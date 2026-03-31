@@ -1,46 +1,42 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 :root {
-  --red: #c8102e;
-  --red-dark: #8b0014;
-  --red-light: #e8304e;
-  --gold: #f6c326;
-  --gold-dim: #c9a000;
+  --red:         #C8102E;
+  --red-dark:    #8B0014;
+  --red-light:   #E8304E;
+  --gold:        #F6C326;
+  --gold-dim:    #C9A000;
 
-  --bg: #0d0d0f;
-  --surface: #161618;
-  --surface2: #1e1e21;
-  --surface3: #272729;
+  --bg:          #0D0D0F;
+  --surface:     #161618;
+  --surface2:    #1E1E21;
+  --surface3:    #272729;
 
-  --border: #2e2e32;
-  --border2: #3a3a3f;
+  --border:      #2E2E32;
+  --border2:     #3A3A3F;
 
-  --text: #f0f0f2;
-  --text-dim: #8a8a90;
-  --text-muted: #555558;
+  --text:        #F0F0F2;
+  --text-dim:    #8A8A90;
+  --text-muted:  #555558;
 
-  --green: #22c55e;
-  --yellow: #eab308;
+  --green:       #22C55E;
+  --yellow:      #EAB308;
 
-  --font-display: "Bebas Neue", sans-serif;
-  --font-body: "DM Sans", sans-serif;
-  --font-mono: "DM Mono", monospace;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
 
-  --radius: 8px;
-  --radius-lg: 14px;
+  --radius:      8px;
+  --radius-lg:   14px;
 }
 
-html,
-body,
-#root {
+html, body, #root {
   height: 100%;
 }
 
@@ -53,20 +49,10 @@ body {
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: var(--surface);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border2);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
-}
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: var(--surface); }
+::-webkit-scrollbar-thumb    { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 /* ─── Inputs ─────────────────────────────────────────────────────────────────── */
 .input {
@@ -81,20 +67,11 @@ body {
   outline: none;
   transition: border-color 0.15s;
 }
-.input:focus {
-  border-color: var(--red);
-}
-.input::placeholder {
-  color: var(--text-muted);
-}
-.input-sm {
-  padding: 7px 10px;
-  font-size: 12px;
-}
+.input:focus        { border-color: var(--red); }
+.input::placeholder { color: var(--text-muted); }
+.input-sm           { padding: 7px 10px; font-size: 12px; }
 
-input[type="date"].input {
-  color-scheme: dark;
-}
+input[type="date"].input { color-scheme: dark; }
 
 select.input {
   appearance: none;
@@ -123,93 +100,51 @@ select.input {
   white-space: nowrap;
   user-select: none;
 }
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.btn-primary {
-  background: var(--red);
-  color: #fff;
-}
-.btn-primary:hover {
-  background: var(--red-light);
-}
+.btn-primary       { background: var(--red); color: #fff; }
+.btn-primary:hover { background: var(--red-light); }
 
 .btn-ghost {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-dim);
 }
-.btn-ghost:hover {
-  border-color: var(--border2);
-  color: var(--text);
-  background: var(--surface2);
-}
+.btn-ghost:hover  { border-color: var(--border2); color: var(--text); background: var(--surface2); }
 
 .btn-icon {
-  width: 30px;
-  height: 30px;
-  padding: 0;
+  width: 30px; height: 30px; padding: 0;
   background: var(--surface3);
   border: 1px solid var(--border);
   color: var(--text-dim);
   border-radius: 6px;
 }
-.btn-icon:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-.btn-icon.danger:hover {
-  background: rgba(200, 16, 46, 0.15);
-  border-color: rgba(200, 16, 46, 0.3);
-  color: var(--red);
-}
+.btn-icon:hover              { background: var(--surface2); color: var(--text); }
+.btn-icon.danger:hover       { background: rgba(200,16,46,0.15); border-color: rgba(200,16,46,0.3); color: var(--red); }
 
-.btn-sm {
-  padding: 5px 10px;
-  font-size: 11px;
-}
+.btn-sm  { padding: 5px 10px; font-size: 11px; }
 
 .btn-export {
   background: linear-gradient(135deg, var(--red), var(--red-dark));
   color: #fff;
   font-size: 13px;
   padding: 9px 20px;
-  box-shadow: 0 4px 14px rgba(200, 16, 46, 0.3);
+  box-shadow: 0 4px 14px rgba(200,16,46,0.3);
 }
 .btn-export:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgba(200, 16, 46, 0.5);
+  box-shadow: 0 6px 20px rgba(200,16,46,0.5);
   transform: translateY(-1px);
 }
-.btn-export.exporting {
-  opacity: 0.7;
-}
+.btn-export.exporting { opacity: 0.7; }
 
 /* ─── Layout helpers ─────────────────────────────────────────────────────────── */
-.input-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.mt-2 {
-  margin-top: 8px;
-}
-.mb-2 {
-  margin-bottom: 8px;
-}
-.flex {
-  display: flex;
-}
-.flex-1 {
-  flex: 1;
-}
-.gap-2 {
-  gap: 8px;
-}
-.items-center {
-  align-items: center;
-}
+.input-row   { display: flex; gap: 8px; align-items: center; }
+.mt-2        { margin-top: 8px; }
+.mb-2        { margin-bottom: 8px; }
+.flex        { display: flex; }
+.flex-1      { flex: 1; }
+.gap-2       { gap: 8px; }
+.items-center { align-items: center; }
 
 /* ─── Typography helpers ─────────────────────────────────────────────────────── */
 .section-label {
@@ -228,10 +163,7 @@ select.input {
   letter-spacing: 0.4px;
 }
 
-.help-text {
-  font-size: 11px;
-  color: var(--text-muted);
-}
+.help-text { font-size: 11px; color: var(--text-muted); }
 
 /* ─── Misc ───────────────────────────────────────────────────────────────────── */
 .empty-state {
@@ -241,14 +173,6 @@ select.input {
   font-size: 12px;
 }
 
-.divider {
-  height: 1px;
-  background: var(--border);
-}
+.divider { height: 1px; background: var(--border); }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }

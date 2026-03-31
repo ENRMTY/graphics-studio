@@ -1,10 +1,10 @@
-import React, { useRef } from "react";
-import type { FullTimeData, Team, Competition, EventType } from "../types";
-import { TeamPicker } from "./TeamPicker";
-import { CompetitionPicker } from "./CompetitionPicker";
-import { EventRow } from "./EventRow";
-import { Icons } from "./Icons";
-import { useFileUpload } from "../hooks/useFileUpload";
+import React, { useRef } from 'react';
+import type { FullTimeData, Team, Competition, EventType } from '../types';
+import { TeamPicker } from './TeamPicker';
+import { CompetitionPicker } from './CompetitionPicker';
+import { EventRow } from './EventRow';
+import { Icons } from './Icons';
+import { useFileUpload } from '../hooks/useFileUpload';
 
 interface Props {
   data: FullTimeData;
@@ -16,35 +16,21 @@ interface Props {
 }
 
 const EVENT_TYPES: { type: EventType; label: string; cls: string }[] = [
-  { type: "goal", label: "Goal", cls: "goal" },
-  { type: "penalty", label: "Penalty", cls: "pen" },
-  { type: "red", label: "Red Card", cls: "red" },
-  { type: "og", label: "OG", cls: "og" },
+  { type: 'goal',    label: 'Goal',     cls: 'goal' },
+  { type: 'penalty', label: 'Penalty',  cls: 'pen'  },
+  { type: 'red',     label: 'Red Card', cls: 'red'  },
+  { type: 'og',      label: 'OG',       cls: 'og'   },
 ];
 
-export function FullTimePanel({
-  data,
-  onChange,
-  teams,
-  competitions,
-  onTeamSave,
-  onCompetitionsChange,
-}: Props) {
-  const bgUpload = useFileUpload((url) => onChange({ ...data, bgImage: url }));
+export function FullTimePanel({ data, onChange, teams, competitions, onTeamSave, onCompetitionsChange }: Props) {
+  const bgUpload = useFileUpload((url, file) =>
+    onChange({ ...data, bgImage: url, bgImageFile: file }),
+  );
 
   const addEvent = (type: EventType) => {
     onChange({
       ...data,
-      events: [
-        ...data.events,
-        {
-          id: Date.now().toString(),
-          type,
-          player: "",
-          minute: "",
-          side: "home",
-        },
-      ],
+      events: [...data.events, { id: Date.now().toString(), type, player: '', minute: '', side: 'home' }],
     });
   };
 
@@ -60,13 +46,9 @@ export function FullTimePanel({
               <img src={data.bgImage} alt="" />
             </div>
             <div style={{ flex: 1 }}>
-              <div className="team-name-display" style={{ fontSize: 12 }}>
-                Background set
-              </div>
+              <div className="team-name-display" style={{ fontSize: 12 }}>Background set</div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={bgUpload.open}>
-              Replace
-            </button>
+            <button className="btn btn-ghost btn-sm" onClick={bgUpload.open}>Replace</button>
           </div>
         ) : (
           <div className="upload-zone" onClick={bgUpload.open}>
@@ -83,14 +65,7 @@ export function FullTimePanel({
         selected={data.competition}
         selectedIcon={data.competitionIcon}
         selectedColor={data.competitionColor}
-        onSelect={(name, icon, color) =>
-          onChange({
-            ...data,
-            competition: name,
-            competitionIcon: icon,
-            competitionColor: color,
-          })
-        }
+        onSelect={(name, icon, color) => onChange({ ...data, competition: name, competitionIcon: icon, competitionColor: color })}
         onCompetitionsChange={onCompetitionsChange}
       />
 
@@ -120,9 +95,7 @@ export function FullTimePanel({
             min={0}
             max={99}
             value={data.homeScore}
-            onChange={(e) =>
-              onChange({ ...data, homeScore: parseInt(e.target.value) || 0 })
-            }
+            onChange={(e) => onChange({ ...data, homeScore: parseInt(e.target.value) || 0 })}
           />
           <div className="score-dash">–</div>
           <input
@@ -131,9 +104,7 @@ export function FullTimePanel({
             min={0}
             max={99}
             value={data.awayScore}
-            onChange={(e) =>
-              onChange({ ...data, awayScore: parseInt(e.target.value) || 0 })
-            }
+            onChange={(e) => onChange({ ...data, awayScore: parseInt(e.target.value) || 0 })}
           />
         </div>
       </div>
@@ -152,29 +123,17 @@ export function FullTimePanel({
               key={ev.id}
               event={ev}
               onChange={(updated) =>
-                onChange({
-                  ...data,
-                  events: data.events.map((e) =>
-                    e.id === ev.id ? updated : e,
-                  ),
-                })
+                onChange({ ...data, events: data.events.map((e) => (e.id === ev.id ? updated : e)) })
               }
               onDelete={() =>
-                onChange({
-                  ...data,
-                  events: data.events.filter((e) => e.id !== ev.id),
-                })
+                onChange({ ...data, events: data.events.filter((e) => e.id !== ev.id) })
               }
             />
           ))}
         </div>
         <div className="add-event-row">
           {EVENT_TYPES.map(({ type, label, cls }) => (
-            <button
-              key={type}
-              className={`add-event-btn ${cls}`}
-              onClick={() => addEvent(type)}
-            >
+            <button key={type} className={`add-event-btn ${cls}`} onClick={() => addEvent(type)}>
               <Icons.Plus style={{ width: 11, height: 11 }} /> {label}
             </button>
           ))}

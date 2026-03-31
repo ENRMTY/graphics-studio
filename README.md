@@ -14,6 +14,7 @@ Outputs 1080×1080 PNG images for full-time results and match day announcements.
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 
@@ -38,6 +39,7 @@ npm run preview
 ## Features
 
 ### Full Time
+
 - Upload custom background photo
 - Select competition (with icon + accent colour)
 - Pick home & away teams from saved library (searchable)
@@ -47,24 +49,28 @@ npm run preview
 - Events render in separate columns below the scoreline, never overlapping logos
 
 ### Match Day
+
 - Upload custom background photo
 - Select competition
 - Pick teams
 - Set date, kick-off time, and venue
 
 ### Team Library
+
 - Save teams with names and logos (PNG with transparency recommended)
 - Search, edit, and delete saved teams
 - Teams persist across sessions via localStorage
 - Teams added inline during graphic creation are auto-saved
 
 ### Competition Library
+
 - Pre-loaded: Premier League, Champions League, FA Cup, Carabao Cup, Europa League, Friendly
 - Upload custom icons (PNG with transparency)
 - Set accent colour per competition (shown as a colour chip on the graphic)
 - Add, edit, delete competitions
 
 ### Export
+
 - Exports at full **1080×1080** resolution regardless of preview scale
 - PNG format, named `lfc-fulltime-{timestamp}.png` or `lfc-matchday-{timestamp}.png`
 

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import Konva from "konva";
-import type { FullTimeData, MatchdayData } from "../types";
-import { renderFullTime, renderMatchday } from "../utils/canvasRenderer";
+import React, { useEffect, useRef } from 'react';
+import Konva from 'konva';
+import type { FullTimeData, MatchdayData } from '../types';
+import { renderFullTime, renderMatchday } from '../utils/canvasRenderer';
 
 interface Props {
   data: FullTimeData | MatchdayData;
@@ -50,13 +50,13 @@ export function Canvas({ data, stageRef }: Props) {
   return (
     <div
       ref={containerRef}
-      style={{ width: DISPLAY_SIZE, height: DISPLAY_SIZE, display: "block" }}
+      style={{ width: DISPLAY_SIZE, height: DISPLAY_SIZE, display: 'block' }}
     />
   );
 }
 
 function triggerRender(stage: Konva.Stage, data: FullTimeData | MatchdayData) {
-  if (data.type === "fulltime") {
+  if (data.type === 'fulltime') {
     renderFullTime(stage, data, FULL_SIZE);
   } else {
     renderMatchday(stage, data, FULL_SIZE);

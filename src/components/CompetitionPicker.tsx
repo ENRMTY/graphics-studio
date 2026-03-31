@@ -1,6 +1,6 @@
-import React, { useState, useRef } from "react";
-import type { Competition } from "../types";
-import { Icons } from "./Icons";
+import React, { useState, useRef } from 'react';
+import type { Competition } from '../types';
+import { Icons } from './Icons';
 
 interface Props {
   competitions: Competition[];
@@ -12,28 +12,17 @@ interface Props {
 }
 
 const PRESET_COLORS = [
-  "#C8102E",
-  "#3d195b",
-  "#001489",
-  "#00A550",
-  "#F57F17",
-  "#0070B8",
-  "#D4AF37",
-  "#555558",
+  '#C8102E','#3d195b','#001489','#00A550','#F57F17','#0070B8','#D4AF37','#555558',
 ];
 
 export function CompetitionPicker({
-  competitions,
-  selected,
-  selectedIcon,
-  selectedColor,
-  onSelect,
-  onCompetitionsChange,
+  competitions, selected, selectedIcon, selectedColor,
+  onSelect, onCompetitionsChange,
 }: Props) {
   const [addOpen, setAddOpen] = useState(false);
-  const [newName, setNewName] = useState("");
+  const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState<string | null>(null);
-  const [newColor, setNewColor] = useState("#C8102E");
+  const [newColor, setNewColor] = useState('#C8102E');
   const [editId, setEditId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -43,7 +32,7 @@ export function CompetitionPicker({
     const reader = new FileReader();
     reader.onload = (ev) => setNewIcon(ev.target?.result as string);
     reader.readAsDataURL(file);
-    e.target.value = "";
+    e.target.value = '';
   };
 
   const handleAdd = () => {
@@ -59,26 +48,14 @@ export function CompetitionPicker({
         onSelect(name, newIcon, newColor);
       }
     } else {
-      const nc: Competition = {
-        id: Date.now().toString(),
-        name,
-        icon: newIcon,
-        color: newColor,
-      };
+      const nc: Competition = { id: Date.now().toString(), name, icon: newIcon, color: newColor };
       onCompetitionsChange([...competitions, nc]);
     }
-    setAddOpen(false);
-    setEditId(null);
-    setNewName("");
-    setNewIcon(null);
-    setNewColor("#C8102E");
+    setAddOpen(false); setEditId(null); setNewName(''); setNewIcon(null); setNewColor('#C8102E');
   };
 
   const startEdit = (c: Competition) => {
-    setEditId(c.id);
-    setNewName(c.name);
-    setNewIcon(c.icon);
-    setNewColor(c.color);
+    setEditId(c.id); setNewName(c.name); setNewIcon(c.icon); setNewColor(c.color);
     setAddOpen(true);
   };
 
@@ -94,43 +71,17 @@ export function CompetitionPicker({
         {competitions.map((c) => (
           <div
             key={c.id}
-            className={`comp-chip ${selected === c.name ? "active" : ""}`}
-            style={
-              selected === c.name
-                ? {
-                    borderColor: c.color,
-                    background: c.color + "22",
-                    color: c.color,
-                  }
-                : {}
-            }
-            onClick={() =>
-              onSelect(
-                selected === c.name ? "" : c.name,
-                selected === c.name ? null : c.icon,
-                selected === c.name ? "" : c.color,
-              )
-            }
+            className={`comp-chip ${selected === c.name ? 'active' : ''}`}
+            style={selected === c.name ? { borderColor: c.color, background: c.color + '22', color: c.color } : {}}
+            onClick={() => onSelect(selected === c.name ? '' : c.name, selected === c.name ? null : c.icon, selected === c.name ? '' : c.color)}
           >
             {c.icon && (
-              <img
-                src={c.icon}
-                alt=""
-                style={{
-                  width: 14,
-                  height: 14,
-                  objectFit: "contain",
-                  flexShrink: 0,
-                }}
-              />
+              <img src={c.icon} alt="" style={{ width: 14, height: 14, objectFit: 'contain', flexShrink: 0 }} />
             )}
             <span className="comp-chip-name">{c.name}</span>
             <span
               className="comp-chip-edit"
-              onClick={(e) => {
-                e.stopPropagation();
-                startEdit(c);
-              }}
+              onClick={(e) => { e.stopPropagation(); startEdit(c); }}
               title="Edit"
             >
               <Icons.Edit style={{ width: 10, height: 10 }} />
@@ -144,16 +95,7 @@ export function CompetitionPicker({
             </span>
           </div>
         ))}
-        <button
-          className="comp-add-btn"
-          onClick={() => {
-            setAddOpen(true);
-            setEditId(null);
-            setNewName("");
-            setNewIcon(null);
-            setNewColor("#C8102E");
-          }}
-        >
+        <button className="comp-add-btn" onClick={() => { setAddOpen(true); setEditId(null); setNewName(''); setNewIcon(null); setNewColor('#C8102E'); }}>
           <Icons.Plus style={{ width: 12, height: 12 }} /> Add
         </button>
       </div>
@@ -168,93 +110,45 @@ export function CompetitionPicker({
       />
 
       {addOpen && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && setAddOpen(false)}
-        >
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setAddOpen(false)}>
           <div className="modal">
-            <h3>{editId ? "Edit Competition" : "Add Competition"}</h3>
+            <h3>{editId ? 'Edit Competition' : 'Add Competition'}</h3>
 
             <div className="form-group">
               <label className="form-label">Name</label>
-              <input
-                className="input"
-                placeholder="e.g. Super Cup"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                autoFocus
-              />
+              <input className="input" placeholder="e.g. Super Cup" value={newName}
+                onChange={(e) => setNewName(e.target.value)} autoFocus />
             </div>
 
             <div className="form-group">
               <label className="form-label">Icon (optional)</label>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={handleIconUpload}
-              />
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleIconUpload} />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 {newIcon && (
-                  <img
-                    src={newIcon}
-                    alt=""
-                    style={{
-                      width: 36,
-                      height: 36,
-                      objectFit: "contain",
-                      background: "var(--surface3)",
-                      borderRadius: 6,
-                      border: "1px solid var(--border)",
-                      padding: 3,
-                    }}
-                  />
+                  <img src={newIcon} alt="" style={{ width: 36, height: 36, objectFit: 'contain', background: 'var(--surface3)', borderRadius: 6, border: '1px solid var(--border)', padding: 3 }} />
                 )}
-                <button
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => fileRef.current?.click()}
-                >
+                <button className="btn btn-ghost btn-sm" onClick={() => fileRef.current?.click()}>
                   <Icons.Upload style={{ width: 12, height: 12 }} />
-                  {newIcon ? "Replace Icon" : "Upload Icon"}
+                  {newIcon ? 'Replace Icon' : 'Upload Icon'}
                 </button>
                 {newIcon && (
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => setNewIcon(null)}
-                  >
-                    Remove
-                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setNewIcon(null)}>Remove</button>
                 )}
               </div>
             </div>
 
             <div className="form-group">
               <label className="form-label">Accent Colour</label>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 6,
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
                 {PRESET_COLORS.map((col) => (
                   <button
                     key={col}
                     onClick={() => setNewColor(col)}
                     style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      background: col,
-                      border:
-                        newColor === col
-                          ? "2px solid white"
-                          : "2px solid transparent",
-                      cursor: "pointer",
-                      outline: "none",
-                      boxShadow: newColor === col ? `0 0 0 2px ${col}` : "none",
+                      width: 26, height: 26, borderRadius: '50%', background: col,
+                      border: newColor === col ? '2px solid white' : '2px solid transparent',
+                      cursor: 'pointer', outline: 'none',
+                      boxShadow: newColor === col ? `0 0 0 2px ${col}` : 'none',
                     }}
                   />
                 ))}
@@ -262,30 +156,15 @@ export function CompetitionPicker({
                   type="color"
                   value={newColor}
                   onChange={(e) => setNewColor(e.target.value)}
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    border: "none",
-                    cursor: "pointer",
-                    background: "none",
-                    padding: 0,
-                  }}
+                  style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', cursor: 'pointer', background: 'none', padding: 0 }}
                   title="Custom colour"
                 />
               </div>
             </div>
 
             <div className="modal-actions">
-              <button
-                className="btn btn-ghost"
-                onClick={() => setAddOpen(false)}
-              >
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={handleAdd}>
-                {editId ? "Save Changes" : "Add Competition"}
-              </button>
+              <button className="btn btn-ghost" onClick={() => setAddOpen(false)}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleAdd}>{editId ? 'Save Changes' : 'Add Competition'}</button>
             </div>
           </div>
         </div>

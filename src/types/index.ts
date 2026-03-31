@@ -1,5 +1,5 @@
-export type EventType = "goal" | "penalty" | "red" | "og";
-export type EventSide = "home" | "away";
+export type EventType = 'goal' | 'penalty' | 'red' | 'og';
+export type EventSide = 'home' | 'away';
 
 export interface MatchEvent {
   id: string;
@@ -16,8 +16,10 @@ export interface Team {
 }
 
 export interface FullTimeData {
-  type: "fulltime";
+  _id?: string;           // server-assigned UUID — present after first save
+  type: 'fulltime';
   bgImage: string | null;
+  bgImageFile?: File;     // held in memory until uploaded, then cleared
   competition: string;
   competitionIcon: string | null;
   competitionColor: string;
@@ -29,8 +31,10 @@ export interface FullTimeData {
 }
 
 export interface MatchdayData {
-  type: "matchday";
+  _id?: string;
+  type: 'matchday';
   bgImage: string | null;
+  bgImageFile?: File;
   competition: string;
   competitionIcon: string | null;
   competitionColor: string;
@@ -41,11 +45,11 @@ export interface MatchdayData {
   venue: string;
 }
 
-export type ViewMode = "ft" | "md" | "teams" | "comps";
+export type ViewMode = 'ft' | 'md' | 'teams' | 'comps';
 
 export interface Competition {
   id: string;
   name: string;
   icon: string | null; // base64
-  color: string; // accent hex
+  color: string;       // accent hex
 }
