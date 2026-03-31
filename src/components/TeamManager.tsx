@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import type { Team } from '../types';
-import { Icons } from './Icons';
-import { useFileUpload } from '../hooks/useFileUpload';
+import React, { useState } from "react";
+import type { Team } from "../types";
+import { Icons } from "./Icons";
+import { useFileUpload } from "../hooks/useFileUpload";
 
 interface Props {
   teams: Team[];
@@ -10,36 +10,50 @@ interface Props {
 
 export function TeamManager({ teams, onUpdate }: Props) {
   const [addOpen, setAddOpen] = useState(false);
-  const [newName, setNewName] = useState('');
+  const [newName, setNewName] = useState("");
   const [newLogo, setNewLogo] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
 
   const [newLogoFile, setNewLogoFile] = useState<File | null>(null);
 
-  const logoUpload = useFileUpload((url, file) => { setNewLogo(url); setNewLogoFile(file); });
+  const logoUpload = useFileUpload((url, file) => {
+    setNewLogo(url);
+    setNewLogoFile(file);
+  });
 
   const filtered = teams.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const openAdd = () => {
-    setEditId(null); setNewName(''); setNewLogo(null); setAddOpen(true);
+    setEditId(null);
+    setNewName("");
+    setNewLogo(null);
+    setAddOpen(true);
   };
 
   const openEdit = (t: Team) => {
-    setEditId(t.id); setNewName(t.name); setNewLogo(t.logo); setAddOpen(true);
+    setEditId(t.id);
+    setNewName(t.name);
+    setNewLogo(t.logo);
+    setAddOpen(true);
   };
 
   const handleSave = () => {
     const name = newName.trim();
     if (!name) return;
     if (editId) {
-      onUpdate(teams.map((t) => (t.id === editId ? { ...t, name, logo: newLogo } : t)));
+      onUpdate(
+        teams.map((t) => (t.id === editId ? { ...t, name, logo: newLogo } : t)),
+      );
     } else {
       onUpdate([...teams, { id: Date.now().toString(), name, logo: newLogo }]);
     }
-    setAddOpen(false); setNewName(''); setNewLogo(null); setEditId(null);
+    setAddOpen(false);
+    setNewName("");
+    setNewLogo(null);
+    setEditId(null);
   };
 
   return (
@@ -47,7 +61,9 @@ export function TeamManager({ teams, onUpdate }: Props) {
       <div className="team-manager-header">
         <div>
           <h2>Team Library</h2>
-          <p className="help-text" style={{ marginTop: 2 }}>{teams.length} teams saved</p>
+          <p className="help-text" style={{ marginTop: 2 }}>
+            {teams.length} teams saved
+          </p>
         </div>
         <button className="btn btn-primary" onClick={openAdd}>
           <Icons.Plus style={{ width: 13, height: 13 }} /> Add Team
@@ -55,7 +71,14 @@ export function TeamManager({ teams, onUpdate }: Props) {
       </div>
 
       <div className="input-row" style={{ marginBottom: 16 }}>
-        <Icons.Search style={{ width: 14, height: 14, color: 'var(--text-muted)', flexShrink: 0 }} />
+        <Icons.Search
+          style={{
+            width: 14,
+            height: 14,
+            color: "var(--text-muted)",
+            flexShrink: 0,
+          }}
+        />
         <input
           className="input"
           placeholder="Search teams…"
@@ -66,8 +89,20 @@ export function TeamManager({ teams, onUpdate }: Props) {
 
       {filtered.length === 0 && (
         <div className="empty-state">
-          <Icons.Ball style={{ width: 32, height: 32, margin: '0 auto 8px', display: 'block', opacity: 0.3 }} />
-          <p>{teams.length === 0 ? 'No teams yet. Add your first team.' : 'No teams match your search.'}</p>
+          <Icons.Ball
+            style={{
+              width: 32,
+              height: 32,
+              margin: "0 auto 8px",
+              display: "block",
+              opacity: 0.3,
+            }}
+          />
+          <p>
+            {teams.length === 0
+              ? "No teams yet. Add your first team."
+              : "No teams match your search."}
+          </p>
         </div>
       )}
 
@@ -78,7 +113,9 @@ export function TeamManager({ teams, onUpdate }: Props) {
               {t.logo ? (
                 <img src={t.logo} alt={t.name} />
               ) : (
-                <Icons.Ball style={{ width: 24, height: 24, color: 'var(--text-muted)' }} />
+                <Icons.Ball
+                  style={{ width: 24, height: 24, color: "var(--text-muted)" }}
+                />
               )}
             </div>
             <div className="team-card-name">{t.name}</div>
@@ -86,7 +123,10 @@ export function TeamManager({ teams, onUpdate }: Props) {
               <button className="btn btn-icon" onClick={() => openEdit(t)}>
                 <Icons.Edit style={{ width: 11, height: 11 }} />
               </button>
-              <button className="btn btn-icon danger" onClick={() => onUpdate(teams.filter((x) => x.id !== t.id))}>
+              <button
+                className="btn btn-icon danger"
+                onClick={() => onUpdate(teams.filter((x) => x.id !== t.id))}
+              >
                 <Icons.Trash style={{ width: 11, height: 11 }} />
               </button>
             </div>
@@ -95,9 +135,12 @@ export function TeamManager({ teams, onUpdate }: Props) {
       </div>
 
       {addOpen && (
-        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setAddOpen(false)}>
+        <div
+          className="modal-overlay"
+          onClick={(e) => e.target === e.currentTarget && setAddOpen(false)}
+        >
           <div className="modal">
-            <h3>{editId ? 'Edit Team' : 'Add New Team'}</h3>
+            <h3>{editId ? "Edit Team" : "Add New Team"}</h3>
             <div className="form-group">
               <label className="form-label">Team Name</label>
               <input
@@ -106,17 +149,38 @@ export function TeamManager({ teams, onUpdate }: Props) {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                onKeyDown={(e) => e.key === "Enter" && handleSave()}
               />
             </div>
             <div className="form-group">
               <label className="form-label">Logo</label>
               <input {...logoUpload.inputProps} />
               {newLogo ? (
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <img src={newLogo} alt="" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: '50%', background: 'var(--surface3)', border: '1px solid var(--border)' }} />
-                  <button className="btn btn-ghost btn-sm" onClick={logoUpload.open}>Replace</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setNewLogo(null)}>Remove</button>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <img
+                    src={newLogo}
+                    alt=""
+                    style={{
+                      width: 48,
+                      height: 48,
+                      objectFit: "contain",
+                      borderRadius: "50%",
+                      background: "var(--surface3)",
+                      border: "1px solid var(--border)",
+                    }}
+                  />
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={logoUpload.open}
+                  >
+                    Replace
+                  </button>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setNewLogo(null)}
+                  >
+                    Remove
+                  </button>
                 </div>
               ) : (
                 <div className="upload-zone" onClick={logoUpload.open}>
@@ -127,9 +191,14 @@ export function TeamManager({ teams, onUpdate }: Props) {
               )}
             </div>
             <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={() => setAddOpen(false)}>Cancel</button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setAddOpen(false)}
+              >
+                Cancel
+              </button>
               <button className="btn btn-primary" onClick={handleSave}>
-                {editId ? 'Save Changes' : 'Add Team'}
+                {editId ? "Save Changes" : "Add Team"}
               </button>
             </div>
           </div>

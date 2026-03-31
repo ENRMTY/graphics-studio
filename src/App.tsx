@@ -1,23 +1,36 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import Konva from 'konva';
-import type { ViewMode, FullTimeData, MatchdayData, Team, Competition } from './types';
-import { teamsService }       from './services/teamsService';
-import { competitionsService } from './services/competitionsService';
-import { graphicsService, apiGraphicToFT, apiGraphicToMD } from './services/graphicsService';
-import { Sidebar }            from './components/Sidebar';
-import { FullTimePanel }      from './components/FullTimePanel';
-import { MatchdayPanel }      from './components/MatchdayPanel';
-import { TeamManager }        from './components/TeamManager';
-import { CompetitionManager } from './components/CompetitionManager';
-import { Canvas }             from './components/Canvas';
-import { Icons }              from './components/Icons';
+// external
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import Konva from "konva";
+
+// internal
+import type {
+  ViewMode,
+  FullTimeData,
+  MatchdayData,
+  Team,
+  Competition,
+} from "./types";
+import { teamsService } from "./services/teamsService";
+import { competitionsService } from "./services/competitionsService";
+import {
+  graphicsService,
+  apiGraphicToFT,
+  apiGraphicToMD,
+} from "./services/graphicsService";
+import { Sidebar } from "./components/Sidebar";
+import { FullTimePanel } from "./components/FullTimePanel";
+import { MatchdayPanel } from "./components/MatchdayPanel";
+import { TeamManager } from "./components/TeamManager";
+import { CompetitionManager } from "./components/CompetitionManager";
+import { Canvas } from "./components/Canvas";
+import { Icons } from "./components/Icons";
 
 const DEFAULT_FT: FullTimeData = {
-  type: 'fulltime',
+  type: "fulltime",
   bgImage: null,
-  competition: '',
+  competition: "",
   competitionIcon: null,
-  competitionColor: '',
+  competitionColor: "",
   homeTeam: null,
   awayTeam: null,
   homeScore: 0,
@@ -26,38 +39,40 @@ const DEFAULT_FT: FullTimeData = {
 };
 
 const DEFAULT_MD: MatchdayData = {
-  type: 'matchday',
+  type: "matchday",
   bgImage: null,
-  competition: '',
+  competition: "",
   competitionIcon: null,
-  competitionColor: '',
+  competitionColor: "",
   homeTeam: null,
   awayTeam: null,
-  matchDate: '',
-  kickoffTime: '',
-  venue: '',
+  matchDate: "",
+  kickoffTime: "",
+  venue: "",
 };
 
 export default function App() {
-  const [view, setView]                 = useState<ViewMode>('ft');
-  const [teams, setTeams]               = useState<Team[]>([]);
+  const [view, setView] = useState<ViewMode>("ft");
+  const [teams, setTeams] = useState<Team[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [ftData, setFtData]             = useState<FullTimeData>(DEFAULT_FT);
-  const [mdData, setMdData]             = useState<MatchdayData>(DEFAULT_MD);
-  const [loading, setLoading]           = useState(true);
-  const [saveStatus, setSaveStatus]     = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [exporting, setExporting]       = useState(false);
+  const [ftData, setFtData] = useState<FullTimeData>(DEFAULT_FT);
+  const [mdData, setMdData] = useState<MatchdayData>(DEFAULT_MD);
+  const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const [exporting, setExporting] = useState(false);
 
-  const ftStageRef    = useRef<Konva.Stage | null>(null);
-  const mdStageRef    = useRef<Konva.Stage | null>(null);
+  const ftStageRef = useRef<Konva.Stage | null>(null);
+  const mdStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Keep latest data accessible inside the debounce closure without re-creating it
+  // keep latest data accessible inside the debounce closure without re-creating it
   const ftRef = useRef(ftData);
   const mdRef = useRef(mdData);
   ftRef.current = ftData;
   mdRef.current = mdData;
 
-  // ── Initial load ────────────────────────────────────────────────────────────
+  // initial load: fetch teams, competitions, and latest drafts
   useEffect(() => {
     async function bootstrap() {
       try {
@@ -68,10 +83,12 @@ export default function App() {
         ]);
         setTeams(teamsData);
         setCompetitions(compsData);
-        if (drafts.fulltime) setFtData(apiGraphicToFT(drafts.fulltime) as FullTimeData);
-        if (drafts.matchday) setMdData(apiGraphicToMD(drafts.matchday) as MatchdayData);
+        if (drafts.fulltime)
+          setFtData(apiGraphicToFT(drafts.fulltime) as FullTimeData);
+        if (drafts.matchday)
+          setMdData(apiGraphicToMD(drafts.matchday) as MatchdayData);
       } catch (err) {
-        console.error('Bootstrap error:', err);
+        console.error("Bootstrap error:", err);
       } finally {
         setLoading(false);
       }
@@ -79,10 +96,10 @@ export default function App() {
     bootstrap();
   }, []);
 
-  // ── Auto-save debounced 1.5 s ───────────────────────────────────────────────
+  // auto-save debounced 1.5 s
   const scheduleAutoSave = useCallback(() => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-    setSaveStatus('saving');
+    setSaveStatus("saving");
     autoSaveTimer.current = setTimeout(async () => {
       const ft = ftRef.current;
       const md = mdRef.current;
@@ -90,7 +107,11 @@ export default function App() {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
         if (ft.bgImageFile) {
           await graphicsService.uploadFTBackground(ftResult.id, ft.bgImageFile);
-          setFtData((p) => ({ ...p, _id: ftResult.id, bgImageFile: undefined }));
+          setFtData((p) => ({
+            ...p,
+            _id: ftResult.id,
+            bgImageFile: undefined,
+          }));
         } else {
           setFtData((p) => ({ ...p, _id: ftResult.id }));
         }
@@ -98,37 +119,47 @@ export default function App() {
         const mdResult = await graphicsService.saveMDDraft(md, md._id);
         if (md.bgImageFile) {
           await graphicsService.uploadMDBackground(mdResult.id, md.bgImageFile);
-          setMdData((p) => ({ ...p, _id: mdResult.id, bgImageFile: undefined }));
+          setMdData((p) => ({
+            ...p,
+            _id: mdResult.id,
+            bgImageFile: undefined,
+          }));
         } else {
           setMdData((p) => ({ ...p, _id: mdResult.id }));
         }
 
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 2000);
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
       } catch (err) {
-        console.error('Auto-save failed:', err);
-        setSaveStatus('error');
+        console.error("Auto-save failed:", err);
+        setSaveStatus("error");
       }
     }, 1500);
   }, []);
 
-  const handleFtChange = useCallback((data: FullTimeData) => {
-    setFtData(data);
-    scheduleAutoSave();
-  }, [scheduleAutoSave]);
+  const handleFtChange = useCallback(
+    (data: FullTimeData) => {
+      setFtData(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
 
-  const handleMdChange = useCallback((data: MatchdayData) => {
-    setMdData(data);
-    scheduleAutoSave();
-  }, [scheduleAutoSave]);
+  const handleMdChange = useCallback(
+    (data: MatchdayData) => {
+      setMdData(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
 
-  // ── Teams ───────────────────────────────────────────────────────────────────
+  // teams
   const handleTeamSave = useCallback(async (team: Team) => {
     try {
       const created = await teamsService.create(team.name);
       setTeams((prev) => [...prev, created]);
     } catch (err) {
-      console.error('Team save failed:', err);
+      console.error("Team save failed:", err);
     }
   }, []);
 
@@ -136,48 +167,70 @@ export default function App() {
     setTeams(updated);
   }, []);
 
-  // ── Competitions ────────────────────────────────────────────────────────────
+  // competitions
   const handleCompetitionsUpdate = useCallback((updated: Competition[]) => {
     setCompetitions(updated);
   }, []);
 
-  // ── Export ──────────────────────────────────────────────────────────────────
+  // export
   const handleExport = async () => {
-    const stage = view === 'ft' ? ftStageRef.current : mdStageRef.current;
-    if (!stage || exporting) return;
+    const stage = view === "ft" ? ftStageRef.current : mdStageRef.current;
+    if (!stage || exporting) {
+      return;
+    }
+
     setExporting(true);
     try {
       const FULL = 1080;
-      const prev = { w: stage.width(), h: stage.height(), sx: stage.scaleX(), sy: stage.scaleY() };
+      const prev = {
+        w: stage.width(),
+        h: stage.height(),
+        sx: stage.scaleX(),
+        sy: stage.scaleY(),
+      };
       stage.size({ width: FULL, height: FULL });
       stage.scale({ x: 1, y: 1 });
       stage.draw();
-      const dataURL = stage.toDataURL({ pixelRatio: 1, mimeType: 'image/png' });
+      const dataURL = stage.toDataURL({ pixelRatio: 1, mimeType: "image/png" });
       stage.size({ width: prev.w, height: prev.h });
       stage.scale({ x: prev.sx, y: prev.sy });
       stage.draw();
-      const link = document.createElement('a');
-      link.download = `lfc-${view === 'ft' ? 'fulltime' : 'matchday'}-${Date.now()}.png`;
+      const link = document.createElement("a");
+      link.download = `lfc-${view === "ft" ? "fulltime" : "matchday"}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
-      // Mark draft as published
-      const id = view === 'ft' ? ftData._id : mdData._id;
+      // mark draft as published
+      const id = view === "ft" ? ftData._id : mdData._id;
       if (id) {
-        if (view === 'ft') await graphicsService.publishFT(id);
-        else               await graphicsService.publishMD(id);
+        if (view === "ft") {
+          await graphicsService.publishFT(id);
+        } else {
+          await graphicsService.publishMD(id);
+        }
       }
     } finally {
       setExporting(false);
     }
   };
 
-  const isCanvas = view === 'ft' || view === 'md';
+  const isCanvas = view === "ft" || view === "md";
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', flexDirection: 'column', gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100vh",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
         <div className="spinner" />
-        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Connecting to server…</span>
+        <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
+          Connecting to server…
+        </span>
       </div>
     );
   }
@@ -186,26 +239,47 @@ export default function App() {
     <div className="app">
       <Sidebar view={view} onViewChange={setView} teamCount={teams.length} />
       <div className="main">
-        {view === 'teams' && <TeamManager teams={teams} onUpdate={handleTeamsUpdate} />}
-        {view === 'comps' && <CompetitionManager competitions={competitions} onUpdate={handleCompetitionsUpdate} />}
+        {view === "teams" && (
+          <TeamManager teams={teams} onUpdate={handleTeamsUpdate} />
+        )}
+        {view === "comps" && (
+          <CompetitionManager
+            competitions={competitions}
+            onUpdate={handleCompetitionsUpdate}
+          />
+        )}
 
         {isCanvas && (
           <>
             <div className="panel">
               <div className="panel-header">
                 <div>
-                  <h2>{view === 'ft' ? 'Full Time Result' : 'Match Day'}</h2>
-                  <p>{view === 'ft' ? 'Configure scoreline & events' : 'Configure upcoming match'}</p>
+                  <h2>{view === "ft" ? "Full Time Result" : "Match Day"}</h2>
+                  <p>
+                    {view === "ft"
+                      ? "Configure scoreline & events"
+                      : "Configure upcoming match"}
+                  </p>
                 </div>
               </div>
-              {view === 'ft' ? (
-                <FullTimePanel data={ftData} onChange={handleFtChange} teams={teams}
-                  competitions={competitions} onTeamSave={handleTeamSave}
-                  onCompetitionsChange={handleCompetitionsUpdate} />
+              {view === "ft" ? (
+                <FullTimePanel
+                  data={ftData}
+                  onChange={handleFtChange}
+                  teams={teams}
+                  competitions={competitions}
+                  onTeamSave={handleTeamSave}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
               ) : (
-                <MatchdayPanel data={mdData} onChange={handleMdChange} teams={teams}
-                  competitions={competitions} onTeamSave={handleTeamSave}
-                  onCompetitionsChange={handleCompetitionsUpdate} />
+                <MatchdayPanel
+                  data={mdData}
+                  onChange={handleMdChange}
+                  teams={teams}
+                  competitions={competitions}
+                  onTeamSave={handleTeamSave}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
               )}
             </div>
 
@@ -213,25 +287,36 @@ export default function App() {
               <div className="canvas-toolbar">
                 <div className="canvas-toolbar-left">
                   <div className="status-dot" />
-                  <span className="status-label">Live Preview · 1080 × 1080</span>
-                  {saveStatus === 'saving' && <span className="save-badge saving">Saving…</span>}
-                  {saveStatus === 'saved'  && <span className="save-badge saved">✓ Saved</span>}
-                  {saveStatus === 'error'  && <span className="save-badge error">Save failed</span>}
+                  <span className="status-label">
+                    Live Preview · 1080 × 1080
+                  </span>
+                  {saveStatus === "saving" && (
+                    <span className="save-badge saving">Saving…</span>
+                  )}
+                  {saveStatus === "saved" && (
+                    <span className="save-badge saved">✓ Saved</span>
+                  )}
+                  {saveStatus === "error" && (
+                    <span className="save-badge error">Save failed</span>
+                  )}
                 </div>
                 <div className="canvas-toolbar-right">
-                  <button className={`btn btn-export ${exporting ? 'exporting' : ''}`}
-                    onClick={handleExport} disabled={exporting}>
+                  <button
+                    className={`btn btn-export ${exporting ? "exporting" : ""}`}
+                    onClick={handleExport}
+                    disabled={exporting}
+                  >
                     <Icons.Export style={{ width: 14, height: 14 }} />
-                    {exporting ? 'Exporting…' : 'Export PNG'}
+                    {exporting ? "Exporting…" : "Export PNG"}
                   </button>
                 </div>
               </div>
               <div className="canvas-wrapper">
                 <div className="canvas-frame">
-                  <div style={{ display: view === 'ft' ? 'block' : 'none' }}>
+                  <div style={{ display: view === "ft" ? "block" : "none" }}>
                     <Canvas data={ftData} stageRef={ftStageRef} />
                   </div>
-                  <div style={{ display: view === 'md' ? 'block' : 'none' }}>
+                  <div style={{ display: view === "md" ? "block" : "none" }}>
                     <Canvas data={mdData} stageRef={mdStageRef} />
                   </div>
                 </div>

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import Konva from 'konva';
-import type { FullTimeData, MatchdayData } from '../types';
-import { renderFullTime, renderMatchday } from '../utils/canvasRenderer';
+import React, { useEffect, useRef } from "react";
+import Konva from "konva";
+import type { FullTimeData, MatchdayData } from "../types";
+import { renderFullTime, renderMatchday } from "../utils/canvasRenderer";
 
 interface Props {
   data: FullTimeData | MatchdayData;
@@ -16,9 +16,11 @@ export function Canvas({ data, stageRef }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(false);
 
-  // Init stage once
+  // init stage on mount, destroy on unmount
   useEffect(() => {
-    if (!containerRef.current || mountedRef.current) return;
+    if (!containerRef.current || mountedRef.current) {
+      return;
+    }
     mountedRef.current = true;
 
     const stage = new Konva.Stage({
@@ -40,7 +42,7 @@ export function Canvas({ data, stageRef }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-render on data change
+  // re-render on data change
   useEffect(() => {
     if (stageRef.current) {
       triggerRender(stageRef.current, data);
@@ -50,13 +52,13 @@ export function Canvas({ data, stageRef }: Props) {
   return (
     <div
       ref={containerRef}
-      style={{ width: DISPLAY_SIZE, height: DISPLAY_SIZE, display: 'block' }}
+      style={{ width: DISPLAY_SIZE, height: DISPLAY_SIZE, display: "block" }}
     />
   );
 }
 
 function triggerRender(stage: Konva.Stage, data: FullTimeData | MatchdayData) {
-  if (data.type === 'fulltime') {
+  if (data.type === "fulltime") {
     renderFullTime(stage, data, FULL_SIZE);
   } else {
     renderMatchday(stage, data, FULL_SIZE);
