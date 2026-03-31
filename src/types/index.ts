@@ -1,5 +1,5 @@
-export type EventType = 'goal' | 'penalty' | 'red' | 'og';
-export type EventSide = 'home' | 'away';
+export type EventType = "goal" | "penalty" | "red" | "og";
+export type EventSide = "home" | "away";
 
 export interface MatchEvent {
   id: string;
@@ -16,7 +16,7 @@ export interface Team {
 }
 
 export interface FullTimeData {
-  type: 'fulltime';
+  type: "fulltime";
   bgImage: string | null;
   competition: string;
   competitionIcon: string | null;
@@ -29,7 +29,7 @@ export interface FullTimeData {
 }
 
 export interface MatchdayData {
-  type: 'matchday';
+  type: "matchday";
   bgImage: string | null;
   competition: string;
   competitionIcon: string | null;
@@ -41,11 +41,11 @@ export interface MatchdayData {
   venue: string;
 }
 
-export type ViewMode = 'ft' | 'md' | 'teams' | 'comps';
+export type ViewMode = "ft" | "md" | "teams" | "comps";
 
 export interface Competition {
   id: string;
   name: string;
   icon: string | null; // base64
-  color: string;       // accent hex
+  color: string; // accent hex
 }

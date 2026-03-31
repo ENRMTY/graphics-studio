@@ -1,6 +1,6 @@
-import React from 'react';
-import type { MatchEvent, EventSide } from '../types';
-import { Icons } from './Icons';
+import React from "react";
+import type { MatchEvent, EventSide } from "../types";
+import { Icons } from "./Icons";
 
 interface Props {
   event: MatchEvent;
@@ -8,11 +8,11 @@ interface Props {
   onDelete: () => void;
 }
 
-const BADGE: Record<MatchEvent['type'], { label: string; cls: string }> = {
-  goal:    { label: '⚽ Goal',    cls: 'badge-goal' },
-  penalty: { label: '⚽ Pen',     cls: 'badge-pen'  },
-  red:     { label: '🟥 Red',     cls: 'badge-red'  },
-  og:      { label: '⚽ OG',      cls: 'badge-og'   },
+const BADGE: Record<MatchEvent["type"], { label: string; cls: string }> = {
+  goal: { label: "⚽ Goal", cls: "badge-goal" },
+  penalty: { label: "⚽ Pen", cls: "badge-pen" },
+  red: { label: "🟥 Red", cls: "badge-red" },
+  og: { label: "⚽ OG", cls: "badge-og" },
 };
 
 export function EventRow({ event, onChange, onDelete }: Props) {
@@ -40,10 +40,10 @@ export function EventRow({ event, onChange, onDelete }: Props) {
       </div>
       <div className="event-side-row">
         <span className="help-text">Side:</span>
-        {(['home', 'away'] as EventSide[]).map((s) => (
+        {(["home", "away"] as EventSide[]).map((s) => (
           <span
             key={s}
-            className={`side-chip ${event.side === s ? 'active' : ''}`}
+            className={`side-chip ${event.side === s ? "active" : ""}`}
             onClick={() => onChange({ ...event, side: s })}
           >
             {s.charAt(0).toUpperCase() + s.slice(1)}

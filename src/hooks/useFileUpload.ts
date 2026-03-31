@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef } from "react";
 
 export function useFileUpload(onLoad: (dataUrl: string) => void) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -7,20 +7,24 @@ export function useFileUpload(onLoad: (dataUrl: string) => void) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      if (ev.target?.result) onLoad(ev.target.result as string);
+      if (ev.target?.result) {
+        onLoad(ev.target.result as string);
+      }
     };
     reader.readAsDataURL(file);
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const inputProps = {
     ref: inputRef,
-    type: 'file' as const,
-    accept: 'image/*',
-    style: { display: 'none' } as React.CSSProperties,
+    type: "file" as const,
+    accept: "image/*",
+    style: { display: "none" } as React.CSSProperties,
     onChange: handleChange,
   };
 

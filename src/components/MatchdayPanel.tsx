@@ -1,9 +1,9 @@
-import React from 'react';
-import type { MatchdayData, Team, Competition } from '../types';
-import { TeamPicker } from './TeamPicker';
-import { CompetitionPicker } from './CompetitionPicker';
-import { Icons } from './Icons';
-import { useFileUpload } from '../hooks/useFileUpload';
+import React from "react";
+import type { MatchdayData, Team, Competition } from "../types";
+import { TeamPicker } from "./TeamPicker";
+import { CompetitionPicker } from "./CompetitionPicker";
+import { Icons } from "./Icons";
+import { useFileUpload } from "../hooks/useFileUpload";
 
 interface Props {
   data: MatchdayData;
@@ -14,7 +14,14 @@ interface Props {
   onCompetitionsChange: (c: Competition[]) => void;
 }
 
-export function MatchdayPanel({ data, onChange, teams, competitions, onTeamSave, onCompetitionsChange }: Props) {
+export function MatchdayPanel({
+  data,
+  onChange,
+  teams,
+  competitions,
+  onTeamSave,
+  onCompetitionsChange,
+}: Props) {
   const bgUpload = useFileUpload((url) => onChange({ ...data, bgImage: url }));
 
   return (
@@ -29,9 +36,13 @@ export function MatchdayPanel({ data, onChange, teams, competitions, onTeamSave,
               <img src={data.bgImage} alt="" />
             </div>
             <div style={{ flex: 1 }}>
-              <div className="team-name-display" style={{ fontSize: 12 }}>Background set</div>
+              <div className="team-name-display" style={{ fontSize: 12 }}>
+                Background set
+              </div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={bgUpload.open}>Replace</button>
+            <button className="btn btn-ghost btn-sm" onClick={bgUpload.open}>
+              Replace
+            </button>
           </div>
         ) : (
           <div className="upload-zone" onClick={bgUpload.open}>
@@ -48,7 +59,14 @@ export function MatchdayPanel({ data, onChange, teams, competitions, onTeamSave,
         selected={data.competition}
         selectedIcon={data.competitionIcon}
         selectedColor={data.competitionColor}
-        onSelect={(name, icon, color) => onChange({ ...data, competition: name, competitionIcon: icon, competitionColor: color })}
+        onSelect={(name, icon, color) =>
+          onChange({
+            ...data,
+            competition: name,
+            competitionIcon: icon,
+            competitionColor: color,
+          })
+        }
         onCompetitionsChange={onCompetitionsChange}
       />
 
@@ -71,9 +89,11 @@ export function MatchdayPanel({ data, onChange, teams, competitions, onTeamSave,
       {/* Match info */}
       <div>
         <div className="section-label">Match Info</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <div>
-            <div className="form-label" style={{ marginBottom: 4 }}>Date</div>
+            <div className="form-label" style={{ marginBottom: 4 }}>
+              Date
+            </div>
             <input
               className="input"
               type="date"
@@ -82,16 +102,22 @@ export function MatchdayPanel({ data, onChange, teams, competitions, onTeamSave,
             />
           </div>
           <div>
-            <div className="form-label" style={{ marginBottom: 4 }}>Kick-off Time</div>
+            <div className="form-label" style={{ marginBottom: 4 }}>
+              Kick-off Time
+            </div>
             <input
               className="input"
               placeholder="e.g. 17:30"
               value={data.kickoffTime}
-              onChange={(e) => onChange({ ...data, kickoffTime: e.target.value })}
+              onChange={(e) =>
+                onChange({ ...data, kickoffTime: e.target.value })
+              }
             />
           </div>
           <div>
-            <div className="form-label" style={{ marginBottom: 4 }}>Venue</div>
+            <div className="form-label" style={{ marginBottom: 4 }}>
+              Venue
+            </div>
             <input
               className="input"
               placeholder="e.g. Anfield"

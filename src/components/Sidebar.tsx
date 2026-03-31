@@ -1,6 +1,6 @@
-import React from 'react';
-import type { ViewMode } from '../types';
-import { Icons } from './Icons';
+import React from "react";
+import type { ViewMode } from "../types";
+import { Icons } from "./Icons";
 
 interface Props {
   view: ViewMode;
@@ -12,19 +12,19 @@ interface NavItem {
   id: ViewMode;
   label: string;
   Icon: React.FC<React.SVGProps<SVGSVGElement>>;
-  section: 'create' | 'library';
+  section: "create" | "library";
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'ft',    label: 'Full Time',  Icon: Icons.FT,    section: 'create'  },
-  { id: 'md',    label: 'Match Day',  Icon: Icons.MD,    section: 'create'  },
-  { id: 'teams', label: 'Teams',      Icon: Icons.Teams, section: 'library' },
-  { id: 'comps', label: 'Competitions', Icon: Icons.Comps, section: 'library' },
+  { id: "ft", label: "Full Time", Icon: Icons.FT, section: "create" },
+  { id: "md", label: "Match Day", Icon: Icons.MD, section: "create" },
+  { id: "teams", label: "Teams", Icon: Icons.Teams, section: "library" },
+  { id: "comps", label: "Competitions", Icon: Icons.Comps, section: "library" },
 ];
 
 export function Sidebar({ view, onViewChange, teamCount }: Props) {
-  const createItems = NAV_ITEMS.filter((n) => n.section === 'create');
-  const libraryItems = NAV_ITEMS.filter((n) => n.section === 'library');
+  const createItems = NAV_ITEMS.filter((n) => n.section === "create");
+  const libraryItems = NAV_ITEMS.filter((n) => n.section === "library");
 
   return (
     <aside className="sidebar">
@@ -38,7 +38,7 @@ export function Sidebar({ view, onViewChange, teamCount }: Props) {
         {createItems.map(({ id, label, Icon }) => (
           <div
             key={id}
-            className={`nav-item ${view === id ? 'active' : ''}`}
+            className={`nav-item ${view === id ? "active" : ""}`}
             onClick={() => onViewChange(id as ViewMode)}
           >
             <Icon style={{ width: 16, height: 16 }} />
@@ -52,7 +52,7 @@ export function Sidebar({ view, onViewChange, teamCount }: Props) {
         {libraryItems.map(({ id, label, Icon }) => (
           <div
             key={id}
-            className={`nav-item ${view === id ? 'active' : ''}`}
+            className={`nav-item ${view === id ? "active" : ""}`}
             onClick={() => onViewChange(id as ViewMode)}
           >
             <Icon style={{ width: 16, height: 16 }} />
