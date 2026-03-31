@@ -1,6 +1,7 @@
 import React from "react";
 import type { ViewMode } from "../types";
 import { Icons } from "./Icons";
+import logoIcon from "../assets/icon.png";
 
 interface Props {
   view: ViewMode;
@@ -29,8 +30,11 @@ export function Sidebar({ view, onViewChange, teamCount }: Props) {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <h1>LFC Studio</h1>
-        <p>Graphics Tool</p>
+        <img src={logoIcon} alt="LFC Studio" className="sidebar-logo" />
+        <div>
+          <h1>LFC Studio</h1>
+          <p>Graphics Tool</p>
+        </div>
       </div>
 
       <nav className="sidebar-nav">
