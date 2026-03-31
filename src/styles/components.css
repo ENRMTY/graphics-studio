@@ -445,7 +445,6 @@
   width: 100%;
   outline: none;
   transition: border-color 0.15s;
-  -moz-appearance: textfield;
 }
 .score-digit::-webkit-outer-spin-button,
 .score-digit::-webkit-inner-spin-button {
