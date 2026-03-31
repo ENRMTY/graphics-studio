@@ -1,4 +1,4 @@
-# LFC Studio — Graphics Tool
+# EoL Graphics Studio — Graphics Tool
 
 A React + TypeScript graphics tool for creating Liverpool FC Facebook post graphics.
 Outputs 1080×1080 PNG images for full-time results and match day announcements.
@@ -8,37 +8,6 @@ Outputs 1080×1080 PNG images for full-time results and match day announcements.
 - **React 18 + TypeScript** (Vite)
 - **Konva.js** — canvas rendering & PNG export
 - **LocalStorage** — persists teams and competitions between sessions
-
----
-
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── Canvas.tsx              # Konva stage wrapper
-│   ├── CompetitionManager.tsx  # Library view: manage competitions
-│   ├── CompetitionPicker.tsx   # Inline competition selector with icon support
-│   ├── EventRow.tsx            # Single match event row (goal / pen / red / OG)
-│   ├── FullTimePanel.tsx       # Left panel for full-time config
-│   ├── Icons.tsx               # SVG icon components
-│   ├── MatchdayPanel.tsx       # Left panel for match day config
-│   ├── Sidebar.tsx             # Navigation sidebar
-│   ├── TeamManager.tsx         # Library view: manage teams
-│   └── TeamPicker.tsx          # Inline team selector with search
-├── hooks/
-│   └── useFileUpload.ts        # Reusable file upload hook (returns base64)
-├── styles/
-│   ├── globals.css             # CSS variables, base resets, shared utilities
-│   └── components.css          # Component-specific styles
-├── types/
-│   └── index.ts                # All TypeScript interfaces and types
-├── utils/
-│   ├── canvasRenderer.ts       # Konva rendering logic (full-time & match day)
-│   └── storage.ts              # localStorage helpers + default competitions
-├── App.tsx                     # Root component, state management
-└── main.tsx                    # Entry point
-```
 
 ---
 
@@ -98,20 +67,6 @@ npm run preview
 ### Export
 - Exports at full **1080×1080** resolution regardless of preview scale
 - PNG format, named `lfc-fulltime-{timestamp}.png` or `lfc-matchday-{timestamp}.png`
-
----
-
-## Deploying to Production (Recommended Stack)
-
-For a hosted version with cloud storage (teams/logos survive clearing the browser):
-
-| Layer       | Tech                          | Notes                              |
-|-------------|-------------------------------|------------------------------------|
-| Frontend    | This React app (Vite build)   | Deploy to Vercel / Netlify / Railway |
-| Backend API | Node.js + Express (TypeScript)| REST endpoints for teams, matches  |
-| Database    | PostgreSQL                    | Teams, competitions, match history |
-| File storage| Cloudinary (free tier)        | Logo/image URLs instead of base64  |
-| Auth        | Single password (JWT)         | Personal tool — no multi-user needed |
 
 ---
 
