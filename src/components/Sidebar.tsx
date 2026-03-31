@@ -31,10 +31,6 @@ export function Sidebar({ view, onViewChange, teamCount }: Props) {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <img src={logoIcon} alt="LFC Studio" className="sidebar-logo" />
-        <div>
-          <h1>LFC Studio</h1>
-          <p>Graphics Tool</p>
-        </div>
       </div>
 
       <nav className="sidebar-nav">
