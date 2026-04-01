@@ -20,27 +20,12 @@ export const loadCompetitions = (): Competition[] => {
     const saved = JSON.parse(
       localStorage.getItem(COMPETITIONS_KEY) || "[]",
     ) as Competition[];
-    // merge with defaults, user data wins
-    const savedIds = new Set(saved.map((c) => c.id));
-    const merged = [
-      ...DEFAULT_COMPETITIONS.filter((d) => !savedIds.has(d.id)),
-      ...saved,
-    ];
-    return merged;
+    return Array.isArray(saved) ? saved : [];
   } catch {
-    return DEFAULT_COMPETITIONS;
+    return [];
   }
 };
 
 export const saveCompetitions = (comps: Competition[]): void => {
   localStorage.setItem(COMPETITIONS_KEY, JSON.stringify(comps));
 };
-
-export const DEFAULT_COMPETITIONS: Competition[] = [
-  { id: "pl", name: "Premier League", icon: null, color: "#3d195b" },
-  { id: "ucl", name: "Champions League", icon: null, color: "#001489" },
-  { id: "fac", name: "FA Cup", icon: null, color: "#C8102E" },
-  { id: "cc", name: "Carabao Cup", icon: null, color: "#00A550" },
-  { id: "uel", name: "Europa League", icon: null, color: "#F57F17" },
-  { id: "fri", name: "Friendly", icon: null, color: "#555558" },
-];

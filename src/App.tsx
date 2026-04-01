@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Konva from "konva";
 import type {
   ViewMode,
@@ -21,6 +21,7 @@ import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas } from "./components/Canvas";
 import { Icons } from "./components/Icons";
+import { saveCompetitions } from "./utils/storage";
 
 const DEFAULT_FT: FullTimeData = {
   type: "fulltime",
@@ -206,6 +207,7 @@ export default function App() {
   // competitions
   const handleCompetitionsUpdate = useCallback((updated: Competition[]) => {
     setCompetitions(updated);
+    saveCompetitions(updated);
   }, []);
 
   // export
