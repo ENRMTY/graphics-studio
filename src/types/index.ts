@@ -17,7 +17,7 @@ export interface Team {
 
 export interface FullTimeData {
   _id?: string; // server-assigned UUID — present after first save
-  type: "fulltime";
+  type: "fulltime" | "halftime";
   bgImage: string | null;
   bgImageFile?: File; // held in memory until uploaded, then cleared
   competition: string;
@@ -45,7 +45,7 @@ export interface MatchdayData {
   venue: string;
 }
 
-export type ViewMode = "ft" | "md" | "teams" | "comps";
+export type ViewMode = "ft" | "ht" | "md" | "teams" | "comps";
 
 export interface Competition {
   id: string;

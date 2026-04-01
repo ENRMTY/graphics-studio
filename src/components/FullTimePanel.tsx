@@ -52,6 +52,24 @@ export function FullTimePanel({
 
   return (
     <div className="panel-body">
+      {/* HT / FT toggle */}
+      <div>
+        <div className="section-label">Graphic Type</div>
+        <div className="tab-row">
+          <div
+            className={`tab ${data.type === "fulltime" ? "active" : ""}`}
+            onClick={() => onChange({ ...data, type: "fulltime" })}
+          >
+            Full Time
+          </div>
+          <div
+            className={`tab ${data.type === "halftime" ? "active" : ""}`}
+            onClick={() => onChange({ ...data, type: "halftime" })}
+          >
+            Half Time
+          </div>
+        </div>
+      </div>
       {/* Background */}
       <div>
         <div className="section-label">Background Image</div>
