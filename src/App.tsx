@@ -22,6 +22,7 @@ import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas } from "./components/Canvas";
 import { Icons } from "./components/Icons";
 import { saveCompetitions } from "./utils/storage";
+import { saveTeams } from "./utils/storage";
 
 const DEFAULT_FT: FullTimeData = {
   type: "fulltime",
@@ -202,6 +203,7 @@ export default function App() {
 
   const handleTeamsUpdate = useCallback((updated: Team[]) => {
     setTeams(updated);
+    saveTeams(updated);
   }, []);
 
   // competitions

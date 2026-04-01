@@ -5,7 +5,8 @@ const COMPETITIONS_KEY = "lfc_competitions_v1";
 
 export const loadTeams = (): Team[] => {
   try {
-    return JSON.parse(localStorage.getItem(TEAMS_KEY) || "[]");
+    const saved = JSON.parse(localStorage.getItem(TEAMS_KEY) || "[]");
+    return Array.isArray(saved) ? saved : [];
   } catch {
     return [];
   }
