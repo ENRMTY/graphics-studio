@@ -58,9 +58,9 @@ export function Canvas({ data, stageRef }: Props) {
 }
 
 function triggerRender(stage: Konva.Stage, data: FullTimeData | MatchdayData) {
-  if (data.type === "fulltime") {
-    renderFullTime(stage, data, FULL_SIZE);
-  } else {
+  if (data.type === "matchday") {
     renderMatchday(stage, data, FULL_SIZE);
+  } else {
+    renderFullTime(stage, data, FULL_SIZE);
   }
 }
