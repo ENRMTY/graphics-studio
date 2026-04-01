@@ -38,7 +38,11 @@ interface ListResponse {
 }
 interface DraftsResponse {
   success: boolean;
-  data: { fulltime: ApiGraphic | null; matchday: ApiGraphic | null };
+  data: {
+    fulltime: ApiGraphic | null;
+    halftime: ApiGraphic | null;
+    matchday: ApiGraphic | null;
+  };
 }
 
 // mappers
@@ -100,7 +104,7 @@ export function apiGraphicToMD(g: ApiGraphic): MatchdayData & { _id?: string } {
 
 function ftToPayload(data: FullTimeData) {
   return {
-    graphicType: "fulltime",
+    graphicType: data.type,
     competitionId: null,
     competitionName: data.competition || null,
     competitionIconUrl: data.competitionIcon || null,
@@ -152,10 +156,18 @@ export const graphicsService = {
     offset?: number;
   }) {
     const qs = new URLSearchParams();
-    if (params?.type) qs.set("type", params.type);
-    if (params?.status) qs.set("status", params.status);
-    if (params?.limit) qs.set("limit", String(params.limit));
-    if (params?.offset) qs.set("offset", String(params.offset));
+    if (params?.type) {
+      qs.set("type", params.type);
+    }
+    if (params?.status) {
+      qs.set("status", params.status);
+    }
+    if (params?.limit) {
+      qs.set("limit", String(params.limit));
+    }
+    if (params?.offset) {
+      qs.set("offset", String(params.offset));
+    }
     const res = await api.get<ListResponse>(`/api/graphics?${qs}`);
     return res;
   },

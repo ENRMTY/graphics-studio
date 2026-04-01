@@ -85,7 +85,7 @@ export default function App() {
   htRef.current = htData;
   mdRef.current = mdData;
 
-  // ── Initial load ────────────────────────────────────────────────────────────
+  // initial load
   useEffect(() => {
     async function bootstrap() {
       try {
@@ -111,7 +111,7 @@ export default function App() {
     bootstrap();
   }, []);
 
-  // ── Auto-save debounced 1.5 s ───────────────────────────────────────────────
+  // auto-save debounced 1.5 s
   const scheduleAutoSave = useCallback(() => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     setSaveStatus("saving");
@@ -189,7 +189,7 @@ export default function App() {
     [scheduleAutoSave],
   );
 
-  // ── Teams ───────────────────────────────────────────────────────────────────
+  // teams
   const handleTeamSave = useCallback(async (team: Team) => {
     try {
       const created = await teamsService.create(team.name);
@@ -203,12 +203,12 @@ export default function App() {
     setTeams(updated);
   }, []);
 
-  // ── Competitions ────────────────────────────────────────────────────────────
+  // competitions
   const handleCompetitionsUpdate = useCallback((updated: Competition[]) => {
     setCompetitions(updated);
   }, []);
 
-  // ── Export ──────────────────────────────────────────────────────────────────
+  // export
   const handleExport = async () => {
     const stage =
       view === "ft"
@@ -216,7 +216,9 @@ export default function App() {
         : view === "ht"
           ? htStageRef.current
           : mdStageRef.current;
-    if (!stage || exporting) return;
+    if (!stage || exporting) {
+      return;
+    }
     setExporting(true);
     try {
       const FULL = 1080;
@@ -239,7 +241,7 @@ export default function App() {
       link.download = `lfc-${label}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
-      // Mark draft as published
+      // mark draft as published
       const id =
         view === "ft" ? ftData._id : view === "ht" ? htData._id : mdData._id;
       if (id) await graphicsService.publishFT(id);
