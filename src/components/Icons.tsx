@@ -27,6 +27,14 @@ export const Icons = {
       <polyline points="12 8 12 12 15 15" />
     </>,
   ),
+  HT: icon(
+    <>
+      <path d="M12 22V12" />
+      <path d="M5 12H2a10 10 0 0 0 20 0h-3" />
+      <circle cx="12" cy="5" r="3" />
+      <path d="M6.16 7.16A6 6 0 0 0 6 9" />
+    </>,
+  ),
   MD: icon(
     <>
       <rect x="3" y="4" width="18" height="18" rx="2" />

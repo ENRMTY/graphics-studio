@@ -1,8 +1,5 @@
-// external
 import React, { useState, useRef, useCallback, useEffect } from "react";
 import Konva from "konva";
-
-// internal
 import type {
   ViewMode,
   FullTimeData,
@@ -38,6 +35,19 @@ const DEFAULT_FT: FullTimeData = {
   events: [],
 };
 
+const DEFAULT_HT: FullTimeData = {
+  type: "halftime",
+  bgImage: null,
+  competition: "",
+  competitionIcon: null,
+  competitionColor: "",
+  homeTeam: null,
+  awayTeam: null,
+  homeScore: 0,
+  awayScore: 0,
+  events: [],
+};
+
 const DEFAULT_MD: MatchdayData = {
   type: "matchday",
   bgImage: null,
@@ -56,6 +66,7 @@ export default function App() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [ftData, setFtData] = useState<FullTimeData>(DEFAULT_FT);
+  const [htData, setHtData] = useState<FullTimeData>(DEFAULT_HT);
   const [mdData, setMdData] = useState<MatchdayData>(DEFAULT_MD);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
@@ -64,15 +75,17 @@ export default function App() {
   const [exporting, setExporting] = useState(false);
 
   const ftStageRef = useRef<Konva.Stage | null>(null);
+  const htStageRef = useRef<Konva.Stage | null>(null);
   const mdStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // keep latest data accessible inside the debounce closure without re-creating it
   const ftRef = useRef(ftData);
+  const htRef = useRef(htData);
   const mdRef = useRef(mdData);
   ftRef.current = ftData;
+  htRef.current = htData;
   mdRef.current = mdData;
 
-  // initial load: fetch teams, competitions, and latest drafts
+  // initial load
   useEffect(() => {
     async function bootstrap() {
       try {
@@ -85,6 +98,8 @@ export default function App() {
         setCompetitions(compsData);
         if (drafts.fulltime)
           setFtData(apiGraphicToFT(drafts.fulltime) as FullTimeData);
+        if (drafts.halftime)
+          setHtData(apiGraphicToFT(drafts.halftime) as FullTimeData);
         if (drafts.matchday)
           setMdData(apiGraphicToMD(drafts.matchday) as MatchdayData);
       } catch (err) {
@@ -102,6 +117,7 @@ export default function App() {
     setSaveStatus("saving");
     autoSaveTimer.current = setTimeout(async () => {
       const ft = ftRef.current;
+      const ht = htRef.current;
       const md = mdRef.current;
       try {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
@@ -114,6 +130,18 @@ export default function App() {
           }));
         } else {
           setFtData((p) => ({ ...p, _id: ftResult.id }));
+        }
+
+        const htResult = await graphicsService.saveFTDraft(ht, ht._id);
+        if (ht.bgImageFile) {
+          await graphicsService.uploadFTBackground(htResult.id, ht.bgImageFile);
+          setHtData((p) => ({
+            ...p,
+            _id: htResult.id,
+            bgImageFile: undefined,
+          }));
+        } else {
+          setHtData((p) => ({ ...p, _id: htResult.id }));
         }
 
         const mdResult = await graphicsService.saveMDDraft(md, md._id);
@@ -140,6 +168,14 @@ export default function App() {
   const handleFtChange = useCallback(
     (data: FullTimeData) => {
       setFtData(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
+  const handleHtChange = useCallback(
+    (data: FullTimeData) => {
+      setHtData(data);
       scheduleAutoSave();
     },
     [scheduleAutoSave],
@@ -174,11 +210,15 @@ export default function App() {
 
   // export
   const handleExport = async () => {
-    const stage = view === "ft" ? ftStageRef.current : mdStageRef.current;
+    const stage =
+      view === "ft"
+        ? ftStageRef.current
+        : view === "ht"
+          ? htStageRef.current
+          : mdStageRef.current;
     if (!stage || exporting) {
       return;
     }
-
     setExporting(true);
     try {
       const FULL = 1080;
@@ -196,24 +236,21 @@ export default function App() {
       stage.scale({ x: prev.sx, y: prev.sy });
       stage.draw();
       const link = document.createElement("a");
-      link.download = `lfc-${view === "ft" ? "fulltime" : "matchday"}-${Date.now()}.png`;
+      const label =
+        view === "ft" ? "fulltime" : view === "ht" ? "halftime" : "matchday";
+      link.download = `lfc-${label}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
       // mark draft as published
-      const id = view === "ft" ? ftData._id : mdData._id;
-      if (id) {
-        if (view === "ft") {
-          await graphicsService.publishFT(id);
-        } else {
-          await graphicsService.publishMD(id);
-        }
-      }
+      const id =
+        view === "ft" ? ftData._id : view === "ht" ? htData._id : mdData._id;
+      if (id) await graphicsService.publishFT(id);
     } finally {
       setExporting(false);
     }
   };
 
-  const isCanvas = view === "ft" || view === "md";
+  const isCanvas = view === "ft" || view === "ht" || view === "md";
 
   if (loading) {
     return (
@@ -254,27 +291,33 @@ export default function App() {
             <div className="panel">
               <div className="panel-header">
                 <div>
-                  <h2>{view === "ft" ? "Full Time Result" : "Match Day"}</h2>
-                  <p>
+                  <h2>
                     {view === "ft"
-                      ? "Configure scoreline & events"
-                      : "Configure upcoming match"}
+                      ? "Full Time Result"
+                      : view === "ht"
+                        ? "Half Time"
+                        : "Match Day"}
+                  </h2>
+                  <p>
+                    {view === "md"
+                      ? "Configure upcoming match"
+                      : "Configure scoreline & events"}
                   </p>
                 </div>
               </div>
-              {view === "ft" ? (
-                <FullTimePanel
-                  data={ftData}
-                  onChange={handleFtChange}
+              {view === "md" ? (
+                <MatchdayPanel
+                  data={mdData}
+                  onChange={handleMdChange}
                   teams={teams}
                   competitions={competitions}
                   onTeamSave={handleTeamSave}
                   onCompetitionsChange={handleCompetitionsUpdate}
                 />
               ) : (
-                <MatchdayPanel
-                  data={mdData}
-                  onChange={handleMdChange}
+                <FullTimePanel
+                  data={view === "ft" ? ftData : htData}
+                  onChange={view === "ft" ? handleFtChange : handleHtChange}
                   teams={teams}
                   competitions={competitions}
                   onTeamSave={handleTeamSave}
@@ -315,6 +358,9 @@ export default function App() {
                 <div className="canvas-frame">
                   <div style={{ display: view === "ft" ? "block" : "none" }}>
                     <Canvas data={ftData} stageRef={ftStageRef} />
+                  </div>
+                  <div style={{ display: view === "ht" ? "block" : "none" }}>
+                    <Canvas data={htData} stageRef={htStageRef} />
                   </div>
                   <div style={{ display: view === "md" ? "block" : "none" }}>
                     <Canvas data={mdData} stageRef={mdStageRef} />

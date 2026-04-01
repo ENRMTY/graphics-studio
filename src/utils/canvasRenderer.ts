@@ -49,7 +49,7 @@ export async function renderFullTime(
   // layout constants
   const PAD = 56;
 
-  // event columns are dynamic height based on number of events, so calculate that first
+  // how many events per side?
   const homeEvents = data.events.filter((e) => e.side === "home");
   const awayEvents = data.events.filter((e) => e.side === "away");
   const maxEvents = Math.max(homeEvents.length, awayEvents.length, 0);
@@ -59,8 +59,8 @@ export async function renderFullTime(
   // fixed heights for the content blocks (from bottom up)
   const RED_BAR_H = 6;
   const BOTTOM_PAD = 36;
-  const TEAM_NAMES_H = 28;
-  const SCORE_H = 110;
+  const TEAM_NAMES_H = 28; // team name text
+  const SCORE_H = 110; // score digits + logo
   const COMP_H = data.competition ? 40 : 0;
   const FT_LABEL_H = 34;
   const TOP_BLOCK_PAD = 20;
@@ -107,10 +107,10 @@ export async function renderFullTime(
     }),
   );
 
-  // place elements bottom-up
+  // now place elements bottom-up
   let cursorY = SIZE - RED_BAR_H - BOTTOM_PAD;
 
-  // events if any
+  // events
   if (maxEvents > 0) {
     cursorY -= EVENTS_BLOCK_H;
     drawEventColumns(
@@ -158,7 +158,7 @@ export async function renderFullTime(
   cursorY -= SCORE_H;
   const scoreRowCY = cursorY + SCORE_H / 2; // vertical center of the row
 
-  // score text
+  // score text (vertically centred in row)
   const scoreTxt = `${data.homeScore ?? 0}   –   ${data.awayScore ?? 0}`;
   layer.add(
     new Konva.Text({
@@ -264,11 +264,11 @@ export async function renderFullTime(
     }
   }
 
-  // full-time label
+  // ft / ht label
   cursorY -= FT_LABEL_H;
   layer.add(
     new Konva.Text({
-      text: "FULL TIME",
+      text: data.type === "halftime" ? "HALF TIME" : "FULL TIME",
       x: PAD,
       y: cursorY,
       fontSize: 24,
@@ -278,7 +278,7 @@ export async function renderFullTime(
     }),
   );
 
-  // watermark
+  // water
   layer.add(
     new Konva.Text({
       text: "ENORMITY OF LFC",
@@ -370,7 +370,7 @@ export async function renderMatchday(
     );
   }
 
-  // date + kick off
+  // date + ko
   if (data.matchDate || data.kickoffTime) {
     cursorY -= 30;
     const parts: string[] = [];
@@ -564,7 +564,7 @@ export async function renderMatchday(
   layer.draw();
 }
 
-// shared helpers for both types of graphic
+// shared helpers
 async function drawCircularLogo(
   layer: Konva.Layer,
   src: string | null,
