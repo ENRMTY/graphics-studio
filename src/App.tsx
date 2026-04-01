@@ -1,5 +1,8 @@
+// external
 import { useState, useRef, useCallback, useEffect } from "react";
 import Konva from "konva";
+
+// types
 import type {
   ViewMode,
   FullTimeData,
@@ -7,6 +10,8 @@ import type {
   Team,
   Competition,
 } from "./types";
+
+// services
 import { teamsService } from "./services/teamsService";
 import { competitionsService } from "./services/competitionsService";
 import {
@@ -14,6 +19,8 @@ import {
   apiGraphicToFT,
   apiGraphicToMD,
 } from "./services/graphicsService";
+
+// components
 import { Sidebar } from "./components/Sidebar";
 import { FullTimePanel } from "./components/FullTimePanel";
 import { MatchdayPanel } from "./components/MatchdayPanel";
@@ -21,9 +28,13 @@ import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas } from "./components/Canvas";
 import { Icons } from "./components/Icons";
+
+// utils
 import { saveCompetitions } from "./utils/storage";
 import { saveTeams } from "./utils/storage";
+import "./utils/storageMigration";
 
+// constants
 const DEFAULT_FT: FullTimeData = {
   type: "fulltime",
   bgImage: null,
