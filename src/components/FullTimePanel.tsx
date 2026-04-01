@@ -55,19 +55,25 @@ export function FullTimePanel({
       {/* HT / FT toggle */}
       <div>
         <div className="section-label">Graphic Type</div>
-        <div className="tab-row">
-          <div
+        <div className="tab-row" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={data.type === "fulltime"}
             className={`tab ${data.type === "fulltime" ? "active" : ""}`}
             onClick={() => onChange({ ...data, type: "fulltime" })}
           >
             Full Time
-          </div>
-          <div
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={data.type === "halftime"}
             className={`tab ${data.type === "halftime" ? "active" : ""}`}
             onClick={() => onChange({ ...data, type: "halftime" })}
           >
             Half Time
-          </div>
+          </button>
         </div>
       </div>
       {/* Background */}

@@ -138,6 +138,41 @@
   gap: 18px;
 }
 
+.tab-row {
+  display: flex;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--surface2);
+}
+.tab-row .tab {
+  flex: 1;
+  margin: 0;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.tab-row .tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+.tab-row .tab.active {
+  color: var(--red-light);
+  background: rgba(200, 16, 46, 0.12);
+}
+.tab-row .tab + .tab {
+  border-left: 1px solid var(--border);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    CANVAS AREA
 ═══════════════════════════════════════════════════════════════ */

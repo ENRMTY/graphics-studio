@@ -4,7 +4,7 @@ import type { FullTimeData, MatchdayData } from "../types";
 // API shapes
 export interface ApiGraphic {
   id: string;
-  graphicType: "fulltime" | "matchday";
+  graphicType: "fulltime" | "halftime" | "matchday";
   status: "draft" | "published";
   bgImageUrl: string | null;
   competitionId: string | null;
@@ -47,9 +47,11 @@ interface DraftsResponse {
 
 // mappers
 export function apiGraphicToFT(g: ApiGraphic): FullTimeData & { _id?: string } {
+  const type: FullTimeData["type"] =
+    g.graphicType === "halftime" ? "halftime" : "fulltime";
   return {
     _id: g.id,
-    type: "fulltime",
+    type,
     bgImage: g.bgImageUrl,
     competition: g.competitionName ?? "",
     competitionIcon: g.competitionIconUrl ?? null,
