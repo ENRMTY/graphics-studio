@@ -333,6 +333,9 @@ export default function App() {
                 <FullTimePanel
                   data={view === "ft" ? ftData : htData}
                   onChange={view === "ft" ? handleFtChange : handleHtChange}
+                  onTypeChange={(type) =>
+                    setView(type === "fulltime" ? "ft" : "ht")
+                  }
                   teams={teams}
                   competitions={competitions}
                   onTeamSave={handleTeamSave}

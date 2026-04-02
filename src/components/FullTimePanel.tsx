@@ -9,6 +9,7 @@ import { useFileUpload } from "../hooks/useFileUpload";
 interface Props {
   data: FullTimeData;
   onChange: (d: FullTimeData) => void;
+  onTypeChange?: (type: "fulltime" | "halftime") => void;
   teams: Team[];
   competitions: Competition[];
   onTeamSave: (t: Team) => void;
@@ -25,6 +26,7 @@ const EVENT_TYPES: { type: EventType; label: string; cls: string }[] = [
 export function FullTimePanel({
   data,
   onChange,
+  onTypeChange,
   teams,
   competitions,
   onTeamSave,
@@ -61,7 +63,10 @@ export function FullTimePanel({
             role="tab"
             aria-selected={data.type === "fulltime"}
             className={`tab ${data.type === "fulltime" ? "active" : ""}`}
-            onClick={() => onChange({ ...data, type: "fulltime" })}
+            onClick={() => {
+              onChange({ ...data, type: "fulltime" });
+              onTypeChange?.("fulltime");
+            }}
           >
             Full Time
           </button>
@@ -70,7 +75,10 @@ export function FullTimePanel({
             role="tab"
             aria-selected={data.type === "halftime"}
             className={`tab ${data.type === "halftime" ? "active" : ""}`}
-            onClick={() => onChange({ ...data, type: "halftime" })}
+            onClick={() => {
+              onChange({ ...data, type: "halftime" });
+              onTypeChange?.("halftime");
+            }}
           >
             Half Time
           </button>

@@ -551,8 +551,9 @@ export async function renderMatchday(
   layer.add(
     new Konva.Text({
       text: "ENORMITY OF LFC",
-      x: SIZE - PAD,
+      x: PAD,
       y: 28,
+      width: SIZE - PAD * 2,
       fontSize: 12,
       fontFamily: FONT_DISPLAY,
       fill: "rgba(255,255,255,0.12)",
