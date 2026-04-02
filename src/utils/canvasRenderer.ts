@@ -386,7 +386,7 @@ export async function renderMatchday(
 
   const PAD = 56;
   const RED_BAR_H = 6;
-  const OVERLAY_H = SIZE * 0.72;
+  const OVERLAY_H = SIZE * 0.5;
   layer.add(
     new Konva.Rect({
       x: 0,
