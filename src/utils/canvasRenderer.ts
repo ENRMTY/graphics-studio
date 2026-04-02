@@ -21,6 +21,68 @@ function coverFit(imgW: number, imgH: number, size: number) {
   return { w, h, x: (size - w) / 2, y: (size - h) / 2 };
 }
 
+async function drawTeamLogo(
+  layer: Konva.Layer,
+  src: string | null,
+  cx: number,
+  cy: number,
+  size: number,
+  style: "plain" | "circled" = "circled",
+): Promise<void> {
+  if (!src) {
+    return;
+  }
+
+  try {
+    const img = await loadImage(src);
+
+    if (style === "plain") {
+      // plain logo
+      layer.add(
+        new Konva.Image({
+          image: img,
+          x: cx - size / 2,
+          y: cy - size / 2,
+          width: size,
+          height: size,
+        }),
+      );
+    } else {
+      // circled style
+      const r = size / 2;
+
+      // light background circle
+      layer.add(
+        new Konva.Circle({
+          x: cx,
+          y: cy,
+          radius: r + 6,
+          fill: "rgba(255,255,255,0.07)",
+          stroke: "rgba(255,255,255,0.12)",
+          strokeWidth: 2,
+        }),
+      );
+
+      // clip the logo inside the circle
+      const group = new Konva.Group({
+        clip: { x: cx - r, y: cy - r, width: size, height: size },
+      });
+      group.add(
+        new Konva.Image({
+          image: img,
+          x: cx - r,
+          y: cy - r,
+          width: size,
+          height: size,
+        }),
+      );
+      layer.add(group);
+    }
+  } catch (e) {
+    // ignore broken images
+  }
+}
+
 // full time
 export async function renderFullTime(
   stage: Konva.Stage,
@@ -132,7 +194,7 @@ export async function renderFullTime(
       text: (data.homeTeam?.name || "HOME").toUpperCase(),
       x: 0,
       y: teamNamesY,
-      width: SIZE / 2 - 16,
+      width: SIZE / 2 - 50,
       align: "right",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
@@ -143,9 +205,9 @@ export async function renderFullTime(
   layer.add(
     new Konva.Text({
       text: (data.awayTeam?.name || "AWAY").toUpperCase(),
-      x: SIZE / 2 + 16,
+      x: SIZE / 2 + 50,
       y: teamNamesY,
-      width: SIZE / 2 - 16,
+      width: SIZE / 2 - 50,
       align: "left",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
@@ -175,24 +237,27 @@ export async function renderFullTime(
   );
 
   // logos flanking the score
-  const LOGO_SIZE = 76;
+  const LOGO_SIZE = 82;
   const LOGO_CX_HOME = SIZE / 2 - 210;
   const LOGO_CX_AWAY = SIZE / 2 + 210;
-  const LOGO_CY = scoreRowCY;
+  // const LOGO_CY = scoreRowCY;
+  const logoY = scoreRowCY - 8;
 
-  await drawCircularLogo(
+  await drawTeamLogo(
     layer,
     data.homeTeam?.logo ?? null,
     LOGO_CX_HOME,
-    LOGO_CY,
+    logoY,
     LOGO_SIZE,
+    data.logoStyle ?? "circled",
   );
-  await drawCircularLogo(
+  await drawTeamLogo(
     layer,
     data.awayTeam?.logo ?? null,
     LOGO_CX_AWAY,
-    LOGO_CY,
+    logoY,
     LOGO_SIZE,
+    data.logoStyle ?? "circled",
   );
 
   // competition
@@ -407,7 +472,7 @@ export async function renderMatchday(
       text: (data.homeTeam?.name || "HOME").toUpperCase(),
       x: 0,
       y: cursorY,
-      width: SIZE / 2 - 16,
+      width: SIZE / 2 - 50,
       align: "right",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
@@ -418,9 +483,9 @@ export async function renderMatchday(
   layer.add(
     new Konva.Text({
       text: (data.awayTeam?.name || "AWAY").toUpperCase(),
-      x: SIZE / 2 + 16,
+      x: SIZE / 2 + 50,
       y: cursorY,
-      width: SIZE / 2 - 16,
+      width: SIZE / 2 - 50,
       align: "left",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
@@ -450,19 +515,21 @@ export async function renderMatchday(
     }),
   );
 
-  await drawCircularLogo(
+  await drawTeamLogo(
     layer,
     data.homeTeam?.logo ?? null,
     LOGO_CX_HOME,
     logoRowCY,
     LOGO_SIZE,
+    data.logoStyle ?? "circled",
   );
-  await drawCircularLogo(
+  await drawTeamLogo(
     layer,
     data.awayTeam?.logo ?? null,
     LOGO_CX_AWAY,
     logoRowCY,
     LOGO_SIZE,
+    data.logoStyle ?? "circled",
   );
 
   // competition

@@ -203,14 +203,17 @@ export default function App() {
   );
 
   // teams
-  const handleTeamSave = useCallback(async (team: Team) => {
-    try {
-      const created = await teamsService.create(team.name);
-      setTeams((prev) => [...prev, created]);
-    } catch (err) {
-      console.error("Team save failed:", err);
-    }
-  }, []);
+  const handleTeamSave = useCallback(
+    async (team: Team & { logoFile?: File }) => {
+      try {
+        const created = await teamsService.create(team.name, team.logoFile);
+        setTeams((prev) => [...prev, created]);
+      } catch (err) {
+        console.error("Team save failed:", err);
+      }
+    },
+    [],
+  );
 
   const handleTeamsUpdate = useCallback((updated: Team[]) => {
     setTeams(updated);

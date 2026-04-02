@@ -1,5 +1,6 @@
 export type EventType = "goal" | "penalty" | "red" | "og";
 export type EventSide = "home" | "away";
+export type LogoStyle = "plain" | "circled";
 
 export interface MatchEvent {
   id: string;
@@ -28,6 +29,7 @@ export interface FullTimeData {
   homeScore: number;
   awayScore: number;
   events: MatchEvent[];
+  logoStyle?: LogoStyle;
 }
 
 export interface MatchdayData {
@@ -43,6 +45,7 @@ export interface MatchdayData {
   matchDate: string;
   kickoffTime: string;
   venue: string;
+  logoStyle?: LogoStyle;
 }
 
 export interface StatItem {

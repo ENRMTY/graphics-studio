@@ -88,6 +88,27 @@ export function MatchdayPanel({
         onNewTeamSave={onTeamSave}
       />
 
+              {/* Logo style */}
+              <div>
+          <div className="section-label">Team Logo Style</div>
+          <div className="tab-row">
+            <button
+              type="button"
+              className={`tab ${data.logoStyle === "circled" || !data.logoStyle ? "active" : ""}`}
+              onClick={() => onChange({ ...data, logoStyle: "circled" })}
+            >
+              Circled + background
+            </button>
+            <button
+              type="button"
+              className={`tab ${data.logoStyle === "plain" ? "active" : ""}`}
+              onClick={() => onChange({ ...data, logoStyle: "plain" })}
+            >
+              Plain logo
+            </button>
+          </div>
+        </div>
+
       {/* Match info */}
       <div>
         <div className="section-label">Match Info</div>
