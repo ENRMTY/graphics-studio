@@ -45,7 +45,50 @@ export interface MatchdayData {
   venue: string;
 }
 
-export type ViewMode = "ft" | "ht" | "md" | "teams" | "comps";
+export interface StatItem {
+  id: string;
+  label: string;
+  value: string;
+  enabled: boolean;
+}
+
+export interface StatsData {
+  type: "stats";
+  bgImage: string | null;
+  bgImageFile?: File;
+  playerName: string;
+  playerImage: string | null;
+  playerImageFile?: File;
+  competition: string;
+  competitionIcon: string | null;
+  competitionColor: string;
+  stats: StatItem[];
+  accentColor: string;
+}
+
+export interface QuoteData {
+  type: "quote";
+  bgImage: string | null;
+  bgImageFile?: File;
+  playerName: string;
+  playerRole: string;
+  playerImage: string | null;
+  playerImageFile?: File;
+  quoteText: string;
+  competition: string;
+  competitionIcon: string | null;
+  competitionColor: string;
+  accentColor: string;
+}
+
+export type ViewMode =
+  | "ft"
+  | "ht"
+  | "md"
+  | "stats"
+  | "quote"
+  | "teams"
+  | "comps";
 
 export interface Competition {
   id: string;
