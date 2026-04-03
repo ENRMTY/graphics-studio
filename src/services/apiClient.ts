@@ -10,13 +10,20 @@ export class ApiError extends Error {
   }
 }
 
+function getToken(): string | null {
+  return localStorage.getItem("token");
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getToken();
+
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       ...(options.body instanceof FormData
         ? {}
         : { "Content-Type": "application/json" }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
