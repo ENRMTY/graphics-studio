@@ -46,15 +46,25 @@ interface DraftsResponse {
 }
 
 // mappers
-export function apiGraphicToFT(g: ApiGraphic): FullTimeData & { _id?: string } {
+export function apiGraphicToFT(
+  g: ApiGraphic,
+  competitions: {
+    id: string;
+    name: string;
+    icon: string | null;
+    color: string;
+  }[] = [],
+): FullTimeData & { _id?: string } {
   const type: FullTimeData["type"] =
     g.graphicType === "halftime" ? "halftime" : "fulltime";
+  const matchedComp = competitions.find((c) => c.name === g.competitionName);
+  const competitionIcon = matchedComp?.icon ?? g.competitionIconUrl ?? null;
   return {
     _id: g.id,
     type,
     bgImage: g.bgImageUrl,
     competition: g.competitionName ?? "",
-    competitionIcon: g.competitionIconUrl ?? null,
+    competitionIcon,
     competitionColor: g.competitionColor ?? "",
     homeTeam: g.homeTeamId
       ? {
@@ -76,13 +86,23 @@ export function apiGraphicToFT(g: ApiGraphic): FullTimeData & { _id?: string } {
   };
 }
 
-export function apiGraphicToMD(g: ApiGraphic): MatchdayData & { _id?: string } {
+export function apiGraphicToMD(
+  g: ApiGraphic,
+  competitions: {
+    id: string;
+    name: string;
+    icon: string | null;
+    color: string;
+  }[] = [],
+): MatchdayData & { _id?: string } {
+  const matchedComp = competitions.find((c) => c.name === g.competitionName);
+  const competitionIcon = matchedComp?.icon ?? g.competitionIconUrl ?? null;
   return {
     _id: g.id,
     type: "matchday",
     bgImage: g.bgImageUrl,
     competition: g.competitionName ?? "",
-    competitionIcon: g.competitionIconUrl ?? null,
+    competitionIcon,
     competitionColor: g.competitionColor ?? "",
     homeTeam: g.homeTeamId
       ? {
@@ -104,19 +124,31 @@ export function apiGraphicToMD(g: ApiGraphic): MatchdayData & { _id?: string } {
   };
 }
 
+function isBase64(s: string | null | undefined): boolean {
+  return !!s && s.startsWith("data:");
+}
+
+function safeUrl(s: string | null | undefined): string | null {
+  if (!s) {
+    return null;
+  }
+  // never persist a base64 data url — the icon/logo lives in cloudinary already
+  return isBase64(s) ? null : s;
+}
+
 function ftToPayload(data: FullTimeData) {
   return {
     graphicType: data.type,
     competitionId: null,
     competitionName: data.competition || null,
-    competitionIconUrl: data.competitionIcon || null,
+    competitionIconUrl: safeUrl(data.competitionIcon),
     competitionColor: data.competitionColor || null,
     homeTeamId: data.homeTeam?.id ?? null,
     homeTeamName: data.homeTeam?.name ?? null,
-    homeTeamLogoUrl: data.homeTeam?.logo ?? null,
+    homeTeamLogoUrl: safeUrl(data.homeTeam?.logo),
     awayTeamId: data.awayTeam?.id ?? null,
     awayTeamName: data.awayTeam?.name ?? null,
-    awayTeamLogoUrl: data.awayTeam?.logo ?? null,
+    awayTeamLogoUrl: safeUrl(data.awayTeam?.logo),
     homeScore: data.homeScore,
     awayScore: data.awayScore,
     events: data.events,
@@ -128,14 +160,14 @@ function mdToPayload(data: MatchdayData) {
     graphicType: "matchday",
     competitionId: null,
     competitionName: data.competition || null,
-    competitionIconUrl: data.competitionIcon || null,
+    competitionIconUrl: safeUrl(data.competitionIcon),
     competitionColor: data.competitionColor || null,
     homeTeamId: data.homeTeam?.id ?? null,
     homeTeamName: data.homeTeam?.name ?? null,
-    homeTeamLogoUrl: data.homeTeam?.logo ?? null,
+    homeTeamLogoUrl: safeUrl(data.homeTeam?.logo),
     awayTeamId: data.awayTeam?.id ?? null,
     awayTeamName: data.awayTeam?.name ?? null,
-    awayTeamLogoUrl: data.awayTeam?.logo ?? null,
+    awayTeamLogoUrl: safeUrl(data.awayTeam?.logo),
     matchDate: data.matchDate || null,
     kickoffTime: data.kickoffTime || null,
     venue: data.venue || null,

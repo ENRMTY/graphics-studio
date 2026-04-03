@@ -91,11 +91,11 @@ export default function App() {
         setTeams(teamsData);
         setCompetitions(compsData);
         if (drafts.fulltime)
-          setFtData(apiGraphicToFT(drafts.fulltime) as FullTimeData);
+          setFtData(apiGraphicToFT(drafts.fulltime, compsData) as FullTimeData);
         if (drafts.halftime)
-          setHtData(apiGraphicToFT(drafts.halftime) as FullTimeData);
+          setHtData(apiGraphicToFT(drafts.halftime, compsData) as FullTimeData);
         if (drafts.matchday)
-          setMdData(apiGraphicToMD(drafts.matchday) as MatchdayData);
+          setMdData(apiGraphicToMD(drafts.matchday, compsData) as MatchdayData);
       } catch (err) {
         console.error("Bootstrap error:", err);
       } finally {
@@ -192,17 +192,14 @@ export default function App() {
   }, []);
 
   // teams
-  const handleTeamSave = useCallback(
-    async (team: Team & { logoFile?: File }) => {
-      try {
-        const created = await teamsService.create(team.name, team.logoFile);
-        setTeams((prev) => [...prev, created]);
-      } catch (err) {
-        console.error("Team save failed:", err);
-      }
-    },
-    [],
-  );
+  const handleTeamSave = useCallback(async (team: Team) => {
+    try {
+      const created = await teamsService.create(team.name);
+      setTeams((prev) => [...prev, created]);
+    } catch (err) {
+      console.error("Team save failed:", err);
+    }
+  }, []);
 
   const handleTeamsUpdate = useCallback((updated: Team[]) => {
     setTeams(updated);
@@ -230,7 +227,6 @@ export default function App() {
     if (!stage || exporting) {
       return;
     }
-
     setExporting(true);
     try {
       const FULL = 1080;
@@ -261,9 +257,15 @@ export default function App() {
       link.download = `lfc-${label}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
-      // mark draft as published
+      // mark draft as published (only for server-backed types)
       const id =
-        view === "ft" ? ftData._id : view === "ht" ? htData._id : mdData._id;
+        view === "ft"
+          ? ftData._id
+          : view === "ht"
+            ? htData._id
+            : view === "md"
+              ? mdData._id
+              : undefined;
       if (id) await graphicsService.publishFT(id);
     } finally {
       setExporting(false);
