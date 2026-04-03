@@ -48,6 +48,9 @@ import { saveCompetitions } from "./utils/storage";
 import { saveTeams } from "./utils/storage";
 import "./utils/storageMigration";
 
+// hooks
+import { useAuth } from "./context/AuthContext";
+
 export default function App() {
   // use states
   const [view, setView] = useState<ViewMode>("ft");
@@ -84,6 +87,9 @@ export default function App() {
   mdRef.current = mdData;
   statsRef.current = statsData;
   quoteRef.current = quoteData;
+
+  // hook vars
+  const { user, token, logout } = useAuth();
 
   // initial load
   useEffect(() => {

@@ -65,7 +65,36 @@ export function Sidebar({ view, onViewChange, teamCount }: Props) {
       </nav>
 
       <div className="sidebar-footer">
-        <span className="team-count-badge">{teamCount} teams saved</span>
+        {user ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              justifyContent: "space-between",
+            }}
+          >
+            <div
+              style={{ fontSize: 13, color: "var(--text)", fontWeight: 500 }}
+            >
+              👤 {user.name}
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={logout}>
+              Log out
+            </button>
+          </div>
+        ) : (
+          <button
+            className="btn btn-ghost"
+            style={{ width: "100%", justifyContent: "flex-start" }}
+            onClick={() => {
+              /* open login modal */
+            }}
+          >
+            Sign In
+          </button>
+        )}
+        <div className="team-count-badge">{teamCount} teams saved</div>
       </div>
     </aside>
   );
