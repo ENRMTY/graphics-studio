@@ -1,5 +1,11 @@
 import Konva from "konva";
-import type { FullTimeData, MatchdayData, MatchEvent } from "../types";
+import type {
+  FullTimeData,
+  MatchdayData,
+  MatchEvent,
+  StatsData,
+  QuoteData,
+} from "../types";
 
 const FONT_DISPLAY = "Bebas Neue";
 const FONT_BODY = "DM Sans";
@@ -739,4 +745,476 @@ function buildEventText(ev: MatchEvent, side: "home" | "away"): string {
   return side === "home"
     ? `${name}  ${min}  ${symbol}`
     : `${symbol}  ${min}  ${name}`;
+}
+
+export async function renderStats(
+  stage: Konva.Stage,
+  data: StatsData,
+  SIZE: number,
+): Promise<void> {
+  stage.destroyChildren();
+  const layer = new Konva.Layer();
+  stage.add(layer);
+
+  const ACCENT = data.accentColor || "#C8102E";
+  const PAD = 56;
+
+  // dark base
+  layer.add(
+    new Konva.Rect({ x: 0, y: 0, width: SIZE, height: SIZE, fill: "#0d0d10" }),
+  );
+
+  // background image
+  if (data.bgImage) {
+    try {
+      const img = await loadImage(data.bgImage);
+      const { w, h, x, y } = coverFit(img.width, img.height, SIZE);
+      layer.add(
+        new Konva.Image({
+          image: img,
+          x,
+          y,
+          width: w,
+          height: h,
+          opacity: 0.35,
+        }),
+      );
+    } catch {
+      // ignore bad images
+    }
+  }
+
+  // full dark gradient overlay so content is always legible
+  layer.add(
+    new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: SIZE,
+      height: SIZE,
+      fillLinearGradientStartPoint: { x: 0, y: 0 },
+      fillLinearGradientEndPoint: { x: 0, y: SIZE },
+      fillLinearGradientColorStops: [
+        0,
+        "rgba(0,0,0,0.55)",
+        0.45,
+        "rgba(0,0,0,0.72)",
+        1,
+        "rgba(0,0,0,0.96)",
+      ],
+    }),
+  );
+
+  // accent bar on left edge
+  layer.add(
+    new Konva.Rect({ x: 0, y: 0, width: 6, height: SIZE, fill: ACCENT }),
+  );
+
+  // player image — right-aligned, tall, faded at bottom
+  if (data.playerImage) {
+    try {
+      const img = await loadImage(data.playerImage);
+      const imgH = SIZE;
+      const imgW = (img.width / img.height) * imgH;
+      const imgX = SIZE - imgW * 0.72; // offset so they're partially visible
+      const group = new Konva.Group({ opacity: 0.9 });
+      group.add(
+        new Konva.Image({
+          image: img,
+          x: imgX,
+          y: 0,
+          width: imgW,
+          height: imgH,
+        }),
+      );
+      layer.add(group);
+      // fade bottom of player image
+      layer.add(
+        new Konva.Rect({
+          x: imgX,
+          y: SIZE * 0.55,
+          width: imgW,
+          height: SIZE * 0.45,
+          fillLinearGradientStartPoint: { x: 0, y: 0 },
+          fillLinearGradientEndPoint: { x: 0, y: SIZE * 0.45 },
+          fillLinearGradientColorStops: [
+            0,
+            "rgba(0,0,0,0)",
+            1,
+            "rgba(0,0,0,0.97)",
+          ],
+        }),
+      );
+    } catch {
+      // ignore bad images
+    }
+  }
+
+  // competition badge (top-right)
+  if (data.competition || data.competitionIcon) {
+    const badgeX = SIZE - PAD;
+    const badgeY = PAD - 8;
+    if (data.competitionIcon) {
+      try {
+        const ci = await loadImage(data.competitionIcon);
+        layer.add(
+          new Konva.Image({
+            image: ci,
+            x: badgeX - 32,
+            y: badgeY,
+            width: 32,
+            height: 32,
+          }),
+        );
+      } catch {
+        // ignore bad images
+      }
+    } else if (data.competition) {
+      layer.add(
+        new Konva.Text({
+          text: data.competition.toUpperCase(),
+          x: PAD,
+          y: badgeY + 6,
+          width: SIZE - PAD * 2,
+          align: "right",
+          fontSize: 13,
+          fontFamily: FONT_BODY,
+          fill: "rgba(255,255,255,0.45)",
+          letterSpacing: 2,
+          fontStyle: "600",
+        }),
+      );
+    }
+  }
+
+  // player name — large, left
+  const nameY = SIZE * 0.3;
+  layer.add(
+    new Konva.Text({
+      text: (data.playerName || "PLAYER NAME").toUpperCase(),
+      x: PAD + 10,
+      y: nameY,
+      fontSize: 52,
+      fontFamily: FONT_DISPLAY,
+      fill: "#FFFFFF",
+      letterSpacing: 3,
+    }),
+  );
+
+  // thin accent line under name
+  const nameMeasure = (data.playerName || "PLAYER NAME").length * 28;
+  layer.add(
+    new Konva.Rect({
+      x: PAD + 10,
+      y: nameY + 62,
+      width: Math.min(nameMeasure, SIZE - PAD * 2 - 20),
+      height: 3,
+      fill: ACCENT,
+      cornerRadius: 1.5,
+    }),
+  );
+
+  // stats grid
+  const enabledStats = data.stats.filter((s) => s.enabled && s.value);
+  const statsY = SIZE * 0.52;
+  const colW = Math.min(
+    180,
+    (SIZE - PAD * 2 - 10) / Math.max(enabledStats.length, 1),
+  );
+
+  enabledStats.forEach((stat, i) => {
+    const x = PAD + 10 + i * (colW + 20);
+
+    // big number
+    layer.add(
+      new Konva.Text({
+        text: stat.value,
+        x,
+        y: statsY,
+        fontSize: 86,
+        fontFamily: FONT_DISPLAY,
+        fill: "#FFFFFF",
+        letterSpacing: -2,
+      }),
+    );
+
+    // label below
+    layer.add(
+      new Konva.Text({
+        text: stat.label.toUpperCase(),
+        x,
+        y: statsY + 90,
+        fontSize: 13,
+        fontFamily: FONT_BODY,
+        fill: "rgba(255,255,255,0.5)",
+        letterSpacing: 3,
+        fontStyle: "600",
+      }),
+    );
+
+    // separator dot between stats
+    if (i < enabledStats.length - 1) {
+      layer.add(
+        new Konva.Circle({
+          x: x + colW + 10,
+          y: statsY + 45,
+          radius: 3,
+          fill: ACCENT,
+          opacity: 0.7,
+        }),
+      );
+    }
+  });
+
+  // watermark
+  layer.add(
+    new Konva.Text({
+      text: "ENORMITY OF LFC",
+      x: PAD,
+      y: SIZE - 36,
+      width: SIZE - PAD * 2,
+      fontSize: 12,
+      fontFamily: FONT_DISPLAY,
+      fill: "rgba(255,255,255,0.12)",
+      letterSpacing: 3,
+      align: "right",
+    }),
+  );
+
+  layer.draw();
+}
+
+export async function renderQuote(
+  stage: Konva.Stage,
+  data: QuoteData,
+  SIZE: number,
+): Promise<void> {
+  stage.destroyChildren();
+  const layer = new Konva.Layer();
+  stage.add(layer);
+
+  const ACCENT = data.accentColor || "#C8102E";
+  const PAD = 64;
+
+  // dark base
+  layer.add(
+    new Konva.Rect({ x: 0, y: 0, width: SIZE, height: SIZE, fill: "#0d0d10" }),
+  );
+
+  // background image
+  if (data.bgImage) {
+    try {
+      const img = await loadImage(data.bgImage);
+      const { w, h, x, y } = coverFit(img.width, img.height, SIZE);
+      layer.add(
+        new Konva.Image({
+          image: img,
+          x,
+          y,
+          width: w,
+          height: h,
+          opacity: 0.25,
+        }),
+      );
+    } catch {
+      // ignore bad images
+    }
+  }
+
+  // gradient vignette
+  layer.add(
+    new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: SIZE,
+      height: SIZE,
+      fillRadialGradientStartPoint: { x: SIZE / 2, y: SIZE / 2 },
+      fillRadialGradientStartRadius: 0,
+      fillRadialGradientEndPoint: { x: SIZE / 2, y: SIZE / 2 },
+      fillRadialGradientEndRadius: SIZE * 0.75,
+      fillRadialGradientColorStops: [0, "rgba(0,0,0,0)", 1, "rgba(0,0,0,0.82)"],
+    }),
+  );
+
+  // player image — left-bottom anchored, faded into bg
+  if (data.playerImage) {
+    try {
+      const img = await loadImage(data.playerImage);
+      const imgH = SIZE * 0.65;
+      const imgW = (img.width / img.height) * imgH;
+      const imgX = -imgW * 0.05;
+      const imgY = SIZE - imgH;
+      layer.add(
+        new Konva.Image({
+          image: img,
+          x: imgX,
+          y: imgY,
+          width: imgW,
+          height: imgH,
+          opacity: 0.85,
+        }),
+      );
+      // fade right edge of player image into bg
+      layer.add(
+        new Konva.Rect({
+          x: imgX,
+          y: imgY,
+          width: imgW,
+          height: imgH,
+          fillLinearGradientStartPoint: { x: imgW * 0.5, y: 0 },
+          fillLinearGradientEndPoint: { x: imgW, y: 0 },
+          fillLinearGradientColorStops: [
+            0,
+            "rgba(0,0,0,0)",
+            1,
+            "rgba(0,0,0,0.9)",
+          ],
+        }),
+      );
+      // fade bottom of player image
+      layer.add(
+        new Konva.Rect({
+          x: imgX,
+          y: imgY + imgH * 0.65,
+          width: imgW,
+          height: imgH * 0.35,
+          fillLinearGradientStartPoint: { x: 0, y: 0 },
+          fillLinearGradientEndPoint: { x: 0, y: imgH * 0.35 },
+          fillLinearGradientColorStops: [
+            0,
+            "rgba(0,0,0,0)",
+            1,
+            "rgba(0,0,0,0.97)",
+          ],
+        }),
+      );
+    } catch {
+      // ignore bad images
+    }
+  }
+
+  // competition badge (top-right)
+  if (data.competitionIcon) {
+    try {
+      const ci = await loadImage(data.competitionIcon);
+      layer.add(
+        new Konva.Image({
+          image: ci,
+          x: SIZE - PAD - 32,
+          y: PAD - 8,
+          width: 32,
+          height: 32,
+        }),
+      );
+    } catch {
+      // ignore bad images
+    }
+  } else if (data.competition) {
+    layer.add(
+      new Konva.Text({
+        text: data.competition.toUpperCase(),
+        x: PAD,
+        y: PAD - 4,
+        width: SIZE - PAD * 2,
+        align: "right",
+        fontSize: 13,
+        fontFamily: FONT_BODY,
+        fill: "rgba(255,255,255,0.4)",
+        letterSpacing: 2,
+        fontStyle: "600",
+      }),
+    );
+  }
+
+  // big open-quote mark
+  layer.add(
+    new Konva.Text({
+      text: "\u201C",
+      x: SIZE * 0.42,
+      y: SIZE * 0.1,
+      fontSize: 160,
+      fontFamily: FONT_DISPLAY,
+      fill: ACCENT,
+      opacity: 0.18,
+    }),
+  );
+
+  // quote text — right side of canvas
+  const quoteX = SIZE * 0.44;
+  const quoteW = SIZE - quoteX - PAD;
+  const quoteText = data.quoteText || "Add your quote here";
+
+  layer.add(
+    new Konva.Text({
+      text: `\u201C${quoteText}\u201D`,
+      x: quoteX,
+      y: SIZE * 0.22,
+      width: quoteW,
+      fontSize: 32,
+      fontFamily: FONT_BODY,
+      fill: "#FFFFFF",
+      fontStyle: "600 italic",
+      lineHeight: 1.45,
+      wrap: "word",
+    }),
+  );
+
+  // accent divider line before attribution
+  layer.add(
+    new Konva.Rect({
+      x: quoteX,
+      y: SIZE * 0.72,
+      width: 40,
+      height: 3,
+      fill: ACCENT,
+      cornerRadius: 1.5,
+    }),
+  );
+
+  // player name attribution
+  layer.add(
+    new Konva.Text({
+      text: (data.playerName || "Player Name").toUpperCase(),
+      x: quoteX,
+      y: SIZE * 0.74,
+      width: quoteW,
+      fontSize: 22,
+      fontFamily: FONT_DISPLAY,
+      fill: "#FFFFFF",
+      letterSpacing: 3,
+    }),
+  );
+
+  // player role / subtitle
+  if (data.playerRole) {
+    layer.add(
+      new Konva.Text({
+        text: data.playerRole,
+        x: quoteX,
+        y: SIZE * 0.74 + 30,
+        width: quoteW,
+        fontSize: 13,
+        fontFamily: FONT_BODY,
+        fill: "rgba(255,255,255,0.45)",
+        letterSpacing: 1,
+        fontStyle: "500",
+      }),
+    );
+  }
+
+  // watermark
+  layer.add(
+    new Konva.Text({
+      text: "ENORMITY OF LFC",
+      x: PAD,
+      y: SIZE - 36,
+      width: SIZE - PAD * 2,
+      fontSize: 12,
+      fontFamily: FONT_DISPLAY,
+      fill: "rgba(255,255,255,0.12)",
+      letterSpacing: 3,
+      align: "right",
+    }),
+  );
+
+  layer.draw();
 }

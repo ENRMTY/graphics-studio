@@ -1,10 +1,21 @@
 import React, { useEffect, useRef } from "react";
 import Konva from "konva";
-import type { FullTimeData, MatchdayData } from "../types";
-import { renderFullTime, renderMatchday } from "../utils/canvasRenderer";
+import type {
+  FullTimeData,
+  MatchdayData,
+  StatsData,
+  QuoteData,
+} from "../types";
+import {
+  renderFullTime,
+  renderMatchday,
+  renderStats,
+  renderQuote,
+} from "../utils/canvasRenderer";
 
+type CanvasData = FullTimeData | MatchdayData | StatsData | QuoteData;
 interface Props {
-  data: FullTimeData | MatchdayData;
+  data: CanvasData;
   stageRef: React.MutableRefObject<Konva.Stage | null>;
 }
 
@@ -57,9 +68,13 @@ export function Canvas({ data, stageRef }: Props) {
   );
 }
 
-function triggerRender(stage: Konva.Stage, data: FullTimeData | MatchdayData) {
+function triggerRender(stage: Konva.Stage, data: CanvasData) {
   if (data.type === "matchday") {
     renderMatchday(stage, data, FULL_SIZE);
+  } else if (data.type === "stats") {
+    renderStats(stage, data, FULL_SIZE);
+  } else if (data.type === "quote") {
+    renderQuote(stage, data, FULL_SIZE);
   } else {
     renderFullTime(stage, data, FULL_SIZE);
   }

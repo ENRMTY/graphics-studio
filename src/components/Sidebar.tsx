@@ -20,6 +20,8 @@ const NAV_ITEMS: NavItem[] = [
   { id: "ft", label: "Full Time", Icon: Icons.FT, section: "create" },
   { id: "ht", label: "Half Time", Icon: Icons.HT, section: "create" },
   { id: "md", label: "Match Day", Icon: Icons.MD, section: "create" },
+  { id: "stats", label: "Player Stats", Icon: Icons.Stats, section: "create" },
+  { id: "quote", label: "Quote", Icon: Icons.Quote, section: "create" },
   { id: "teams", label: "Teams", Icon: Icons.Teams, section: "library" },
   { id: "comps", label: "Competitions", Icon: Icons.Comps, section: "library" },
 ];

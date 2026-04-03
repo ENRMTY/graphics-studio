@@ -7,6 +7,8 @@ import type {
   ViewMode,
   FullTimeData,
   MatchdayData,
+  StatsData,
+  QuoteData,
   Team,
   Competition,
 } from "./types";
@@ -24,55 +26,26 @@ import {
 import { Sidebar } from "./components/Sidebar";
 import { FullTimePanel } from "./components/FullTimePanel";
 import { MatchdayPanel } from "./components/MatchdayPanel";
+import { StatsPanel } from "./components/StatsPanel";
+import { QuotePanel } from "./components/QuotePanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas } from "./components/Canvas";
 import { Icons } from "./components/Icons";
 
+// constants
+import {
+  DEFAULT_FT,
+  DEFAULT_HT,
+  DEFAULT_MD,
+  DEFAULT_STATS,
+  DEFAULT_QUOTE,
+} from "./constants/defaults";
+
 // utils
 import { saveCompetitions } from "./utils/storage";
 import { saveTeams } from "./utils/storage";
 import "./utils/storageMigration";
-
-// constants
-const DEFAULT_FT: FullTimeData = {
-  type: "fulltime",
-  bgImage: null,
-  competition: "",
-  competitionIcon: null,
-  competitionColor: "",
-  homeTeam: null,
-  awayTeam: null,
-  homeScore: 0,
-  awayScore: 0,
-  events: [],
-};
-
-const DEFAULT_HT: FullTimeData = {
-  type: "halftime",
-  bgImage: null,
-  competition: "",
-  competitionIcon: null,
-  competitionColor: "",
-  homeTeam: null,
-  awayTeam: null,
-  homeScore: 0,
-  awayScore: 0,
-  events: [],
-};
-
-const DEFAULT_MD: MatchdayData = {
-  type: "matchday",
-  bgImage: null,
-  competition: "",
-  competitionIcon: null,
-  competitionColor: "",
-  homeTeam: null,
-  awayTeam: null,
-  matchDate: "",
-  kickoffTime: "",
-  venue: "",
-};
 
 export default function App() {
   const [view, setView] = useState<ViewMode>("ft");
@@ -81,6 +54,8 @@ export default function App() {
   const [ftData, setFtData] = useState<FullTimeData>(DEFAULT_FT);
   const [htData, setHtData] = useState<FullTimeData>(DEFAULT_HT);
   const [mdData, setMdData] = useState<MatchdayData>(DEFAULT_MD);
+  const [statsData, setStatsData] = useState<StatsData>(DEFAULT_STATS);
+  const [quoteData, setQuoteData] = useState<QuoteData>(DEFAULT_QUOTE);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -90,13 +65,19 @@ export default function App() {
   const ftStageRef = useRef<Konva.Stage | null>(null);
   const htStageRef = useRef<Konva.Stage | null>(null);
   const mdStageRef = useRef<Konva.Stage | null>(null);
+  const statsStageRef = useRef<Konva.Stage | null>(null);
+  const quoteStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ftRef = useRef(ftData);
   const htRef = useRef(htData);
   const mdRef = useRef(mdData);
+  const statsRef = useRef(statsData);
+  const quoteRef = useRef(quoteData);
   ftRef.current = ftData;
   htRef.current = htData;
   mdRef.current = mdData;
+  statsRef.current = statsData;
+  quoteRef.current = quoteData;
 
   // initial load
   useEffect(() => {
@@ -202,6 +183,14 @@ export default function App() {
     [scheduleAutoSave],
   );
 
+  const handleStatsChange = useCallback((data: StatsData) => {
+    setStatsData(data);
+  }, []);
+
+  const handleQuoteChange = useCallback((data: QuoteData) => {
+    setQuoteData(data);
+  }, []);
+
   // teams
   const handleTeamSave = useCallback(
     async (team: Team & { logoFile?: File }) => {
@@ -233,10 +222,15 @@ export default function App() {
         ? ftStageRef.current
         : view === "ht"
           ? htStageRef.current
-          : mdStageRef.current;
+          : view === "stats"
+            ? statsStageRef.current
+            : view === "quote"
+              ? quoteStageRef.current
+              : mdStageRef.current;
     if (!stage || exporting) {
       return;
     }
+
     setExporting(true);
     try {
       const FULL = 1080;
@@ -255,7 +249,15 @@ export default function App() {
       stage.draw();
       const link = document.createElement("a");
       const label =
-        view === "ft" ? "fulltime" : view === "ht" ? "halftime" : "matchday";
+        view === "ft"
+          ? "fulltime"
+          : view === "ht"
+            ? "halftime"
+            : view === "stats"
+              ? "stats"
+              : view === "quote"
+                ? "quote"
+                : "matchday";
       link.download = `lfc-${label}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
@@ -268,7 +270,12 @@ export default function App() {
     }
   };
 
-  const isCanvas = view === "ft" || view === "ht" || view === "md";
+  const isCanvas =
+    view === "ft" ||
+    view === "ht" ||
+    view === "md" ||
+    view === "stats" ||
+    view === "quote";
 
   if (loading) {
     return (
@@ -314,12 +321,20 @@ export default function App() {
                       ? "Full Time Result"
                       : view === "ht"
                         ? "Half Time"
-                        : "Match Day"}
+                        : view === "stats"
+                          ? "Player Stats"
+                          : view === "quote"
+                            ? "Quote Card"
+                            : "Match Day"}
                   </h2>
                   <p>
                     {view === "md"
                       ? "Configure upcoming match"
-                      : "Configure scoreline & events"}
+                      : view === "stats"
+                        ? "Player stats graphic"
+                        : view === "quote"
+                          ? "Player quote graphic"
+                          : "Configure scoreline & events"}
                   </p>
                 </div>
               </div>
@@ -330,6 +345,20 @@ export default function App() {
                   teams={teams}
                   competitions={competitions}
                   onTeamSave={handleTeamSave}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "stats" ? (
+                <StatsPanel
+                  data={statsData}
+                  onChange={handleStatsChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "quote" ? (
+                <QuotePanel
+                  data={quoteData}
+                  onChange={handleQuoteChange}
+                  competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
                 />
               ) : (
@@ -385,6 +414,12 @@ export default function App() {
                   </div>
                   <div style={{ display: view === "md" ? "block" : "none" }}>
                     <Canvas data={mdData} stageRef={mdStageRef} />
+                  </div>
+                  <div style={{ display: view === "stats" ? "block" : "none" }}>
+                    <Canvas data={statsData} stageRef={statsStageRef} />
+                  </div>
+                  <div style={{ display: view === "quote" ? "block" : "none" }}>
+                    <Canvas data={quoteData} stageRef={quoteStageRef} />
                   </div>
                 </div>
               </div>
