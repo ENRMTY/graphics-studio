@@ -152,7 +152,7 @@ export function AuthModal({ onClose }: Props) {
 
         {/* Info note */}
         <div className="auth-info-note">
-          Sign in to sync your teams, competitions and drafts to the server.
+          Sign in to sync your teams, competitions and drafts, and access them from any device.
           Without an account your data is saved locally only.
         </div>
       </div>
