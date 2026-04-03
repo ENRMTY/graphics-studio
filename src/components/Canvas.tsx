@@ -14,37 +14,53 @@ import {
 } from "../utils/canvasRenderer";
 
 type CanvasData = FullTimeData | MatchdayData | StatsData | QuoteData;
+
+export type CanvasSize = "1080x1080" | "1080x1920";
+
 interface Props {
   data: CanvasData;
   stageRef: React.MutableRefObject<Konva.Stage | null>;
+  canvasSize: CanvasSize;
 }
 
-const FULL_SIZE = 1080;
-const DISPLAY_SIZE = 520;
-const SCALE = DISPLAY_SIZE / FULL_SIZE;
+const FULL_W = 1080;
+const DISPLAY_H = 520;
 
-export function Canvas({ data, stageRef }: Props) {
+function getFullDimensions(canvasSize: CanvasSize) {
+  return canvasSize === "1080x1920"
+    ? { fullW: 1080, fullH: 1920 }
+    : { fullW: 1080, fullH: 1080 };
+}
+
+function getDisplayDimensions(canvasSize: CanvasSize) {
+  const { fullW, fullH } = getFullDimensions(canvasSize);
+  const scale = DISPLAY_H / fullH;
+  return { displayW: Math.round(fullW * scale), displayH: DISPLAY_H, scale };
+}
+
+export function Canvas({ data, stageRef, canvasSize }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(false);
+  const sizeRef = useRef(canvasSize);
+  sizeRef.current = canvasSize;
 
-  // init stage on mount, destroy on unmount
+  // init stage once
   useEffect(() => {
     if (!containerRef.current || mountedRef.current) {
       return;
     }
-    mountedRef.current = true;
 
+    mountedRef.current = true;
+    const { displayW, displayH, scale } = getDisplayDimensions(sizeRef.current);
     const stage = new Konva.Stage({
       container: containerRef.current,
-      width: DISPLAY_SIZE,
-      height: DISPLAY_SIZE,
-      scaleX: SCALE,
-      scaleY: SCALE,
+      width: displayW,
+      height: displayH,
+      scaleX: scale,
+      scaleY: scale,
     });
     stageRef.current = stage;
-
-    triggerRender(stage, data);
-
+    triggerRender(stage, data, sizeRef.current);
     return () => {
       stage.destroy();
       stageRef.current = null;
@@ -53,29 +69,46 @@ export function Canvas({ data, stageRef }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // re-render on data change
+  // re-render when data or size changes
   useEffect(() => {
-    if (stageRef.current) {
-      triggerRender(stageRef.current, data);
+    const stage = stageRef.current;
+    if (!stage) {
+      return;
     }
-  }, [data, stageRef]);
+    
+    const { displayW, displayH, scale } = getDisplayDimensions(canvasSize);
+    stage.width(displayW);
+    stage.height(displayH);
+    stage.scaleX(scale);
+    stage.scaleY(scale);
+    triggerRender(stage, data, canvasSize);
+  }, [data, canvasSize, stageRef]);
+
+  const { displayW, displayH } = getDisplayDimensions(canvasSize);
 
   return (
     <div
       ref={containerRef}
-      style={{ width: DISPLAY_SIZE, height: DISPLAY_SIZE, display: "block" }}
+      style={{ width: displayW, height: displayH, display: "block" }}
     />
   );
 }
 
-function triggerRender(stage: Konva.Stage, data: CanvasData) {
+function triggerRender(
+  stage: Konva.Stage,
+  data: CanvasData,
+  canvasSize: CanvasSize,
+) {
+  const { fullW, fullH } = getFullDimensions(canvasSize);
   if (data.type === "matchday") {
-    renderMatchday(stage, data, FULL_SIZE);
+    renderMatchday(stage, data, fullW, fullH);
   } else if (data.type === "stats") {
-    renderStats(stage, data, FULL_SIZE);
+    renderStats(stage, data, fullW, fullH);
   } else if (data.type === "quote") {
-    renderQuote(stage, data, FULL_SIZE);
+    renderQuote(stage, data, fullW, fullH);
   } else {
-    renderFullTime(stage, data, FULL_SIZE);
+    renderFullTime(stage, data, fullW, fullH);
   }
 }
+
+export { getFullDimensions };

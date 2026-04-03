@@ -30,7 +30,8 @@ import { StatsPanel } from "./components/StatsPanel";
 import { QuotePanel } from "./components/QuotePanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
-import { Canvas } from "./components/Canvas";
+import { Canvas, getFullDimensions } from "./components/Canvas";
+import type { CanvasSize } from "./components/Canvas";
 import { Icons } from "./components/Icons";
 
 // constants
@@ -48,6 +49,7 @@ import { saveTeams } from "./utils/storage";
 import "./utils/storageMigration";
 
 export default function App() {
+  // use states
   const [view, setView] = useState<ViewMode>("ft");
   const [teams, setTeams] = useState<Team[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -61,13 +63,17 @@ export default function App() {
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [exporting, setExporting] = useState(false);
+  const [canvasSize, setCanvasSize] = useState<CanvasSize>("1080x1080");
 
+  // use refs
   const ftStageRef = useRef<Konva.Stage | null>(null);
   const htStageRef = useRef<Konva.Stage | null>(null);
   const mdStageRef = useRef<Konva.Stage | null>(null);
   const statsStageRef = useRef<Konva.Stage | null>(null);
   const quoteStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // use refs vars
   const ftRef = useRef(ftData);
   const htRef = useRef(htData);
   const mdRef = useRef(mdData);
@@ -224,19 +230,17 @@ export default function App() {
             : view === "quote"
               ? quoteStageRef.current
               : mdStageRef.current;
-    if (!stage || exporting) {
-      return;
-    }
+    if (!stage || exporting) return;
     setExporting(true);
     try {
-      const FULL = 1080;
+      const { fullW, fullH } = getFullDimensions(canvasSize);
       const prev = {
         w: stage.width(),
         h: stage.height(),
         sx: stage.scaleX(),
         sy: stage.scaleY(),
       };
-      stage.size({ width: FULL, height: FULL });
+      stage.size({ width: fullW, height: fullH });
       stage.scale({ x: 1, y: 1 });
       stage.draw();
       const dataURL = stage.toDataURL({ pixelRatio: 1, mimeType: "image/png" });
@@ -254,10 +258,9 @@ export default function App() {
               : view === "quote"
                 ? "quote"
                 : "matchday";
-      link.download = `lfc-${label}-${Date.now()}.png`;
+      link.download = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
-      // mark draft as published (only for server-backed types)
       const id =
         view === "ft"
           ? ftData._id
@@ -382,9 +385,17 @@ export default function App() {
               <div className="canvas-toolbar">
                 <div className="canvas-toolbar-left">
                   <div className="status-dot" />
-                  <span className="status-label">
-                    Live Preview · 1080 × 1080
-                  </span>
+                  <div className="size-picker">
+                    {(["1080x1080", "1080x1920"] as CanvasSize[]).map((s) => (
+                      <button
+                        key={s}
+                        className={`size-chip ${canvasSize === s ? "active" : ""}`}
+                        onClick={() => setCanvasSize(s)}
+                      >
+                        {s === "1080x1080" ? "1080 × 1080" : "1080 × 1920"}
+                      </button>
+                    ))}
+                  </div>
                   {saveStatus === "saving" && (
                     <span className="save-badge saving">Saving…</span>
                   )}
@@ -406,22 +417,43 @@ export default function App() {
                   </button>
                 </div>
               </div>
+
               <div className="canvas-wrapper">
                 <div className="canvas-frame">
                   <div style={{ display: view === "ft" ? "block" : "none" }}>
-                    <Canvas data={ftData} stageRef={ftStageRef} />
+                    <Canvas
+                      data={ftData}
+                      stageRef={ftStageRef}
+                      canvasSize={canvasSize}
+                    />
                   </div>
                   <div style={{ display: view === "ht" ? "block" : "none" }}>
-                    <Canvas data={htData} stageRef={htStageRef} />
+                    <Canvas
+                      data={htData}
+                      stageRef={htStageRef}
+                      canvasSize={canvasSize}
+                    />
                   </div>
                   <div style={{ display: view === "md" ? "block" : "none" }}>
-                    <Canvas data={mdData} stageRef={mdStageRef} />
+                    <Canvas
+                      data={mdData}
+                      stageRef={mdStageRef}
+                      canvasSize={canvasSize}
+                    />
                   </div>
                   <div style={{ display: view === "stats" ? "block" : "none" }}>
-                    <Canvas data={statsData} stageRef={statsStageRef} />
+                    <Canvas
+                      data={statsData}
+                      stageRef={statsStageRef}
+                      canvasSize={canvasSize}
+                    />
                   </div>
                   <div style={{ display: view === "quote" ? "block" : "none" }}>
-                    <Canvas data={quoteData} stageRef={quoteStageRef} />
+                    <Canvas
+                      data={quoteData}
+                      stageRef={quoteStageRef}
+                      canvasSize={canvasSize}
+                    />
                   </div>
                 </div>
               </div>
