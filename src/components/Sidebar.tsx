@@ -2,11 +2,13 @@ import React from "react";
 import type { ViewMode } from "../types";
 import { Icons } from "./Icons";
 import logoIcon from "../assets/icon.png";
+import { useAuth } from "../context/AuthContext";
 
 interface Props {
   view: ViewMode;
   onViewChange: (v: ViewMode) => void;
   teamCount: number;
+  onSignInClick: () => void;
 }
 
 interface NavItem {
@@ -26,7 +28,13 @@ const NAV_ITEMS: NavItem[] = [
   { id: "comps", label: "Competitions", Icon: Icons.Comps, section: "library" },
 ];
 
-export function Sidebar({ view, onViewChange, teamCount }: Props) {
+export function Sidebar({
+  view,
+  onViewChange,
+  teamCount,
+  onSignInClick,
+}: Props) {
+  const { user, logout } = useAuth();
   const createItems = NAV_ITEMS.filter((n) => n.section === "create");
   const libraryItems = NAV_ITEMS.filter((n) => n.section === "library");
 
@@ -65,7 +73,28 @@ export function Sidebar({ view, onViewChange, teamCount }: Props) {
       </nav>
 
       <div className="sidebar-footer">
-        <span className="team-count-badge">{teamCount} teams saved</span>
+        {user ? (
+          <div className="sidebar-user">
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-avatar">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <span className="sidebar-user-name">{user.name}</span>
+            </div>
+            <button className="btn btn-ghost btn-sm" onClick={logout}>
+              Log out
+            </button>
+          </div>
+        ) : (
+          <button
+            className="btn btn-ghost sidebar-signin-btn"
+            onClick={onSignInClick}
+          >
+            <Icons.User style={{ width: 14, height: 14 }} />
+            Sign In
+          </button>
+        )}
+        <div className="team-count-badge">{teamCount} teams saved</div>
       </div>
     </aside>
   );

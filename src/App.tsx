@@ -33,6 +33,8 @@ import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas, getFullDimensions } from "./components/Canvas";
 import type { CanvasSize } from "./components/Canvas";
 import { Icons } from "./components/Icons";
+import { AuthModal } from "./components/AuthModal";
+import { useAuth } from "./context/AuthContext";
 
 // constants
 import {
@@ -64,6 +66,7 @@ export default function App() {
   >("idle");
   const [exporting, setExporting] = useState(false);
   const [canvasSize, setCanvasSize] = useState<CanvasSize>("1080x1080");
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // use refs
   const ftStageRef = useRef<Konva.Stage | null>(null);
@@ -304,7 +307,12 @@ export default function App() {
 
   return (
     <div className="app">
-      <Sidebar view={view} onViewChange={setView} teamCount={teams.length} />
+      <Sidebar
+        view={view}
+        onViewChange={setView}
+        teamCount={teams.length}
+        onSignInClick={() => setShowAuthModal(true)}
+      />
       <div className="main">
         {view === "teams" && (
           <TeamManager teams={teams} onUpdate={handleTeamsUpdate} />
@@ -461,6 +469,7 @@ export default function App() {
           </>
         )}
       </div>
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 }
