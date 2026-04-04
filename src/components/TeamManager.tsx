@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { Team } from "../types";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { teamsService } from "../services/teamsService";
 
 interface Props {
   teams: Team[];
@@ -12,10 +13,11 @@ export function TeamManager({ teams, onUpdate }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newLogo, setNewLogo] = useState<string | null>(null);
+  const [newLogoFile, setNewLogoFile] = useState<File | null>(null);
   const [search, setSearch] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
-
-  const [newLogoFile, setNewLogoFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const logoUpload = useFileUpload((url, file) => {
     setNewLogo(url);
@@ -30,6 +32,8 @@ export function TeamManager({ teams, onUpdate }: Props) {
     setEditId(null);
     setNewName("");
     setNewLogo(null);
+    setNewLogoFile(null);
+    setError(null);
     setAddOpen(true);
   };
 
@@ -37,23 +41,52 @@ export function TeamManager({ teams, onUpdate }: Props) {
     setEditId(t.id);
     setNewName(t.name);
     setNewLogo(t.logo);
+    setNewLogoFile(null);
+    setError(null);
     setAddOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const name = newName.trim();
-    if (!name) return;
-    if (editId) {
-      onUpdate(
-        teams.map((t) => (t.id === editId ? { ...t, name, logo: newLogo } : t)),
-      );
-    } else {
-      onUpdate([...teams, { id: Date.now().toString(), name, logo: newLogo }]);
+    if (!name) {
+      return;
     }
-    setAddOpen(false);
-    setNewName("");
-    setNewLogo(null);
-    setEditId(null);
+    setSaving(true);
+    setError(null);
+    try {
+      if (editId) {
+        const updated = await teamsService.update(
+          editId,
+          name,
+          newLogoFile ?? undefined,
+        );
+        onUpdate(teams.map((t) => (t.id === editId ? updated : t)));
+      } else {
+        const created = await teamsService.create(
+          name,
+          newLogoFile ?? undefined,
+        );
+        onUpdate([...teams, created]);
+      }
+      setAddOpen(false);
+      setNewName("");
+      setNewLogo(null);
+      setNewLogoFile(null);
+      setEditId(null);
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to save team");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await teamsService.delete(id);
+      onUpdate(teams.filter((t) => t.id !== id));
+    } catch (err: any) {
+      console.error("Delete team failed:", err);
+    }
   };
 
   return (
@@ -125,7 +158,7 @@ export function TeamManager({ teams, onUpdate }: Props) {
               </button>
               <button
                 className="btn btn-icon danger"
-                onClick={() => onUpdate(teams.filter((x) => x.id !== t.id))}
+                onClick={() => handleDelete(t.id)}
               >
                 <Icons.Trash style={{ width: 11, height: 11 }} />
               </button>
@@ -177,7 +210,10 @@ export function TeamManager({ teams, onUpdate }: Props) {
                   </button>
                   <button
                     className="btn btn-ghost btn-sm"
-                    onClick={() => setNewLogo(null)}
+                    onClick={() => {
+                      setNewLogo(null);
+                      setNewLogoFile(null);
+                    }}
                   >
                     Remove
                   </button>
@@ -190,15 +226,25 @@ export function TeamManager({ teams, onUpdate }: Props) {
                 </div>
               )}
             </div>
+            {error && (
+              <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 8 }}>
+                {error}
+              </p>
+            )}
             <div className="modal-actions">
               <button
                 className="btn btn-ghost"
                 onClick={() => setAddOpen(false)}
+                disabled={saving}
               >
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                {editId ? "Save Changes" : "Add Team"}
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? "Saving…" : editId ? "Save Changes" : "Add Team"}
               </button>
             </div>
           </div>

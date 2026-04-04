@@ -36,7 +36,6 @@ import { Canvas, getFullDimensions } from "./components/Canvas";
 import type { CanvasSize } from "./components/Canvas";
 import { Icons } from "./components/Icons";
 import { AuthModal } from "./components/AuthModal";
-import { useAuth } from "./context/AuthContext";
 
 // constants
 import {
@@ -286,13 +285,11 @@ export default function App() {
 
   const handleTeamsUpdate = useCallback((updated: Team[]) => {
     setTeams(updated);
-    saveTeams(updated);
   }, []);
 
   // competitions
   const handleCompetitionsUpdate = useCallback((updated: Competition[]) => {
     setCompetitions(updated);
-    saveCompetitions(updated);
   }, []);
 
   // export

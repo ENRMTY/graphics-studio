@@ -1,38 +1,37 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import type { Competition } from "../types";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { competitionsService } from "../services/competitionsService";
+import { PRESET_COLORS } from "../constants/colors";
 
 interface Props {
   competitions: Competition[];
   onUpdate: (comps: Competition[]) => void;
 }
 
-const PRESET_COLORS = [
-  "#C8102E",
-  "#3d195b",
-  "#001489",
-  "#00A550",
-  "#F57F17",
-  "#0070B8",
-  "#D4AF37",
-  "#555558",
-];
-
 export function CompetitionManager({ competitions, onUpdate }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [newIcon, setNewIcon] = useState<string | null>(null);
+  const [newIconFile, setNewIconFile] = useState<File | null>(null);
   const [newColor, setNewColor] = useState("#C8102E");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const iconUpload = useFileUpload((url) => setNewIcon(url));
+  const iconUpload = useFileUpload((url, file) => {
+    setNewIcon(url);
+    setNewIconFile(file);
+  });
 
   const openAdd = () => {
     setEditId(null);
     setNewName("");
     setNewIcon(null);
+    setNewIconFile(null);
     setNewColor("#C8102E");
+    setError(null);
     setAddOpen(true);
   };
 
@@ -40,32 +39,54 @@ export function CompetitionManager({ competitions, onUpdate }: Props) {
     setEditId(c.id);
     setNewName(c.name);
     setNewIcon(c.icon);
+    setNewIconFile(null);
     setNewColor(c.color);
+    setError(null);
     setAddOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const name = newName.trim();
-    if (!name) {
-      return;
+    if (!name) return;
+    setSaving(true);
+    setError(null);
+    try {
+      if (editId) {
+        const updated = await competitionsService.update(
+          editId,
+          name,
+          newColor,
+          newIconFile ?? undefined,
+        );
+        onUpdate(competitions.map((c) => (c.id === editId ? updated : c)));
+      } else {
+        const created = await competitionsService.create(
+          name,
+          newColor,
+          newIconFile ?? undefined,
+        );
+        onUpdate([...competitions, created]);
+      }
+      setAddOpen(false);
+      setEditId(null);
+      setNewName("");
+      setNewIcon(null);
+      setNewIconFile(null);
+      setNewColor("#C8102E");
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to save competition");
+    } finally {
+      setSaving(false);
     }
-    if (editId) {
-      onUpdate(
-        competitions.map((c) =>
-          c.id === editId ? { ...c, name, icon: newIcon, color: newColor } : c,
-        ),
-      );
-    } else {
-      onUpdate([
-        ...competitions,
-        { id: Date.now().toString(), name, icon: newIcon, color: newColor },
-      ]);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await competitionsService.delete(id);
+      onUpdate(competitions.filter((c) => c.id !== id));
+    } catch (err: any) {
+      console.error("Delete competition failed:", err);
     }
-    setAddOpen(false);
-    setEditId(null);
-    setNewName("");
-    setNewIcon(null);
-    setNewColor("#C8102E");
   };
 
   return (
@@ -118,9 +139,7 @@ export function CompetitionManager({ competitions, onUpdate }: Props) {
               </button>
               <button
                 className="btn btn-icon danger"
-                onClick={() =>
-                  onUpdate(competitions.filter((x) => x.id !== c.id))
-                }
+                onClick={() => handleDelete(c.id)}
               >
                 <Icons.Trash style={{ width: 11, height: 11 }} />
               </button>
@@ -178,7 +197,10 @@ export function CompetitionManager({ competitions, onUpdate }: Props) {
                 {newIcon && (
                   <button
                     className="btn btn-ghost btn-sm"
-                    onClick={() => setNewIcon(null)}
+                    onClick={() => {
+                      setNewIcon(null);
+                      setNewIconFile(null);
+                    }}
                   >
                     Remove
                   </button>
@@ -241,15 +263,30 @@ export function CompetitionManager({ competitions, onUpdate }: Props) {
               </div>
             </div>
 
+            {error && (
+              <p style={{ color: "var(--red)", fontSize: 13, marginBottom: 8 }}>
+                {error}
+              </p>
+            )}
+
             <div className="modal-actions">
               <button
                 className="btn btn-ghost"
                 onClick={() => setAddOpen(false)}
+                disabled={saving}
               >
                 Cancel
               </button>
-              <button className="btn btn-primary" onClick={handleSave}>
-                {editId ? "Save Changes" : "Add Competition"}
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving
+                  ? "Saving…"
+                  : editId
+                    ? "Save Changes"
+                    : "Add Competition"}
               </button>
             </div>
           </div>
