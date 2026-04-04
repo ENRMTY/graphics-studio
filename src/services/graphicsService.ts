@@ -1,5 +1,10 @@
 import { api } from "./apiClient";
-import type { FullTimeData, MatchdayData } from "../types";
+import type {
+  FullTimeData,
+  MatchdayData,
+  StatsData,
+  QuoteData,
+} from "../types";
 
 // API shapes
 export interface ApiGraphic {
@@ -23,6 +28,14 @@ export interface ApiGraphic {
   matchDate: string | null;
   kickoffTime: string | null;
   venue: string | null;
+  playerName: string | null;
+  playerImageUrl: string | null;
+  statsData:
+    | { id: string; label: string; value: string; enabled: boolean }[]
+    | null;
+  accentColor: string | null;
+  playerRole: string | null;
+  quoteText: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +55,8 @@ interface DraftsResponse {
     fulltime: ApiGraphic | null;
     halftime: ApiGraphic | null;
     matchday: ApiGraphic | null;
+    stats: ApiGraphic | null;
+    quote: ApiGraphic | null;
   };
 }
 
@@ -124,6 +139,37 @@ export function apiGraphicToMD(
   };
 }
 
+export function apiGraphicToStats(g: ApiGraphic): StatsData & { _id?: string } {
+  return {
+    _id: g.id,
+    type: "stats",
+    bgImage: g.bgImageUrl,
+    playerName: g.playerName ?? "",
+    playerImage: g.playerImageUrl,
+    competition: g.competitionName ?? "",
+    competitionIcon: g.competitionIconUrl ?? null,
+    competitionColor: g.competitionColor ?? "",
+    stats: g.statsData ?? [],
+    accentColor: g.accentColor ?? "#C8102E",
+  };
+}
+
+export function apiGraphicToQuote(g: ApiGraphic): QuoteData & { _id?: string } {
+  return {
+    _id: g.id,
+    type: "quote",
+    bgImage: g.bgImageUrl,
+    playerName: g.playerName ?? "",
+    playerRole: g.playerRole ?? "",
+    playerImage: g.playerImageUrl,
+    quoteText: g.quoteText ?? "",
+    competition: g.competitionName ?? "",
+    competitionIcon: g.competitionIconUrl ?? null,
+    competitionColor: g.competitionColor ?? "",
+    accentColor: g.accentColor ?? "#C8102E",
+  };
+}
+
 function isBase64(s: string | null | undefined): boolean {
   return !!s && s.startsWith("data:");
 }
@@ -171,6 +217,31 @@ function mdToPayload(data: MatchdayData) {
     matchDate: data.matchDate || null,
     kickoffTime: data.kickoffTime || null,
     venue: data.venue || null,
+  };
+}
+
+function statsToPayload(data: StatsData) {
+  return {
+    graphicType: "stats",
+    competitionName: data.competition || null,
+    competitionIconUrl: safeUrl(data.competitionIcon),
+    competitionColor: data.competitionColor || null,
+    playerName: data.playerName || null,
+    statsData: data.stats ?? [],
+    accentColor: data.accentColor || null,
+  };
+}
+
+function quoteToPayload(data: QuoteData) {
+  return {
+    graphicType: "quote",
+    competitionName: data.competition || null,
+    competitionIconUrl: safeUrl(data.competitionIcon),
+    competitionColor: data.competitionColor || null,
+    playerName: data.playerName || null,
+    playerRole: data.playerRole || null,
+    quoteText: data.quoteText || null,
+    accentColor: data.accentColor || null,
   };
 }
 
@@ -269,6 +340,78 @@ export const graphicsService = {
     const res = await api.patch<SingleResponse>(`/api/graphics/${id}`, {
       status: "published",
     });
+    return res.data;
+  },
+
+  // stats
+  async saveStatsDraft(data: StatsData, id?: string): Promise<ApiGraphic> {
+    if (id) {
+      const res = await api.patch<SingleResponse>(
+        `/api/graphics/${id}`,
+        statsToPayload(data),
+      );
+      return res.data;
+    }
+    const res = await api.post<SingleResponse>(
+      "/api/graphics",
+      statsToPayload(data),
+    );
+    return res.data;
+  },
+
+  async uploadStatsPlayerImage(id: string, file: File): Promise<ApiGraphic> {
+    const form = new FormData();
+    form.append("playerImage", file);
+    const res = await api.patchForm<SingleResponse>(
+      `/api/graphics/${id}/player-image`,
+      form,
+    );
+    return res.data;
+  },
+
+  async uploadStatsBgImage(id: string, file: File): Promise<ApiGraphic> {
+    const form = new FormData();
+    form.append("background", file);
+    const res = await api.patchForm<SingleResponse>(
+      `/api/graphics/${id}/background`,
+      form,
+    );
+    return res.data;
+  },
+
+  // quote
+  async saveQuoteDraft(data: QuoteData, id?: string): Promise<ApiGraphic> {
+    if (id) {
+      const res = await api.patch<SingleResponse>(
+        `/api/graphics/${id}`,
+        quoteToPayload(data),
+      );
+      return res.data;
+    }
+    const res = await api.post<SingleResponse>(
+      "/api/graphics",
+      quoteToPayload(data),
+    );
+    return res.data;
+  },
+
+  async uploadQuotePlayerImage(id: string, file: File): Promise<ApiGraphic> {
+    const form = new FormData();
+    form.append("playerImage", file);
+    const res = await api.patchForm<SingleResponse>(
+      `/api/graphics/${id}/player-image`,
+      form,
+    );
+    return res.data;
+  },
+
+  async uploadQuoteBgImage(id: string, file: File): Promise<ApiGraphic> {
+    const form = new FormData();
+    form.append("background", file);
+    const res = await api.patchForm<SingleResponse>(
+      `/api/graphics/${id}/background`,
+      form,
+    );
     return res.data;
   },
 

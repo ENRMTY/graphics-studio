@@ -56,6 +56,7 @@ export interface StatItem {
 }
 
 export interface StatsData {
+  _id?: string;
   type: "stats";
   bgImage: string | null;
   bgImageFile?: File;
@@ -70,6 +71,7 @@ export interface StatsData {
 }
 
 export interface QuoteData {
+  _id?: string;
   type: "quote";
   bgImage: string | null;
   bgImageFile?: File;
