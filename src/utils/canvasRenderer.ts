@@ -93,8 +93,9 @@ function drawEventColumns(
   SIZE: number,
   lineH: number,
 ): void {
-  const maxRows = Math.max(homeEvents.length, awayEvents.length);
+  const TEAM_NAME_MARGIN = 50;
 
+  const maxRows = Math.max(homeEvents.length, awayEvents.length);
   for (let i = 0; i < maxRows; i++) {
     const y = startY + i * lineH;
     const homeEv = homeEvents[i];
@@ -107,7 +108,7 @@ function drawEventColumns(
           text: txt,
           x: 0,
           y,
-          width: SIZE / 2 - 20,
+          width: SIZE / 2 - TEAM_NAME_MARGIN,
           align: "right",
           fontSize: 18,
           fontFamily: FONT_BODY,
@@ -121,9 +122,9 @@ function drawEventColumns(
       layer.add(
         new Konva.Text({
           text: txt,
-          x: SIZE / 2 + 20,
+          x: SIZE / 2 + TEAM_NAME_MARGIN,
           y,
-          width: SIZE / 2 - 20,
+          width: SIZE / 2 - TEAM_NAME_MARGIN,
           align: "left",
           fontSize: 18,
           fontFamily: FONT_BODY,
@@ -253,6 +254,7 @@ export async function renderFullTime(
   }
 
   const PAD = 56;
+  const TEAM_NAME_MARGIN = 50;
   const homeEvents = data.events.filter((e) => e.side === "home");
   const awayEvents = data.events.filter((e) => e.side === "away");
   const maxEvents = Math.max(homeEvents.length, awayEvents.length, 0);
@@ -275,7 +277,7 @@ export async function renderFullTime(
     COMP_H +
     FT_LABEL_H +
     TOP_BLOCK_PAD;
-  const OVERLAY_H = Math.min(CONTENT_H + 120, H * 0.9);
+  const OVERLAY_H = Math.min(CONTENT_H + 150, H * 0.9);
 
   layer.add(
     new Konva.Rect({
@@ -330,7 +332,7 @@ export async function renderFullTime(
       text: (data.homeTeam?.name || "HOME").toUpperCase(),
       x: 0,
       y: cursorY,
-      width: W / 2 - 50,
+      width: W / 2 - TEAM_NAME_MARGIN,
       align: "right",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
@@ -341,9 +343,9 @@ export async function renderFullTime(
   layer.add(
     new Konva.Text({
       text: (data.awayTeam?.name || "AWAY").toUpperCase(),
-      x: W / 2 + 50,
+      x: W / 2 + TEAM_NAME_MARGIN,
       y: cursorY,
-      width: W / 2 - 50,
+      width: W / 2 - TEAM_NAME_MARGIN,
       align: "left",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
