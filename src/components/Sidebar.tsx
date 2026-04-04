@@ -73,6 +73,7 @@ export function Sidebar({
       </nav>
 
       <div className="sidebar-footer">
+        <div className="team-count-badge">{teamCount} teams saved</div>
         {user ? (
           <div className="sidebar-user">
             <div className="sidebar-user-info">
@@ -94,7 +95,6 @@ export function Sidebar({
             Sign In
           </button>
         )}
-        <div className="team-count-badge">{teamCount} teams saved</div>
       </div>
     </aside>
   );

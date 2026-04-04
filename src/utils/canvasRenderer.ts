@@ -271,7 +271,7 @@ export async function renderFullTime(
     COMP_H +
     FT_LABEL_H +
     TOP_BLOCK_PAD;
-  const OVERLAY_H = Math.min(CONTENT_H + 100, H * 0.85);
+  const OVERLAY_H = Math.min(CONTENT_H + 120, H * 0.9);
 
   layer.add(
     new Konva.Rect({
@@ -284,8 +284,18 @@ export async function renderFullTime(
       fillLinearGradientColorStops: [
         0,
         "rgba(0,0,0,0)",
-        0.28,
-        "rgba(0,0,0,0.72)",
+        0.08,
+        "rgba(0,0,0,0.03)",
+        0.18,
+        "rgba(0,0,0,0.12)",
+        0.3,
+        "rgba(0,0,0,0.35)",
+        0.45,
+        "rgba(0,0,0,0.62)",
+        0.6,
+        "rgba(0,0,0,0.80)",
+        0.75,
+        "rgba(0,0,0,0.91)",
         1,
         "rgba(0,0,0,0.97)",
       ],
@@ -434,7 +444,21 @@ export async function renderMatchday(
 
   const PAD = 56;
   const RED_BAR_H = 6;
-  const OVERLAY_H = H * 0.5;
+
+  // Calculate content height dynamically
+  const MD_COMP_H = data.competition ? 44 : 0;
+  const MD_VENUE_H = data.venue ? 28 : 0;
+  const MD_DATE_H = data.matchDate || data.kickoffTime ? 30 : 0;
+  const MD_CONTENT_H =
+    36 + // bottom pad
+    MD_VENUE_H +
+    MD_DATE_H +
+    34 + // team names
+    120 + // logo row
+    MD_COMP_H +
+    36 + // match day label
+    30; // top breathing room
+  const OVERLAY_H = Math.min(MD_CONTENT_H + 100, H * 0.88);
 
   layer.add(
     new Konva.Rect({
@@ -447,8 +471,18 @@ export async function renderMatchday(
       fillLinearGradientColorStops: [
         0,
         "rgba(0,0,0,0)",
+        0.08,
+        "rgba(0,0,0,0.03)",
+        0.18,
+        "rgba(0,0,0,0.14)",
         0.3,
-        "rgba(0,0,0,0.78)",
+        "rgba(0,0,0,0.38)",
+        0.45,
+        "rgba(0,0,0,0.64)",
+        0.6,
+        "rgba(0,0,0,0.82)",
+        0.75,
+        "rgba(0,0,0,0.92)",
         1,
         "rgba(0,0,0,0.97)",
       ],
