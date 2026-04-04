@@ -42,7 +42,7 @@ export function FullTimePanel({
       events: [
         ...data.events,
         {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           type,
           player: "",
           minute: "",

@@ -128,7 +128,9 @@ export default function App() {
 
   // auto-save debounced 1.5 s
   const scheduleAutoSave = useCallback(() => {
-    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+    }
     setSaveStatus("saving");
     autoSaveTimer.current = setTimeout(async () => {
       const ft = ftRef.current;
