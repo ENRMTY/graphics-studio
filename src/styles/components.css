@@ -92,7 +92,6 @@
 
 .sidebar-footer {
   padding: 14px 10px;
-  border-top: 1px solid var(--border);
 }
 .team-count-badge {
   font-size: 11px;
@@ -100,7 +99,7 @@
   text-align: center;
   font-family: var(--font-mono);
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -960,6 +959,7 @@
   justify-content: flex-start;
   gap: 8px;
   margin-bottom: 8px;
+  margin-top: 8px;
 }
 
 .sidebar-user {

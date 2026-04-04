@@ -20,6 +20,8 @@ import {
   graphicsService,
   apiGraphicToFT,
   apiGraphicToMD,
+  apiGraphicToStats,
+  apiGraphicToQuote,
 } from "./services/graphicsService";
 
 // components
@@ -46,8 +48,7 @@ import {
 } from "./constants/defaults";
 
 // utils
-import { saveCompetitions } from "./utils/storage";
-import { saveTeams } from "./utils/storage";
+import { saveCompetitions, saveTeams } from "./utils/storage";
 import "./utils/storageMigration";
 
 export default function App() {
@@ -105,6 +106,11 @@ export default function App() {
           setHtData(apiGraphicToFT(drafts.halftime, compsData) as FullTimeData);
         if (drafts.matchday)
           setMdData(apiGraphicToMD(drafts.matchday, compsData) as MatchdayData);
+
+        if (drafts.stats)
+          setStatsData(apiGraphicToStats(drafts.stats) as StatsData);
+        if (drafts.quote)
+          setQuoteData(apiGraphicToQuote(drafts.quote) as QuoteData);
       } catch (err) {
         console.error("Bootstrap error:", err);
       } finally {
@@ -122,6 +128,8 @@ export default function App() {
       const ft = ftRef.current;
       const ht = htRef.current;
       const md = mdRef.current;
+      const stats = statsRef.current;
+      const quote = quoteRef.current;
       try {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
         if (ft.bgImageFile) {
@@ -159,6 +167,64 @@ export default function App() {
           setMdData((p) => ({ ...p, _id: mdResult.id }));
         }
 
+        const statsResult = await graphicsService.saveStatsDraft(
+          stats,
+          (stats as any)._id,
+        );
+        if (stats.bgImageFile) {
+          await graphicsService.uploadStatsBgImage(
+            statsResult.id,
+            stats.bgImageFile,
+          );
+          setStatsData((p) => ({
+            ...p,
+            _id: statsResult.id,
+            bgImageFile: undefined,
+          }));
+        } else {
+          setStatsData((p) => ({ ...p, _id: statsResult.id }));
+        }
+        if (stats.playerImageFile) {
+          await graphicsService.uploadStatsPlayerImage(
+            statsResult.id,
+            stats.playerImageFile,
+          );
+          setStatsData((p) => ({
+            ...p,
+            _id: statsResult.id,
+            playerImageFile: undefined,
+          }));
+        }
+
+        const quoteResult = await graphicsService.saveQuoteDraft(
+          quote,
+          (quote as any)._id,
+        );
+        if (quote.bgImageFile) {
+          await graphicsService.uploadQuoteBgImage(
+            quoteResult.id,
+            quote.bgImageFile,
+          );
+          setQuoteData((p) => ({
+            ...p,
+            _id: quoteResult.id,
+            bgImageFile: undefined,
+          }));
+        } else {
+          setQuoteData((p) => ({ ...p, _id: quoteResult.id }));
+        }
+        if (quote.playerImageFile) {
+          await graphicsService.uploadQuotePlayerImage(
+            quoteResult.id,
+            quote.playerImageFile,
+          );
+          setQuoteData((p) => ({
+            ...p,
+            _id: quoteResult.id,
+            playerImageFile: undefined,
+          }));
+        }
+
         setSaveStatus("saved");
         setTimeout(() => setSaveStatus("idle"), 2000);
       } catch (err) {
@@ -192,13 +258,21 @@ export default function App() {
     [scheduleAutoSave],
   );
 
-  const handleStatsChange = useCallback((data: StatsData) => {
-    setStatsData(data);
-  }, []);
+  const handleStatsChange = useCallback(
+    (data: StatsData) => {
+      setStatsData(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
 
-  const handleQuoteChange = useCallback((data: QuoteData) => {
-    setQuoteData(data);
-  }, []);
+  const handleQuoteChange = useCallback(
+    (data: QuoteData) => {
+      setQuoteData(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
 
   // teams
   const handleTeamSave = useCallback(async (team: Team) => {
