@@ -73,7 +73,16 @@ export function Sidebar({
       </nav>
 
       <div className="sidebar-footer">
-        <div className="team-count-badge">{teamCount} teams saved</div>
+        <div
+          className="team-count-wrapper"
+          style={{
+            borderBottom: "1px solid var(--border)",
+            paddingBottom: "0.2rem",
+            marginBottom: "0.5rem",
+          }}
+        >
+          <div className="team-count-badge">{teamCount} teams saved</div>
+        </div>
         {user ? (
           <div className="sidebar-user">
             <div className="sidebar-user-info">
