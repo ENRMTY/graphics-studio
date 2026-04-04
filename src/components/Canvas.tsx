@@ -5,15 +5,22 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
+  LineupData,
 } from "../types";
 import {
   renderFullTime,
   renderMatchday,
   renderStats,
   renderQuote,
+  renderLineup,
 } from "../utils/canvasRenderer";
 
-type CanvasData = FullTimeData | MatchdayData | StatsData | QuoteData;
+type CanvasData =
+  | FullTimeData
+  | MatchdayData
+  | StatsData
+  | QuoteData
+  | LineupData;
 
 export type CanvasSize = "1080x1080" | "1080x1920";
 
@@ -75,7 +82,7 @@ export function Canvas({ data, stageRef, canvasSize }: Props) {
     if (!stage) {
       return;
     }
-    
+
     const { displayW, displayH, scale } = getDisplayDimensions(canvasSize);
     stage.width(displayW);
     stage.height(displayH);
@@ -106,6 +113,8 @@ function triggerRender(
     renderStats(stage, data, fullW, fullH);
   } else if (data.type === "quote") {
     renderQuote(stage, data, fullW, fullH);
+  } else if (data.type === "lineup") {
+    renderLineup(stage, data, fullW, fullH);
   } else {
     renderFullTime(stage, data, fullW, fullH);
   }

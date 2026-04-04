@@ -9,6 +9,7 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
+  LineupData,
   Team,
   Competition,
 } from "./types";
@@ -30,6 +31,7 @@ import { FullTimePanel } from "./components/FullTimePanel";
 import { MatchdayPanel } from "./components/MatchdayPanel";
 import { StatsPanel } from "./components/StatsPanel";
 import { QuotePanel } from "./components/QuotePanel";
+import { LineupPanel } from "./components/LineupPanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas, getFullDimensions } from "./components/Canvas";
@@ -44,6 +46,7 @@ import {
   DEFAULT_MD,
   DEFAULT_STATS,
   DEFAULT_QUOTE,
+  DEFAULT_LINEUP,
 } from "./constants/defaults";
 
 // utils
@@ -60,6 +63,7 @@ export default function App() {
   const [mdData, setMdData] = useState<MatchdayData>(DEFAULT_MD);
   const [statsData, setStatsData] = useState<StatsData>(DEFAULT_STATS);
   const [quoteData, setQuoteData] = useState<QuoteData>(DEFAULT_QUOTE);
+  const [lineupData, setLineupData] = useState<LineupData>(DEFAULT_LINEUP);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -74,6 +78,7 @@ export default function App() {
   const mdStageRef = useRef<Konva.Stage | null>(null);
   const statsStageRef = useRef<Konva.Stage | null>(null);
   const quoteStageRef = useRef<Konva.Stage | null>(null);
+  const lineupStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // use refs vars
@@ -82,11 +87,13 @@ export default function App() {
   const mdRef = useRef(mdData);
   const statsRef = useRef(statsData);
   const quoteRef = useRef(quoteData);
+  const lineupRef = useRef(lineupData);
   ftRef.current = ftData;
   htRef.current = htData;
   mdRef.current = mdData;
   statsRef.current = statsData;
   quoteRef.current = quoteData;
+  lineupRef.current = lineupData;
 
   // initial load
   useEffect(() => {
@@ -274,6 +281,11 @@ export default function App() {
   );
 
   // teams
+  const handleLineupChange = useCallback((data: LineupData) => {
+    setLineupData(data);
+  }, []);
+
+  // teams
   const handleTeamSave = useCallback(async (team: Team) => {
     try {
       const created = await teamsService.create(team.name);
@@ -331,7 +343,9 @@ export default function App() {
               ? "stats"
               : view === "quote"
                 ? "quote"
-                : "matchday";
+                : view === "lineup"
+                  ? "lineup"
+                  : "matchday";
       link.download = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
@@ -354,7 +368,8 @@ export default function App() {
     view === "ht" ||
     view === "md" ||
     view === "stats" ||
-    view === "quote";
+    view === "quote" ||
+    view === "lineup";
 
   if (loading) {
     return (
@@ -409,7 +424,9 @@ export default function App() {
                           ? "Player Stats"
                           : view === "quote"
                             ? "Quote Card"
-                            : "Match Day"}
+                            : view === "lineup"
+                              ? "Lineup"
+                              : "Match Day"}
                   </h2>
                   <p>
                     {view === "md"
@@ -442,6 +459,13 @@ export default function App() {
                 <QuotePanel
                   data={quoteData}
                   onChange={handleQuoteChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "lineup" ? (
+                <LineupPanel
+                  data={lineupData}
+                  onChange={handleLineupChange}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
                 />
@@ -531,6 +555,15 @@ export default function App() {
                     <Canvas
                       data={quoteData}
                       stageRef={quoteStageRef}
+                      canvasSize={canvasSize}
+                    />
+                  </div>
+                  <div
+                    style={{ display: view === "lineup" ? "block" : "none" }}
+                  >
+                    <Canvas
+                      data={lineupData}
+                      stageRef={lineupStageRef}
                       canvasSize={canvasSize}
                     />
                   </div>

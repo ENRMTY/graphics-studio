@@ -5,12 +5,15 @@ import type {
   MatchEvent,
   StatsData,
   QuoteData,
+  LineupData,
+  LineupPlayer,
 } from "../types";
 
 const FONT_DISPLAY = "Bebas Neue";
 const FONT_BODY = "DM Sans";
 
-// helpers
+// HELPERS
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
     const img = new window.Image();
@@ -223,7 +226,8 @@ async function drawCompetition(
   }
 }
 
-// full time
+// FULL TIME
+
 export async function renderFullTime(
   stage: Konva.Stage,
   data: FullTimeData,
@@ -417,7 +421,8 @@ export async function renderFullTime(
   layer.draw();
 }
 
-// matchday
+// MATCHDAY
+
 export async function renderMatchday(
   stage: Konva.Stage,
   data: MatchdayData,
@@ -445,7 +450,7 @@ export async function renderMatchday(
   const PAD = 56;
   const RED_BAR_H = 6;
 
-  // Calculate content height dynamically
+  // calculate content height dynamically
   const MD_COMP_H = data.competition ? 44 : 0;
   const MD_VENUE_H = data.venue ? 28 : 0;
   const MD_DATE_H = data.matchDate || data.kickoffTime ? 30 : 0;
@@ -640,6 +645,8 @@ export async function renderMatchday(
   layer.draw();
 }
 
+// STATS
+
 export async function renderStats(
   stage: Konva.Stage,
   data: StatsData,
@@ -672,7 +679,7 @@ export async function renderStats(
         }),
       );
     } catch {
-      /* ignore */
+      // ignore
     }
   }
 
@@ -731,7 +738,7 @@ export async function renderStats(
         }),
       );
     } catch {
-      /* ignore */
+      // ignore
     }
   }
 
@@ -749,7 +756,7 @@ export async function renderStats(
           }),
         );
       } catch {
-        /* ignore */
+        // ignore
       }
     } else if (data.competition) {
       layer.add(
@@ -856,7 +863,7 @@ export async function renderStats(
   layer.draw();
 }
 
-// ─── QUOTE ───────────────────────────────────────────────────────────────────
+// QUOTE
 
 export async function renderQuote(
   stage: Konva.Stage,
@@ -890,7 +897,7 @@ export async function renderQuote(
         }),
       );
     } catch {
-      /* ignore */
+      // ignore
     }
   }
 
@@ -958,7 +965,7 @@ export async function renderQuote(
         }),
       );
     } catch {
-      /* ignore */
+      // ignore
     }
   }
 
@@ -975,7 +982,7 @@ export async function renderQuote(
         }),
       );
     } catch {
-      /* ignore */
+      // ignore
     }
   } else if (data.competition) {
     layer.add(
@@ -1075,6 +1082,572 @@ export async function renderQuote(
       letterSpacing: 3,
       align: "right",
     }),
+  );
+
+  layer.draw();
+}
+
+// LINEUP PITCH
+
+function drawPitch(
+  layer: Konva.Layer,
+  px: number,
+  py: number,
+  pw: number,
+  ph: number,
+) {
+  const lc = "rgba(255,255,255,0.30)"; // line colour
+  const lw = 2;
+
+  // outer boundary
+  layer.add(
+    new Konva.Rect({
+      x: px,
+      y: py,
+      width: pw,
+      height: ph,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "rgba(0,0,0,0)",
+    }),
+  );
+
+  // halfway line
+  layer.add(
+    new Konva.Line({
+      points: [px, py + ph / 2, px + pw, py + ph / 2],
+      stroke: lc,
+      strokeWidth: lw,
+    }),
+  );
+
+  // centre circle
+  const cx = px + pw / 2;
+  const cy = py + ph / 2;
+  const cr = pw * 0.13;
+  layer.add(
+    new Konva.Circle({
+      x: cx,
+      y: cy,
+      radius: cr,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "rgba(0,0,0,0)",
+    }),
+  );
+  layer.add(new Konva.Circle({ x: cx, y: cy, radius: 3, fill: lc }));
+
+  // penalty areas - attacking end (top, where liverpool attack)
+  const paw = pw * 0.6; // penalty area width
+  const pah = ph * 0.18; // penalty area height
+  const pax = px + (pw - paw) / 2;
+  layer.add(
+    new Konva.Rect({
+      x: pax,
+      y: py,
+      width: paw,
+      height: pah,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "rgba(0,0,0,0)",
+    }),
+  );
+
+  // 6-yard box - top
+  const syw = pw * 0.28;
+  const syh = ph * 0.07;
+  const syx = px + (pw - syw) / 2;
+  layer.add(
+    new Konva.Rect({
+      x: syx,
+      y: py,
+      width: syw,
+      height: syh,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "rgba(0,0,0,0)",
+    }),
+  );
+
+  // penalty spot - top
+  layer.add(
+    new Konva.Circle({ x: cx, y: py + ph * 0.115, radius: 3, fill: lc }),
+  );
+
+  // penalty arc - top
+  layer.add(
+    new Konva.Arc({
+      x: cx,
+      y: py + ph * 0.115,
+      innerRadius: 0,
+      outerRadius: cr,
+      angle: 120,
+      rotation: -60,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "rgba(0,0,0,0)",
+      clipFunc: (ctx: CanvasRenderingContext2D) => {
+        ctx.rect(px, py + pah, pw, ph); // clip to only show arc outside box
+      },
+    }),
+  );
+
+  // penalty area - defending end (bottom, goalkeeper end)
+  layer.add(
+    new Konva.Rect({
+      x: pax,
+      y: py + ph - pah,
+      width: paw,
+      height: pah,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "rgba(0,0,0,0)",
+    }),
+  );
+
+  // 6-yard box - bottom (bottom, goalkeeper end)
+  layer.add(
+    new Konva.Rect({
+      x: syx,
+      y: py + ph - syh,
+      width: syw,
+      height: syh,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "rgba(0,0,0,0)",
+    }),
+  );
+
+  // penalty spot - bottom
+  layer.add(
+    new Konva.Circle({ x: cx, y: py + ph - ph * 0.115, radius: 3, fill: lc }),
+  );
+
+  // corner arcs
+  const cornerR = pw * 0.03;
+  [
+    { x: px, y: py, rot: 0 },
+    { x: px + pw, y: py, rot: 270 },
+    { x: px, y: py + ph, rot: 90 },
+    { x: px + pw, y: py + ph, rot: 180 },
+  ].forEach(({ x, y, rot }) => {
+    layer.add(
+      new Konva.Arc({
+        x,
+        y,
+        innerRadius: 0,
+        outerRadius: cornerR,
+        angle: 90,
+        rotation: rot,
+        stroke: lc,
+        strokeWidth: lw,
+        fill: "rgba(0,0,0,0)",
+      }),
+    );
+  });
+}
+
+function drawPlayerDot(
+  layer: Konva.Layer,
+  px: number,
+  py: number,
+  pw: number,
+  ph: number,
+  player: LineupPlayer,
+  dotR: number,
+  accentColor: string,
+) {
+  const bx = px + player.x * pw;
+  const by = py + player.y * ph;
+
+  // outer ring
+  layer.add(
+    new Konva.Circle({
+      x: bx,
+      y: by,
+      radius: dotR + 3,
+      fill: "rgba(0,0,0,0.5)",
+      stroke: accentColor,
+      strokeWidth: 2,
+    }),
+  );
+
+  // fill
+  layer.add(
+    new Konva.Circle({ x: bx, y: by, radius: dotR, fill: accentColor }),
+  );
+
+  // number
+  if (player.number !== null) {
+    layer.add(
+      new Konva.Text({
+        x: bx - dotR,
+        y: by - dotR * 0.7,
+        width: dotR * 2,
+        text: String(player.number),
+        fontSize: dotR * 1.0,
+        fontFamily: "Bebas Neue",
+        fill: "#fff",
+        align: "center",
+      }),
+    );
+  }
+
+  // name label below dot
+  layer.add(
+    new Konva.Text({
+      x: bx - 60,
+      y: by + dotR + 5,
+      width: 120,
+      text: player.name.split(" ").pop() ?? player.name,
+      fontSize: 17,
+      fontFamily: "DM Sans",
+      fontStyle: "600",
+      fill: "#fff",
+      align: "center",
+      shadowColor: "rgba(0,0,0,0.9)",
+      shadowBlur: 6,
+      shadowOffsetX: 0,
+      shadowOffsetY: 1,
+    }),
+  );
+}
+
+export async function renderLineup(
+  stage: Konva.Stage,
+  data: LineupData,
+  W: number,
+  H: number = W,
+): Promise<void> {
+  stage.destroyChildren();
+  const layer = new Konva.Layer();
+  stage.add(layer);
+
+  const ACCENT = data.competitionColor || "#C8102E";
+  const PAD = 44;
+
+  // dark base
+  layer.add(
+    new Konva.Rect({ x: 0, y: 0, width: W, height: H, fill: "#0e1117" }),
+  );
+
+  // background image
+  if (data.bgImage) {
+    try {
+      const img = await loadImage(data.bgImage);
+      const { w, h, x, y } = coverFit(img.width, img.height, W, H);
+      layer.add(
+        new Konva.Image({
+          image: img,
+          x,
+          y,
+          width: w,
+          height: h,
+          opacity: 0.18,
+        }),
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  // full dark gradient vignette over everything
+  layer.add(
+    new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: W,
+      height: H,
+      fillLinearGradientStartPoint: { x: 0, y: 0 },
+      fillLinearGradientEndPoint: { x: 0, y: H },
+      fillLinearGradientColorStops: [
+        0,
+        "rgba(0,0,0,0.55)",
+        0.5,
+        "rgba(0,0,0,0.2)",
+        1,
+        "rgba(0,0,0,0.75)",
+      ],
+    }),
+  );
+
+  // layout zones
+  const HEADER_H = 90; // top: competition + match
+  const FOOTER_H = H > 1080 ? 260 : 200; // subs strip
+  const PITCH_TOP = HEADER_H + 12;
+  const PITCH_H = H - PITCH_TOP - FOOTER_H - 16;
+  const PITCH_PAD_X = PAD + 10;
+  const pw = W - PITCH_PAD_X * 2;
+  const ph = PITCH_H;
+  const px = PITCH_PAD_X;
+  const py = PITCH_TOP;
+
+  // subtle pitch green tint
+  layer.add(
+    new Konva.Rect({
+      x: px - 2,
+      y: py - 2,
+      width: pw + 4,
+      height: ph + 4,
+      fillLinearGradientStartPoint: { x: 0, y: 0 },
+      fillLinearGradientEndPoint: { x: 0, y: ph },
+      fillLinearGradientColorStops: [
+        0,
+        "rgba(20,80,30,0.35)",
+        0.5,
+        "rgba(15,60,25,0.20)",
+        1,
+        "rgba(20,80,30,0.35)",
+      ],
+      cornerRadius: 4,
+    }),
+  );
+
+  // draw pitch lines
+  drawPitch(layer, px, py, pw, ph);
+
+  // players
+  const dotR = W > 1080 ? 26 : 22;
+  for (const player of data.players) {
+    drawPlayerDot(layer, px, py, pw, ph, player, dotR, ACCENT);
+  }
+
+  // header: competition + match info
+  let headerX = PAD;
+
+  if (data.competitionIcon) {
+    try {
+      const ci = await loadImage(data.competitionIcon);
+      layer.add(
+        new Konva.Image({
+          image: ci,
+          x: headerX,
+          y: 18,
+          width: 36,
+          height: 36,
+        }),
+      );
+      headerX += 46;
+    } catch {
+      // ignore
+    }
+  }
+
+  if (data.competition) {
+    layer.add(
+      new Konva.Text({
+        text: data.competition.toUpperCase(),
+        x: data.competitionIcon ? headerX : PAD,
+        y: 26,
+        fontSize: 13,
+        fontFamily: "DM Sans",
+        fontStyle: "600",
+        fill: "rgba(255,255,255,0.5)",
+        letterSpacing: 2,
+      }),
+    );
+  }
+
+  // match: home vs away
+  const homeName = data.homeTeam?.name ?? "LIVERPOOL FC";
+  const awayName = data.awayTeam?.name ?? "OPPONENT";
+  const matchText = `${homeName.toUpperCase()}  vs  ${awayName.toUpperCase()}`;
+  layer.add(
+    new Konva.Text({
+      text: matchText,
+      x: PAD,
+      y: 50,
+      width: W - PAD * 2 - 120,
+      fontSize: 24,
+      fontFamily: "Bebas Neue",
+      fill: "#fff",
+      letterSpacing: 3,
+    }),
+  );
+
+  // formation badge (top right)
+  layer.add(
+    new Konva.Text({
+      text: data.formation,
+      x: W - PAD - 90,
+      y: 18,
+      width: 90,
+      fontSize: 32,
+      fontFamily: "Bebas Neue",
+      fill: ACCENT,
+      letterSpacing: 2,
+      align: "right",
+    }),
+  );
+
+  // lineup label
+  layer.add(
+    new Konva.Text({
+      text: "STARTING XI",
+      x: W - PAD - 90,
+      y: 54,
+      width: 90,
+      fontSize: 11,
+      fontFamily: "DM Sans",
+      fontStyle: "600",
+      fill: "rgba(255,255,255,0.35)",
+      letterSpacing: 2,
+      align: "right",
+    }),
+  );
+
+  // red bar accent below header
+  layer.add(
+    new Konva.Rect({
+      x: PAD,
+      y: HEADER_H - 4,
+      width: 40,
+      height: 3,
+      fill: ACCENT,
+      cornerRadius: 1.5,
+    }),
+  );
+
+  // footer: subs strip
+  const FOOTER_Y = H - FOOTER_H;
+
+  // footer background
+  layer.add(
+    new Konva.Rect({
+      x: 0,
+      y: FOOTER_Y,
+      width: W,
+      height: FOOTER_H,
+      fillLinearGradientStartPoint: { x: 0, y: 0 },
+      fillLinearGradientEndPoint: { x: 0, y: FOOTER_H },
+      fillLinearGradientColorStops: [
+        0,
+        "rgba(0,0,0,0.75)",
+        1,
+        "rgba(0,0,0,0.95)",
+      ],
+    }),
+  );
+
+  // divider line
+  layer.add(
+    new Konva.Line({
+      points: [PAD, FOOTER_Y + 1, W - PAD, FOOTER_Y + 1],
+      stroke: "rgba(255,255,255,0.10)",
+      strokeWidth: 1,
+    }),
+  );
+
+  // "subs" label + manager
+  layer.add(
+    new Konva.Text({
+      text: "SUBSTITUTES",
+      x: PAD,
+      y: FOOTER_Y + 14,
+      fontSize: 12,
+      fontFamily: "DM Sans",
+      fontStyle: "600",
+      fill: ACCENT,
+      letterSpacing: 3,
+    }),
+  );
+
+  if (data.manager) {
+    layer.add(
+      new Konva.Text({
+        text: `MGR: ${data.manager.toUpperCase()}`,
+        x: PAD,
+        y: FOOTER_Y + 14,
+        width: W - PAD * 2,
+        fontSize: 12,
+        fontFamily: "DM Sans",
+        fontStyle: "600",
+        fill: "rgba(255,255,255,0.35)",
+        letterSpacing: 2,
+        align: "right",
+      }),
+    );
+  }
+
+  // sub player chips
+  const subs = data.subs.slice(0, 9);
+  const chipW = Math.min(
+    Math.floor((W - PAD * 2) / Math.max(subs.length, 1)) - 8,
+    110,
+  );
+  const chipH = FOOTER_H - 55;
+  const totalChipsW = subs.length * (chipW + 8) - 8;
+  const chipsStartX = (W - totalChipsW) / 2;
+  const chipY = FOOTER_Y + 36;
+
+  subs.forEach((sub, i) => {
+    const cx = chipsStartX + i * (chipW + 8);
+
+    // chip bg
+    layer.add(
+      new Konva.Rect({
+        x: cx,
+        y: chipY,
+        width: chipW,
+        height: chipH,
+        fill: "rgba(255,255,255,0.06)",
+        stroke: "rgba(255,255,255,0.10)",
+        strokeWidth: 1,
+        cornerRadius: 6,
+      }),
+    );
+
+    // number
+    if (sub.number !== null) {
+      layer.add(
+        new Konva.Text({
+          text: String(sub.number),
+          x: cx,
+          y: chipY + 8,
+          width: chipW,
+          fontSize: 28,
+          fontFamily: "Bebas Neue",
+          fill: ACCENT,
+          align: "center",
+        }),
+      );
+    }
+
+    // name
+    layer.add(
+      new Konva.Text({
+        text: (sub.name.split(" ").pop() ?? sub.name).toUpperCase(),
+        x: cx + 4,
+        y: chipY + chipH - 24,
+        width: chipW - 8,
+        fontSize: 11,
+        fontFamily: "DM Sans",
+        fontStyle: "600",
+        fill: "rgba(255,255,255,0.75)",
+        align: "center",
+        letterSpacing: 0.5,
+      }),
+    );
+  });
+
+  // watermark
+  layer.add(
+    new Konva.Text({
+      text: "ENORMITY OF LFC",
+      x: PAD,
+      y: H - 22,
+      width: W - PAD * 2,
+      fontSize: 11,
+      fontFamily: "Bebas Neue",
+      fill: "rgba(255,255,255,0.08)",
+      letterSpacing: 3,
+      align: "right",
+    }),
+  );
+
+  // red bottom bar
+  layer.add(
+    new Konva.Rect({ x: 0, y: H - 6, width: W, height: 6, fill: ACCENT }),
   );
 
   layer.draw();
