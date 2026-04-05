@@ -5,6 +5,7 @@ import {
   QuoteData,
   LineupData,
   LineupPlayer,
+  TransferData,
 } from "@types";
 
 export const DEFAULT_FT: FullTimeData = {
@@ -69,6 +70,17 @@ export const DEFAULT_QUOTE: QuoteData = {
   competitionIcon: null,
   competitionColor: "",
   accentColor: "#C8102E",
+};
+
+export const DEFAULT_TRANSFER: TransferData = {
+  type: "transfer",
+  bgImage: null,
+  playerName: "",
+  fromTeam: null,
+  toTeam: null,
+  transferKind: "transfer",
+  fee: "",
+  status: "confirmed",
 };
 
 const GK_Y = 0.88;

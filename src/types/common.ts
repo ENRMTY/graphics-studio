@@ -8,5 +8,6 @@ export type ViewMode =
   | "stats"
   | "quote"
   | "lineup"
+  | "transfer"
   | "teams"
   | "comps";

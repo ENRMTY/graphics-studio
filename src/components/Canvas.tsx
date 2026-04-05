@@ -6,6 +6,7 @@ import type {
   StatsData,
   QuoteData,
   LineupData,
+  TransferData,
 } from "@types";
 import {
   renderFullTime,
@@ -13,6 +14,7 @@ import {
   renderStats,
   renderQuote,
   renderLineup,
+  renderTransfer,
 } from "@graphics";
 
 type CanvasData =
@@ -20,7 +22,8 @@ type CanvasData =
   | MatchdayData
   | StatsData
   | QuoteData
-  | LineupData;
+  | LineupData
+  | TransferData;
 
 export type CanvasSize = "1080x1080" | "1080x1920";
 
@@ -115,6 +118,8 @@ function triggerRender(
     renderQuote(stage, data, fullW, fullH);
   } else if (data.type === "lineup") {
     renderLineup(stage, data, fullW, fullH);
+  } else if (data.type === "transfer") {
+    renderTransfer(stage, data, fullW, fullH);
   } else {
     renderFullTime(stage, data, fullW, fullH);
   }
