@@ -13,7 +13,7 @@ import {
   renderStats,
   renderQuote,
   renderLineup,
-} from "../utils/canvasRenderer";
+} from "../graphics";
 
 type CanvasData =
   | FullTimeData
