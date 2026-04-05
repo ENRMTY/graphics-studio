@@ -1,4 +1,4 @@
-import { FullTimeData, MatchdayData, StatsData, QuoteData, LineupData, LineupPlayer } from "../types";
+import { FullTimeData, MatchdayData, StatsData, QuoteData, LineupData, LineupPlayer } from "@types";
 
 export const DEFAULT_FT: FullTimeData = {
   type: "fulltime",

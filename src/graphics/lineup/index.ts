@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { drawPitch } from "./drawPitch";
 import { loadImage, coverFit } from "../helpers";
-import { LineupData } from "../../types";
+import { LineupData } from "@types";
 import { drawPlayerDot } from "./drawPlayerDot";
 
 export async function renderLineup(

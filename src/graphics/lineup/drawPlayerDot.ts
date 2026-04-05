@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { LineupPlayer } from "../../types";
+import { LineupPlayer } from "@types";
 
 export function drawPlayerDot(
   layer: Konva.Layer,

@@ -1,5 +1,5 @@
 import React from "react";
-import type { ViewMode } from "../types";
+import type { ViewMode } from "@types";
 import { Icons } from "./Icons";
 import logoIcon from "../assets/icon.png";
 import { useAuth } from "../context/AuthContext";

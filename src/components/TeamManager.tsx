@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import type { Team } from "../types";
+import { useState } from "react";
+import type { Team } from "@types";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { teamsService } from "../services/teamsService";

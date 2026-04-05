@@ -1,4 +1,4 @@
-import type { QuoteData, Competition } from "../types";
+import type { QuoteData, Competition } from "@types";
 import { CompetitionPicker } from "./CompetitionPicker";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";

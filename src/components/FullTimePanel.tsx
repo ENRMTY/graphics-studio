@@ -1,5 +1,4 @@
-import React, { useRef } from "react";
-import type { FullTimeData, Team, Competition, EventType } from "../types";
+import type { FullTimeData, Team, Competition, EventType } from "@types";
 import { TeamPicker } from "./TeamPicker";
 import { CompetitionPicker } from "./CompetitionPicker";
 import { EventRow } from "./EventRow";

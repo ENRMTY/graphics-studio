@@ -6,14 +6,14 @@ import type {
   StatsData,
   QuoteData,
   LineupData,
-} from "../types";
+} from "@types";
 import {
   renderFullTime,
   renderMatchday,
   renderStats,
   renderQuote,
   renderLineup,
-} from "../graphics";
+} from "@graphics";
 
 type CanvasData =
   | FullTimeData

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import type { Competition } from "../types";
+import type { Competition } from "@types";
 import { Icons } from "./Icons";
 
 interface Props {

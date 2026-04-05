@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { MatchdayData } from "../types";
+import { MatchdayData } from "@types";
 import {
   loadImage,
   coverFit,

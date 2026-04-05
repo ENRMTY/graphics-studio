@@ -1,4 +1,4 @@
-import type { LineupData, LineupPlayer, Competition } from "../types";
+import type { LineupData, LineupPlayer, Competition } from "@types";
 import { CompetitionPicker } from "./CompetitionPicker";
 import { TeamPicker } from "./TeamPicker";
 import { Icons } from "./Icons";

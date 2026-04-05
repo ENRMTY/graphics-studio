@@ -1,5 +1,5 @@
 import { api } from "./apiClient";
-import type { Competition } from "../types";
+import type { Competition } from "@types";
 import { loadCompetitions, saveCompetitions } from "../utils/storage";
 
 interface ApiCompetition {

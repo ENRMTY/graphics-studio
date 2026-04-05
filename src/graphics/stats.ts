@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { StatsData } from "../types";
+import { StatsData } from "@types";
 import { loadImage, coverFit, FONT_BODY, FONT_DISPLAY } from "./helpers";
 
 export async function renderStats(

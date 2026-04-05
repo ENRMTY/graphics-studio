@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { FullTimeData } from "../types";
+import { FullTimeData } from "@types";
 import {
   loadImage,
   coverFit,

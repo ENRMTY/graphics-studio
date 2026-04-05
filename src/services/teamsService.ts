@@ -1,5 +1,5 @@
 import { api } from "./apiClient";
-import type { Team } from "../types";
+import type { Team } from "@types";
 import { loadTeams, saveTeams } from "../utils/storage";
 
 interface ApiTeam {

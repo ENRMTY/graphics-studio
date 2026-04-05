@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { MatchEvent } from "../types";
+import { MatchEvent } from "@types";
 
 export const FONT_DISPLAY = "Bebas Neue";
 export const FONT_BODY = "DM Sans";

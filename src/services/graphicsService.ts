@@ -4,7 +4,7 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
-} from "../types";
+} from "@types";
 import { isValidUUID } from "../helpers/isValidUuid";
 
 // API shapes

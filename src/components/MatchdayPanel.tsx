@@ -1,5 +1,5 @@
 import React from "react";
-import type { MatchdayData, Team, Competition } from "../types";
+import type { MatchdayData, Team, Competition } from "@types";
 import { TeamPicker } from "./TeamPicker";
 import { CompetitionPicker } from "./CompetitionPicker";
 import { Icons } from "./Icons";

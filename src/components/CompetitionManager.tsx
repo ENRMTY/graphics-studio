@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Competition } from "../types";
+import type { Competition } from "@types";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { competitionsService } from "../services/competitionsService";

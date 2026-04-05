@@ -1,5 +1,5 @@
 import Konva from "konva";
-import { QuoteData } from "../types";
+import { QuoteData } from "@types";
 import { loadImage, coverFit, FONT_BODY, FONT_DISPLAY } from "./helpers";
 
 export async function renderQuote(
