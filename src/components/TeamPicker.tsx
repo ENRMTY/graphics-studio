@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import type { Team } from "../types";
+import type { Team } from "@types";
 import { Icons } from "./Icons";
 
 interface Props {

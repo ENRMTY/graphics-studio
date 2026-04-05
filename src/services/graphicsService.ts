@@ -4,7 +4,8 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
-} from "../types";
+} from "@types";
+import { isValidUUID } from "../helpers/isValidUuid";
 
 // API shapes
 export interface ApiGraphic {
@@ -178,7 +179,7 @@ function safeUrl(s: string | null | undefined): string | null {
   if (!s) {
     return null;
   }
-  // never persist a base64 data url — the icon/logo lives in cloudinary already
+  // never persist a base64 data url - the icon/logo lives in cloudinary already
   return isBase64(s) ? null : s;
 }
 
@@ -189,10 +190,14 @@ function ftToPayload(data: FullTimeData) {
     competitionName: data.competition || null,
     competitionIconUrl: safeUrl(data.competitionIcon),
     competitionColor: data.competitionColor || null,
-    homeTeamId: data.homeTeam?.id ?? null,
+    homeTeamId: isValidUUID(data.homeTeam?.id)
+      ? (data.homeTeam?.id ?? null)
+      : null,
     homeTeamName: data.homeTeam?.name ?? null,
     homeTeamLogoUrl: safeUrl(data.homeTeam?.logo),
-    awayTeamId: data.awayTeam?.id ?? null,
+    awayTeamId: isValidUUID(data.awayTeam?.id)
+      ? (data.awayTeam?.id ?? null)
+      : null,
     awayTeamName: data.awayTeam?.name ?? null,
     awayTeamLogoUrl: safeUrl(data.awayTeam?.logo),
     homeScore: data.homeScore,
@@ -208,10 +213,14 @@ function mdToPayload(data: MatchdayData) {
     competitionName: data.competition || null,
     competitionIconUrl: safeUrl(data.competitionIcon),
     competitionColor: data.competitionColor || null,
-    homeTeamId: data.homeTeam?.id ?? null,
+    homeTeamId: isValidUUID(data.homeTeam?.id)
+      ? (data.homeTeam?.id ?? null)
+      : null,
     homeTeamName: data.homeTeam?.name ?? null,
     homeTeamLogoUrl: safeUrl(data.homeTeam?.logo),
-    awayTeamId: data.awayTeam?.id ?? null,
+    awayTeamId: isValidUUID(data.awayTeam?.id)
+      ? (data.awayTeam?.id ?? null)
+      : null,
     awayTeamName: data.awayTeam?.name ?? null,
     awayTeamLogoUrl: safeUrl(data.awayTeam?.logo),
     matchDate: data.matchDate || null,

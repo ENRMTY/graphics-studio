@@ -1,4 +1,4 @@
-import type { Team, Competition } from "../types";
+import type { Team, Competition } from "@types";
 
 const TEAMS_KEY = "lfc_teams_v3";
 const COMPETITIONS_KEY = "lfc_competitions_v1";

@@ -1,5 +1,5 @@
 import React from "react";
-import type { MatchEvent, EventSide } from "../types";
+import type { MatchEvent, EventSide } from "@types";
 import { Icons } from "./Icons";
 
 interface Props {
