@@ -4,13 +4,20 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
+  TransferData,
 } from "@types";
 import { isValidUUID } from "../helpers/isValidUuid";
 
 // API shapes
 export interface ApiGraphic {
   id: string;
-  graphicType: "fulltime" | "halftime" | "matchday";
+  graphicType:
+    | "fulltime"
+    | "halftime"
+    | "matchday"
+    | "stats"
+    | "quote"
+    | "transfer";
   status: "draft" | "published";
   bgImageUrl: string | null;
   competitionId: string | null;
@@ -37,6 +44,9 @@ export interface ApiGraphic {
   accentColor: string | null;
   playerRole: string | null;
   quoteText: string | null;
+  transferKind: string | null;
+  transferFee: string | null;
+  transferStatus: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,6 +68,7 @@ interface DraftsResponse {
     matchday: ApiGraphic | null;
     stats: ApiGraphic | null;
     quote: ApiGraphic | null;
+    transfer: ApiGraphic | null;
   };
 }
 
@@ -171,6 +182,35 @@ export function apiGraphicToQuote(g: ApiGraphic): QuoteData & { _id?: string } {
   };
 }
 
+export function apiGraphicToTransfer(
+  g: ApiGraphic,
+): TransferData & { _id?: string } {
+  return {
+    _id: g.id,
+    type: "transfer",
+    bgImage: g.bgImageUrl,
+    playerName: g.playerName ?? "",
+    fromTeam: g.homeTeamId
+      ? {
+          id: g.homeTeamId,
+          name: g.homeTeamName ?? "",
+          logo: g.homeTeamLogoUrl,
+        }
+      : null,
+    toTeam: g.awayTeamId
+      ? {
+          id: g.awayTeamId,
+          name: g.awayTeamName ?? "",
+          logo: g.awayTeamLogoUrl,
+        }
+      : null,
+    transferKind:
+      (g.transferKind as TransferData["transferKind"]) ?? "transfer",
+    fee: g.transferFee ?? "",
+    status: (g.transferStatus as TransferData["status"]) ?? "confirmed",
+  };
+}
+
 function isBase64(s: string | null | undefined): boolean {
   return !!s && s.startsWith("data:");
 }
@@ -251,6 +291,24 @@ function quoteToPayload(data: QuoteData) {
     playerRole: data.playerRole || null,
     quoteText: data.quoteText || null,
     accentColor: data.accentColor || null,
+  };
+}
+
+function transferToPayload(data: TransferData) {
+  return {
+    graphicType: "transfer",
+    playerName: data.playerName || null,
+    homeTeamId: isValidUUID(data.fromTeam?.id)
+      ? (data.fromTeam?.id ?? null)
+      : null,
+    homeTeamName: data.fromTeam?.name ?? null,
+    homeTeamLogoUrl: safeUrl(data.fromTeam?.logo),
+    awayTeamId: isValidUUID(data.toTeam?.id) ? (data.toTeam?.id ?? null) : null,
+    awayTeamName: data.toTeam?.name ?? null,
+    awayTeamLogoUrl: safeUrl(data.toTeam?.logo),
+    transferKind: data.transferKind,
+    transferFee: data.transferKind === "loan" ? null : data.fee || null,
+    transferStatus: data.status,
   };
 }
 
@@ -415,6 +473,35 @@ export const graphicsService = {
   },
 
   async uploadQuoteBgImage(id: string, file: File): Promise<ApiGraphic> {
+    const form = new FormData();
+    form.append("background", file);
+    const res = await api.patchForm<SingleResponse>(
+      `/api/graphics/${id}/background`,
+      form,
+    );
+    return res.data;
+  },
+
+  // transfer
+  async saveTransferDraft(
+    data: TransferData,
+    id?: string,
+  ): Promise<ApiGraphic> {
+    if (id) {
+      const res = await api.patch<SingleResponse>(
+        `/api/graphics/${id}`,
+        transferToPayload(data),
+      );
+      return res.data;
+    }
+    const res = await api.post<SingleResponse>(
+      "/api/graphics",
+      transferToPayload(data),
+    );
+    return res.data;
+  },
+
+  async uploadTransferBackground(id: string, file: File): Promise<ApiGraphic> {
     const form = new FormData();
     form.append("background", file);
     const res = await api.patchForm<SingleResponse>(

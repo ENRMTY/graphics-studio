@@ -159,4 +159,12 @@ export const Icons = {
       <circle cx="12" cy="7" r="4" />
     </>,
   ),
+  Transfer: icon(
+    <>
+      <path d="M5 9l4-4 4 4" />
+      <path d="M9 5v11" />
+      <path d="M19 15l-4 4-4-4" />
+      <path d="M15 19V8" />
+    </>,
+  ),
 };

@@ -10,6 +10,7 @@ import type {
   StatsData,
   QuoteData,
   LineupData,
+  TransferData,
   Team,
   Competition,
 } from "./types";
@@ -24,6 +25,7 @@ import {
   apiGraphicToMD,
   apiGraphicToStats,
   apiGraphicToQuote,
+  apiGraphicToTransfer,
 } from "./services/graphicsService";
 
 // utils
@@ -36,6 +38,7 @@ import { MatchdayPanel } from "./components/MatchdayPanel";
 import { StatsPanel } from "./components/StatsPanel";
 import { QuotePanel } from "./components/QuotePanel";
 import { LineupPanel } from "./components/LineupPanel";
+import { TransferPanel } from "./components/TransferPanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas, getFullDimensions } from "./components/Canvas";
@@ -51,6 +54,7 @@ import {
   DEFAULT_STATS,
   DEFAULT_QUOTE,
   DEFAULT_LINEUP,
+  DEFAULT_TRANSFER,
 } from "@defaults";
 
 // utils
@@ -67,6 +71,8 @@ export default function App() {
   const [statsData, setStatsData] = useState<StatsData>(DEFAULT_STATS);
   const [quoteData, setQuoteData] = useState<QuoteData>(DEFAULT_QUOTE);
   const [lineupData, setLineupData] = useState<LineupData>(DEFAULT_LINEUP);
+  const [transferData, setTransferData] =
+    useState<TransferData>(DEFAULT_TRANSFER);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -82,6 +88,7 @@ export default function App() {
   const statsStageRef = useRef<Konva.Stage | null>(null);
   const quoteStageRef = useRef<Konva.Stage | null>(null);
   const lineupStageRef = useRef<Konva.Stage | null>(null);
+  const transferStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // use refs vars
@@ -91,12 +98,14 @@ export default function App() {
   const statsRef = useRef(statsData);
   const quoteRef = useRef(quoteData);
   const lineupRef = useRef(lineupData);
+  const transferRef = useRef(transferData);
   ftRef.current = ftData;
   htRef.current = htData;
   mdRef.current = mdData;
   statsRef.current = statsData;
   quoteRef.current = quoteData;
   lineupRef.current = lineupData;
+  transferRef.current = transferData;
 
   // initial load
   useEffect(() => {
@@ -124,6 +133,11 @@ export default function App() {
         }
         if (drafts.quote) {
           setQuoteData(apiGraphicToQuote(drafts.quote) as QuoteData);
+        }
+        if ((drafts as any).transfer) {
+          setTransferData(
+            apiGraphicToTransfer((drafts as any).transfer) as TransferData,
+          );
         }
 
         // restore last lineup from local snapshot
@@ -161,6 +175,7 @@ export default function App() {
       const md = mdRef.current;
       const stats = statsRef.current;
       const quote = quoteRef.current;
+      const transfer = transferRef.current;
       try {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
         if (ft.bgImageFile) {
@@ -256,6 +271,24 @@ export default function App() {
           }));
         }
 
+        const transferResult = await graphicsService.saveTransferDraft(
+          transfer,
+          (transfer as any)._id,
+        );
+        if (transfer.bgImageFile) {
+          await graphicsService.uploadTransferBackground(
+            transferResult.id,
+            transfer.bgImageFile,
+          );
+          setTransferData((p) => ({
+            ...p,
+            _id: transferResult.id,
+            bgImageFile: undefined,
+          }));
+        } else {
+          setTransferData((p) => ({ ...p, _id: transferResult.id }));
+        }
+
         setSaveStatus("saved");
         setTimeout(() => setSaveStatus("idle"), 2000);
       } catch (err) {
@@ -305,6 +338,14 @@ export default function App() {
     [scheduleAutoSave],
   );
 
+  const handleTransferChange = useCallback(
+    (data: TransferData) => {
+      setTransferData(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
   // lineups
   const handleLineupChange = useCallback((data: LineupData) => {
     setLineupData(data);
@@ -342,7 +383,9 @@ export default function App() {
               ? quoteStageRef.current
               : view === "lineup"
                 ? lineupStageRef.current
-                : mdStageRef.current;
+                : view === "transfer"
+                  ? transferStageRef.current
+                  : mdStageRef.current;
     if (!stage || exporting) return;
     setExporting(true);
     try {
@@ -372,7 +415,9 @@ export default function App() {
                 ? "quote"
                 : view === "lineup"
                   ? "lineup"
-                  : "matchday";
+                  : view === "transfer"
+                    ? "transfer"
+                    : "matchday";
       link.download = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
@@ -405,7 +450,8 @@ export default function App() {
     view === "md" ||
     view === "stats" ||
     view === "quote" ||
-    view === "lineup";
+    view === "lineup" ||
+    view === "transfer";
 
   if (loading) {
     return (
@@ -462,7 +508,9 @@ export default function App() {
                             ? "Quote Card"
                             : view === "lineup"
                               ? "Lineup"
-                              : "Match Day"}
+                              : view === "transfer"
+                                ? "Transfer"
+                                : "Match Day"}
                   </h2>
                   <p>
                     {view === "md"
@@ -471,7 +519,9 @@ export default function App() {
                         ? "Player stats graphic"
                         : view === "quote"
                           ? "Player quote graphic"
-                          : "Configure scoreline & events"}
+                          : view === "transfer"
+                            ? "Player transfer graphic"
+                            : "Configure scoreline & events"}
                   </p>
                 </div>
               </div>
@@ -504,6 +554,13 @@ export default function App() {
                   onChange={handleLineupChange}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
+                  teams={teams}
+                  onTeamSave={handleTeamSave}
+                />
+              ) : view === "transfer" ? (
+                <TransferPanel
+                  data={transferData}
+                  onChange={handleTransferChange}
                   teams={teams}
                   onTeamSave={handleTeamSave}
                 />
@@ -602,6 +659,15 @@ export default function App() {
                     <Canvas
                       data={lineupData}
                       stageRef={lineupStageRef}
+                      canvasSize={canvasSize}
+                    />
+                  </div>
+                  <div
+                    style={{ display: view === "transfer" ? "block" : "none" }}
+                  >
+                    <Canvas
+                      data={transferData}
+                      stageRef={transferStageRef}
                       canvasSize={canvasSize}
                     />
                   </div>

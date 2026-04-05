@@ -7,3 +7,4 @@ export * from "./lineup";
 export * from "./matchday";
 export * from "./fullTime";
 export * from "./quote";
+export * from "./transfer";
