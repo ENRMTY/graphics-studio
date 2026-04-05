@@ -48,10 +48,12 @@ export function drawPitch(
   );
   layer.add(new Konva.Circle({ x: cx, y: cy, radius: 3, fill: lc }));
 
-  // penalty areas - attacking end (top, where liverpool attack)
-  const paw = pw * 0.6; // penalty area width
-  const pah = ph * 0.18; // penalty area height
+  // penalty areas
+  const paw = pw * 0.6;
+  const pah = ph * 0.18;
   const pax = px + (pw - paw) / 2;
+
+  // attacking end (top)
   layer.add(
     new Konva.Rect({
       x: pax,
@@ -81,29 +83,31 @@ export function drawPitch(
   );
 
   // penalty spot - top
-  layer.add(
-    new Konva.Circle({ x: cx, y: py + ph * 0.115, radius: 3, fill: lc }),
-  );
+  const penSpotTopY = py + ph * 0.115;
+  layer.add(new Konva.Circle({ x: cx, y: penSpotTopY, radius: 3, fill: lc }));
 
-  // penalty arc - top
-  layer.add(
-    new Konva.Arc({
-      x: cx,
-      y: py + ph * 0.115,
-      innerRadius: 0,
-      outerRadius: cr,
-      angle: 120,
-      rotation: -60,
-      stroke: lc,
-      strokeWidth: lw,
-      fill: "rgba(0,0,0,0)",
-      clipFunc: (ctx: CanvasRenderingContext2D) => {
-        ctx.rect(px, py + pah, pw, ph); // clip to only show arc outside box
-      },
-    }),
-  );
+  {
+    const arcR = cr;
+    const spotY = penSpotTopY;
+    const boxBottomY = py + pah;
+    const dy = boxBottomY - spotY;
+    const halfAngleRad = dy < arcR ? Math.asin(dy / arcR) : Math.PI / 2;
+    const halfAngleDeg = (halfAngleRad * 180) / Math.PI;
+    const startAngle = 90 + halfAngleDeg;
+    const endAngle = 90 + (180 - halfAngleDeg);
 
-  // penalty area - defending end (bottom, goalkeeper end)
+    const arcPath = describeArc(cx, spotY, arcR, startAngle, endAngle);
+    layer.add(
+      new Konva.Path({
+        data: arcPath,
+        stroke: lc,
+        strokeWidth: lw,
+        fill: "rgba(0,0,0,0)",
+      }),
+    );
+  }
+
+  // defending end (bottom)
   layer.add(
     new Konva.Rect({
       x: pax,
@@ -116,7 +120,7 @@ export function drawPitch(
     }),
   );
 
-  // 6-yard box - bottom (bottom, goalkeeper end)
+  // 6-yard box - bottom
   layer.add(
     new Konva.Rect({
       x: syx,
@@ -130,9 +134,30 @@ export function drawPitch(
   );
 
   // penalty spot - bottom
-  layer.add(
-    new Konva.Circle({ x: cx, y: py + ph - ph * 0.115, radius: 3, fill: lc }),
-  );
+  const penSpotBotY = py + ph - ph * 0.115;
+  layer.add(new Konva.Circle({ x: cx, y: penSpotBotY, radius: 3, fill: lc }));
+
+  // penalty arc - bottom
+  {
+    const arcR = cr;
+    const spotY = penSpotBotY;
+    const boxTopY = py + ph - pah;
+    const dy = spotY - boxTopY;
+    const halfAngleRad = dy < arcR ? Math.asin(dy / arcR) : Math.PI / 2;
+    const halfAngleDeg = (halfAngleRad * 180) / Math.PI;
+    const startAngle = 270 + halfAngleDeg;
+    const endAngle = 270 + (180 - halfAngleDeg);
+
+    const arcPath = describeArc(cx, spotY, arcR, startAngle, endAngle);
+    layer.add(
+      new Konva.Path({
+        data: arcPath,
+        stroke: lc,
+        strokeWidth: lw,
+        fill: "rgba(0,0,0,0)",
+      }),
+    );
+  }
 
   // corner arcs
   const cornerR = pw * 0.03;
@@ -156,4 +181,20 @@ export function drawPitch(
       }),
     );
   });
+}
+
+function describeArc(
+  cx: number,
+  cy: number,
+  r: number,
+  startAngleDeg: number,
+  endAngleDeg: number,
+): string {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const x1 = cx + r * Math.cos(toRad(startAngleDeg));
+  const y1 = cy + r * Math.sin(toRad(startAngleDeg));
+  const x2 = cx + r * Math.cos(toRad(endAngleDeg));
+  const y2 = cy + r * Math.sin(toRad(endAngleDeg));
+  const largeArc = endAngleDeg - startAngleDeg > 180 ? 1 : 0;
+  return `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
 }

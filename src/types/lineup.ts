@@ -8,6 +8,7 @@ export interface LineupPlayer {
   // fractional pitch coords
   x: number;
   y: number;
+  isCaptain?: boolean;
 }
 
 export interface LineupData {

@@ -6,10 +6,9 @@ const CURRENT_VERSION = "v1.2"; // increment to force clear
 // runs automatically when this file is imported
 function runStorageMigration() {
   const currentVersion = localStorage.getItem(STORAGE_VERSION_KEY);
-
   if (currentVersion !== CURRENT_VERSION) {
     console.log(
-      `Clearing old storage (version changed: ${currentVersion || "none"} → ${CURRENT_VERSION})`,
+      `Clearing old storage (version changed: ${currentVersion || "none"} -> ${CURRENT_VERSION})`,
     );
 
     localStorage.removeItem(TEAMS_KEY);
@@ -17,9 +16,7 @@ function runStorageMigration() {
 
     localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION);
 
-    console.log(
-      "Old teams & competitions localStorage cleared successfully",
-    );
+    console.log("Old teams & competitions localStorage cleared successfully");
   }
 }
 
