@@ -3,6 +3,7 @@ import { drawPitch } from "./drawPitch";
 import { loadImage, coverFit } from "../helpers";
 import { LineupData } from "@types";
 import { drawPlayerDot } from "./drawPlayerDot";
+import { displayName } from "./displayName";
 
 export async function renderLineup(
   stage: Konva.Stage,
@@ -307,7 +308,7 @@ export async function renderLineup(
     // name
     layer.add(
       new Konva.Text({
-        text: (sub.name.split(" ").pop() ?? sub.name).toUpperCase(),
+        text: displayName(sub.name).toUpperCase(),
         x: cx + 4,
         y: chipY + chipH - 24,
         width: chipW - 8,

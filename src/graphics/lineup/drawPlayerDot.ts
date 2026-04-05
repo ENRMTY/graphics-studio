@@ -1,5 +1,6 @@
 import Konva from "konva";
 import { LineupPlayer } from "@types";
+import { displayName } from "./displayName";
 
 export function drawPlayerDot(
   layer: Konva.Layer,
@@ -31,7 +32,7 @@ export function drawPlayerDot(
     new Konva.Circle({ x: bx, y: by, radius: dotR, fill: accentColor }),
   );
 
-  // captain armband
+  // captain armband "C" badge (top-right of dot)
   if (player.isCaptain) {
     const badgeR = dotR * 0.45;
     const badgeX = bx + dotR * 0.65;
@@ -80,7 +81,7 @@ export function drawPlayerDot(
       x: bx - 60,
       y: by + dotR + 5,
       width: 120,
-      text: player.name.split(" ").pop() ?? player.name,
+      text: displayName(player.name),
       fontSize: 17,
       fontFamily: "DM Sans",
       fontStyle: "600",
