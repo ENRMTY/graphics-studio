@@ -21,8 +21,8 @@ export function drawPlayerDot(
       y: by,
       radius: dotR + 3,
       fill: "rgba(0,0,0,0.5)",
-      stroke: accentColor,
-      strokeWidth: 2,
+      stroke: player.isCaptain ? "#FFD700" : accentColor,
+      strokeWidth: player.isCaptain ? 3 : 2,
     }),
   );
 
@@ -30,6 +30,33 @@ export function drawPlayerDot(
   layer.add(
     new Konva.Circle({ x: bx, y: by, radius: dotR, fill: accentColor }),
   );
+
+  // captain armband
+  if (player.isCaptain) {
+    const badgeR = dotR * 0.45;
+    const badgeX = bx + dotR * 0.65;
+    const badgeY = by - dotR * 0.65;
+    layer.add(
+      new Konva.Circle({
+        x: badgeX,
+        y: badgeY,
+        radius: badgeR,
+        fill: "#FFD700",
+      }),
+    );
+    layer.add(
+      new Konva.Text({
+        x: badgeX - badgeR,
+        y: badgeY - badgeR * 0.8,
+        width: badgeR * 2,
+        text: "C",
+        fontSize: badgeR * 1.2,
+        fontFamily: "Bebas Neue",
+        fill: "#000",
+        align: "center",
+      }),
+    );
+  }
 
   // number
   if (player.number !== null) {

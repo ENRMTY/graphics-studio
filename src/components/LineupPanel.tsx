@@ -1,40 +1,166 @@
-import type { LineupData, LineupPlayer, Competition } from "@types";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from "react";
+import type { LineupData, LineupPlayer, Competition, Team } from "@types";
 import { CompetitionPicker } from "./CompetitionPicker";
 import { TeamPicker } from "./TeamPicker";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { buildDefaultLineup } from "@defaults";
+import { loadSavedPlayers, type SavedPlayer } from "../utils/storage";
 
 interface Props {
   data: LineupData;
   onChange: (d: LineupData) => void;
   competitions: Competition[];
   onCompetitionsChange: (c: Competition[]) => void;
+  teams: Team[];
+  onTeamSave: (team: Team) => void;
 }
 
 const FORMATIONS = ["4-3-3", "4-4-2", "4-2-3-1", "3-4-3", "3-5-2", "5-4-1"];
+
+// auto-complete input for player names with ghost text and suggestions from saved players
+function PlayerNameInput({
+  value,
+  onChange,
+  savedPlayers,
+  placeholder = "Player name",
+}: {
+  value: string;
+  onChange: (name: string, suggestion?: SavedPlayer) => void;
+  savedPlayers: SavedPlayer[];
+  placeholder?: string;
+}) {
+  const [ghost, setGhost] = useState("");
+  const [activeSuggestion, setActiveSuggestion] = useState<SavedPlayer | null>(
+    null,
+  );
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // recompute ghost whenever value changes
+  useEffect(() => {
+    if (!value.trim()) {
+      setGhost("");
+      setActiveSuggestion(null);
+      return;
+    }
+    const lower = value.toLowerCase();
+    const match = savedPlayers.find((p) =>
+      p.name.toLowerCase().startsWith(lower),
+    );
+    if (match && match.name.toLowerCase() !== lower) {
+      setGhost(match.name.slice(value.length));
+      setActiveSuggestion(match);
+    } else {
+      setGhost("");
+      setActiveSuggestion(null);
+    }
+  }, [value, savedPlayers]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if ((e.key === "Tab" || e.key === "Enter") && activeSuggestion && ghost) {
+      e.preventDefault();
+      onChange(activeSuggestion.name, activeSuggestion);
+      setGhost("");
+      setActiveSuggestion(null);
+    }
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value);
+  };
+
+  return (
+    <div style={{ position: "relative", flex: 1 }}>
+      {/* ghost layer — shows completion in faded colour */}
+      {ghost && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            padding: "4px 8px",
+            fontSize: 12,
+            fontFamily: "inherit",
+            pointerEvents: "none",
+            color: "transparent", // hide the typed part
+            whiteSpace: "pre",
+            overflow: "hidden",
+          }}
+        >
+          <span style={{ visibility: "hidden" }}>{value}</span>
+          <span style={{ color: "rgba(255,255,255,0.28)" }}>{ghost}</span>
+        </div>
+      )}
+      <input
+        ref={inputRef}
+        className="input"
+        value={value}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        autoComplete="off"
+        spellCheck={false}
+        style={{
+          padding: "4px 8px",
+          fontSize: 12,
+          width: "100%",
+          background: "transparent",
+          position: "relative",
+          zIndex: 1,
+        }}
+      />
+    </div>
+  );
+}
 
 function PlayerRow({
   player,
   onUpdate,
   onRemove,
   showPosition = true,
+  savedPlayers,
 }: {
   player: LineupPlayer;
   onUpdate: (p: LineupPlayer) => void;
   onRemove?: () => void;
   showPosition?: boolean;
+  savedPlayers: SavedPlayer[];
 }) {
+  const handleNameChange = (name: string, suggestion?: SavedPlayer) => {
+    if (suggestion) {
+      // autocomplete accepted
+      onUpdate({
+        ...player,
+        name,
+        number:
+          player.number === null && suggestion.number !== null
+            ? suggestion.number
+            : player.number,
+      });
+    } else {
+      onUpdate({ ...player, name });
+    }
+  };
+
   return (
     <div
       style={{
         display: "grid",
         gridTemplateColumns: showPosition
-          ? "36px 1fr 52px auto"
-          : "1fr 52px auto",
-        gap: 6,
+          ? "36px 1fr 48px 28px auto"
+          : "1fr 48px 28px auto",
+        gap: 5,
         alignItems: "center",
-        marginBottom: 6,
+        marginBottom: 5,
       }}
     >
       {showPosition && (
@@ -49,20 +175,20 @@ function PlayerRow({
           }
           placeholder="POS"
           style={{
-            padding: "4px 6px",
-            fontSize: 11,
+            padding: "4px 5px",
+            fontSize: 10,
             textAlign: "center",
             fontFamily: "var(--font-mono)",
           }}
         />
       )}
-      <input
-        className="input"
+
+      <PlayerNameInput
         value={player.name}
-        onChange={(e) => onUpdate({ ...player, name: e.target.value })}
-        placeholder="Player name"
-        style={{ padding: "4px 8px", fontSize: 12 }}
+        onChange={handleNameChange}
+        savedPlayers={savedPlayers}
       />
+
       <input
         className="input"
         type="number"
@@ -76,9 +202,36 @@ function PlayerRow({
           })
         }
         placeholder="#"
-        style={{ padding: "4px 6px", fontSize: 12, textAlign: "center" }}
+        style={{ padding: "4px 5px", fontSize: 12, textAlign: "center" }}
       />
-      {onRemove && (
+
+      {/* Captain toggle */}
+      <button
+        title={player.isCaptain ? "Remove captain" : "Set as captain"}
+        onClick={() => onUpdate({ ...player, isCaptain: !player.isCaptain })}
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 4,
+          border: player.isCaptain
+            ? "1.5px solid #FFD700"
+            : "1.5px solid rgba(255,255,255,0.15)",
+          background: player.isCaptain ? "rgba(255,215,0,0.15)" : "transparent",
+          color: player.isCaptain ? "#FFD700" : "rgba(255,255,255,0.3)",
+          fontSize: 11,
+          fontWeight: 700,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          transition: "all 0.15s",
+        }}
+      >
+        C
+      </button>
+
+      {onRemove ? (
         <button
           className="btn btn-icon danger"
           onClick={onRemove}
@@ -86,46 +239,85 @@ function PlayerRow({
         >
           <Icons.Trash style={{ width: 10, height: 10 }} />
         </button>
+      ) : (
+        <span style={{ width: 28 }} />
       )}
     </div>
   );
 }
 
+// main panel
 export function LineupPanel({
   data,
   onChange,
   competitions,
   onCompetitionsChange,
+  teams,
+  onTeamSave,
 }: Props) {
+  const [savedPlayers, setSavedPlayers] = useState<SavedPlayer[]>([]);
+
+  // load saved players on mount
+  useEffect(() => {
+    setSavedPlayers(loadSavedPlayers());
+  }, []);
+
   const bgUpload = useFileUpload((url, file) =>
     onChange({ ...data, bgImage: url, bgImageFile: file }),
   );
 
-  const updatePlayer = (idx: number, p: LineupPlayer) => {
-    const next = [...data.players];
-    next[idx] = p;
-    onChange({ ...data, players: next });
-  };
+  const updatePlayer = useCallback(
+    (idx: number, p: LineupPlayer) => {
+      const next = [...data.players];
+      // if this player is being set as captain, clear captain from others
+      if (p.isCaptain) {
+        for (let i = 0; i < next.length; i++)
+          next[i] = { ...next[i], isCaptain: false };
+      }
+      next[idx] = p;
+      onChange({ ...data, players: next });
+    },
+    [data, onChange],
+  );
 
-  const updateSub = (idx: number, p: LineupPlayer) => {
-    const next = [...data.subs];
-    next[idx] = p;
-    onChange({ ...data, subs: next });
-  };
+  const updateSub = useCallback(
+    (idx: number, p: LineupPlayer) => {
+      const next = [...data.subs];
+      // if sub is set as captain, clear from starters too
+      if (p.isCaptain) {
+        const newPlayers = data.players.map((pl) => ({
+          ...pl,
+          isCaptain: false,
+        }));
+        const newSubs = [...data.subs];
+        for (let i = 0; i < newSubs.length; i++)
+          newSubs[i] = { ...newSubs[i], isCaptain: false };
+        newSubs[idx] = p;
+        onChange({ ...data, players: newPlayers, subs: newSubs });
+        return;
+      }
+      next[idx] = p;
+      onChange({ ...data, subs: next });
+    },
+    [data, onChange],
+  );
 
   const addSub = () => {
-    const next = [
-      ...data.subs,
-      {
-        id: `sub-${Date.now()}`,
-        name: "",
-        number: null,
-        position: "",
-        x: 0,
-        y: 0,
-      } as LineupPlayer,
-    ];
-    onChange({ ...data, subs: next });
+    onChange({
+      ...data,
+      subs: [
+        ...data.subs,
+        {
+          id: `sub-${Date.now()}`,
+          name: "",
+          number: null,
+          position: "",
+          x: 0,
+          y: 0,
+          isCaptain: false,
+        } as LineupPlayer,
+      ],
+    });
   };
 
   const removeSub = (idx: number) => {
@@ -133,7 +325,15 @@ export function LineupPanel({
   };
 
   const applyFormation = (f: string) => {
-    onChange({ ...data, formation: f, players: buildDefaultLineup(f) });
+    // preserve names/numbers when switching formation if counts match, else blank
+    const newPositions = buildDefaultLineup(f);
+    const merged = newPositions.map((slot, i) => ({
+      ...slot,
+      name: data.players[i]?.name ?? "",
+      number: data.players[i]?.number ?? null,
+      isCaptain: data.players[i]?.isCaptain ?? false,
+    }));
+    onChange({ ...data, formation: f, players: merged });
   };
 
   return (
@@ -184,18 +384,18 @@ export function LineupPanel({
 
       {/* Teams */}
       <TeamPicker
-        label="Liverpool (Home)"
+        label="Home Team"
         value={data.homeTeam}
         onChange={(t) => onChange({ ...data, homeTeam: t })}
-        teams={[]}
-        onNewTeamSave={() => {}}
+        teams={teams}
+        onNewTeamSave={onTeamSave}
       />
       <TeamPicker
-        label="Opponent (Away)"
+        label="Away Team"
         value={data.awayTeam}
         onChange={(t) => onChange({ ...data, awayTeam: t })}
-        teams={[]}
-        onNewTeamSave={() => {}}
+        teams={teams}
+        onNewTeamSave={onTeamSave}
       />
 
       {/* Manager */}
@@ -225,8 +425,8 @@ export function LineupPanel({
           ))}
         </div>
         <p className="help-text" style={{ marginTop: 6 }}>
-          Switching formation resets player positions to defaults —
-          names/numbers stay.
+          Switching formation keeps names where possible. Press Tab or Enter to
+          accept autocomplete suggestions.
         </p>
       </div>
 
@@ -236,8 +436,8 @@ export function LineupPanel({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "36px 1fr 52px",
-            gap: 6,
+            gridTemplateColumns: "36px 1fr 48px 28px 28px",
+            gap: 5,
             marginBottom: 4,
           }}
         >
@@ -260,6 +460,17 @@ export function LineupPanel({
           >
             #
           </span>
+          <span
+            style={{
+              fontSize: 10,
+              color: "var(--text-muted)",
+              textAlign: "center",
+            }}
+            title="Captain"
+          >
+            C
+          </span>
+          <span />
         </div>
         {data.players.map((p, i) => (
           <PlayerRow
@@ -267,6 +478,7 @@ export function LineupPanel({
             player={p}
             onUpdate={(updated) => updatePlayer(i, updated)}
             showPosition
+            savedPlayers={savedPlayers}
           />
         ))}
       </div>
@@ -293,8 +505,8 @@ export function LineupPanel({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 52px auto",
-            gap: 6,
+            gridTemplateColumns: "1fr 48px 28px auto",
+            gap: 5,
             marginBottom: 4,
           }}
         >
@@ -308,6 +520,16 @@ export function LineupPanel({
           >
             #
           </span>
+          <span
+            style={{
+              fontSize: 10,
+              color: "var(--text-muted)",
+              textAlign: "center",
+            }}
+            title="Captain"
+          >
+            C
+          </span>
           <span />
         </div>
         {data.subs.map((p, i) => (
@@ -317,6 +539,7 @@ export function LineupPanel({
             onUpdate={(updated) => updateSub(i, updated)}
             onRemove={() => removeSub(i)}
             showPosition={false}
+            savedPlayers={savedPlayers}
           />
         ))}
         {data.subs.length === 0 && (

@@ -17,6 +17,7 @@ import type {
 // services
 import { teamsService } from "./services/teamsService";
 import { competitionsService } from "./services/competitionsService";
+import { playersService } from "./services/playersService";
 import {
   graphicsService,
   apiGraphicToFT,
@@ -24,6 +25,9 @@ import {
   apiGraphicToStats,
   apiGraphicToQuote,
 } from "./services/graphicsService";
+
+// utils
+import { loadLineupSnapshot } from "./utils/storage";
 
 // components
 import { Sidebar } from "./components/Sidebar";
@@ -105,17 +109,37 @@ export default function App() {
         ]);
         setTeams(teamsData);
         setCompetitions(compsData);
-        if (drafts.fulltime)
+        if (drafts.fulltime) {
           setFtData(apiGraphicToFT(drafts.fulltime, compsData) as FullTimeData);
-        if (drafts.halftime)
+        }
+        if (drafts.halftime) {
           setHtData(apiGraphicToFT(drafts.halftime, compsData) as FullTimeData);
-        if (drafts.matchday)
+        }
+        if (drafts.matchday) {
           setMdData(apiGraphicToMD(drafts.matchday, compsData) as MatchdayData);
+        }
 
-        if (drafts.stats)
+        if (drafts.stats) {
           setStatsData(apiGraphicToStats(drafts.stats) as StatsData);
-        if (drafts.quote)
+        }
+        if (drafts.quote) {
           setQuoteData(apiGraphicToQuote(drafts.quote) as QuoteData);
+        }
+
+        // restore last lineup from local snapshot
+        const snapshot = loadLineupSnapshot();
+        if (snapshot) {
+          setLineupData((prev) => ({
+            ...prev,
+            players: snapshot.players,
+            subs: snapshot.subs,
+            formation: snapshot.formation,
+            manager: snapshot.manager,
+          }));
+        }
+
+        // background-sync saved players
+        playersService.getAll().catch(() => {});
       } catch (err) {
         console.error("Bootstrap error:", err);
       } finally {
@@ -281,7 +305,7 @@ export default function App() {
     [scheduleAutoSave],
   );
 
-  // teams
+  // lineups
   const handleLineupChange = useCallback((data: LineupData) => {
     setLineupData(data);
   }, []);
@@ -316,7 +340,9 @@ export default function App() {
             ? statsStageRef.current
             : view === "quote"
               ? quoteStageRef.current
-              : mdStageRef.current;
+              : view === "lineup"
+                ? lineupStageRef.current
+                : mdStageRef.current;
     if (!stage || exporting) return;
     setExporting(true);
     try {
@@ -350,6 +376,15 @@ export default function App() {
       link.download = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       link.href = dataURL;
       link.click();
+
+      // save players after lineup export
+      if (view === "lineup") {
+        const ld = lineupRef.current;
+        playersService
+          .saveAfterExport(ld.players, ld.subs, ld.formation, ld.manager)
+          .catch(() => {});
+      }
+
       const id =
         view === "ft"
           ? ftData._id
@@ -469,6 +504,8 @@ export default function App() {
                   onChange={handleLineupChange}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
+                  teams={teams}
+                  onTeamSave={handleTeamSave}
                 />
               ) : (
                 <FullTimePanel
