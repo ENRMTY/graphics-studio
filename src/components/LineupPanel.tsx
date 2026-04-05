@@ -3,7 +3,7 @@ import { CompetitionPicker } from "./CompetitionPicker";
 import { TeamPicker } from "./TeamPicker";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
-import { buildDefaultLineup } from "../constants/defaults";
+import { buildDefaultLineup } from "@defaults";
 
 interface Props {
   data: LineupData;

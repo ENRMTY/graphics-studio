@@ -47,10 +47,9 @@ import {
   DEFAULT_STATS,
   DEFAULT_QUOTE,
   DEFAULT_LINEUP,
-} from "./constants/defaults";
+} from "@defaults";
 
 // utils
-import { saveCompetitions, saveTeams } from "./utils/storage";
 import "./utils/storageMigration";
 
 export default function App() {

@@ -1,4 +1,3 @@
-import React from "react";
 import type { MatchdayData, Team, Competition } from "@types";
 import { TeamPicker } from "./TeamPicker";
 import { CompetitionPicker } from "./CompetitionPicker";
