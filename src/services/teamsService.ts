@@ -61,9 +61,9 @@ export const teamsService = {
       form.append("logo", logoFile);
     }
     const res = await api.postForm<SingleResponse>("/api/teams", form);
+
     const newTeam = toTeam(res.data);
 
-    // update local data
     const current = loadTeams();
     saveTeams([...current, newTeam]);
 

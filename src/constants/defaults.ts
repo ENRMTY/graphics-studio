@@ -80,6 +80,7 @@ export const DEFAULT_TRANSFER: TransferData = {
   toTeam: null,
   transferKind: "transfer",
   fee: "",
+  currency: "£",
   status: "confirmed",
 };
 

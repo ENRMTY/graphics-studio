@@ -289,8 +289,8 @@ export async function renderTransfer(
     }),
   );
 
-  // fee (if not loan)
-  if (data.transferKind !== "loan" && data.fee) {
+  // fee, if not loan
+  if (data.transferKind !== "loan") {
     const FEE_Y = CLUB_NAME_Y + 30;
 
     layer.add(
@@ -305,9 +305,21 @@ export async function renderTransfer(
         fontStyle: "600",
       }),
     );
+
+    // build fee display string
+    let feeDisplay: string;
+    if (data.transferKind === "free") {
+      feeDisplay = "FREE";
+    } else if (data.fee) {
+      const currency = (data as any).currency ?? "£";
+      feeDisplay = (currency + data.fee).toUpperCase();
+    } else {
+      feeDisplay = "TBC";
+    }
+
     layer.add(
       new Konva.Text({
-        text: data.transferKind === "free" ? "FREE" : data.fee.toUpperCase(),
+        text: feeDisplay,
         x: PAD_X,
         y: FEE_Y + 18,
         fontSize: 36,

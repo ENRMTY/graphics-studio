@@ -1,4 +1,10 @@
-import type { TransferData, TransferKind, TransferStatus, Team } from "@types";
+import type {
+  TransferData,
+  TransferKind,
+  TransferStatus,
+  TransferCurrency,
+  Team,
+} from "@types";
 import { TeamPicker } from "./TeamPicker";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
@@ -10,10 +16,16 @@ interface Props {
   onTeamSave: (t: Team) => void;
 }
 
-const KIND_OPTIONS: { value: TransferKind; label: string; desc: string }[] = [
-  { value: "transfer", label: "Transfer", desc: "Permanent move with fee" },
-  { value: "free", label: "Free Transfer", desc: "No fee involved" },
-  { value: "loan", label: "Loan", desc: "Temporary move" },
+const KIND_OPTIONS: { value: TransferKind; label: string }[] = [
+  { value: "transfer", label: "Transfer" },
+  { value: "free", label: "Free Transfer" },
+  { value: "loan", label: "Loan" },
+];
+
+const CURRENCIES: { value: TransferCurrency; label: string }[] = [
+  { value: "£", label: "£  GBP" },
+  { value: "€", label: "€  EUR" },
+  { value: "$", label: "$  USD" },
 ];
 
 export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
@@ -21,13 +33,15 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
     onChange({ ...data, bgImage: url, bgImageFile: file }),
   );
 
-  const setKind = (kind: TransferKind) =>
-    onChange({ ...data, transferKind: kind });
+  const setKind = (transferKind: TransferKind) =>
+    onChange({ ...data, transferKind });
   const setStatus = (status: TransferStatus) => onChange({ ...data, status });
+  const setCurrency = (currency: TransferCurrency) =>
+    onChange({ ...data, currency });
 
   return (
     <div className="panel-body">
-      {/* Status toggle */}
+      {/* status toggle */}
       <div>
         <div className="section-label">Transfer Status</div>
         <div className="tab-row" role="tablist">
@@ -52,7 +66,7 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
         </div>
       </div>
 
-      {/* Background */}
+      {/* background */}
       <div>
         <div className="section-label">Player Background Image</div>
         <input {...bgUpload.inputProps} />
@@ -79,7 +93,7 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
         )}
       </div>
 
-      {/* Player name */}
+      {/* player name */}
       <div>
         <div className="section-label">Player Name</div>
         <input
@@ -90,7 +104,7 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
         />
       </div>
 
-      {/* From team */}
+      {/* from / to teams */}
       <TeamPicker
         label="From Club"
         value={data.fromTeam}
@@ -98,8 +112,6 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
         teams={teams}
         onNewTeamSave={onTeamSave}
       />
-
-      {/* To team */}
       <TeamPicker
         label="To Club"
         value={data.toTeam}
@@ -108,7 +120,7 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
         onNewTeamSave={onTeamSave}
       />
 
-      {/* Transfer kind */}
+      {/* transfer type */}
       <div>
         <div className="section-label">Transfer Type</div>
         <div className="tab-row" role="tablist">
@@ -127,16 +139,64 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
         </div>
       </div>
 
-      {/* Fee — only for permanent transfers */}
+      {/* fee + currency */}
       {data.transferKind === "transfer" && (
         <div>
           <div className="section-label">Transfer Fee</div>
-          <input
-            className="input"
-            placeholder="e.g. £85m, €120m, Undisclosed"
-            value={data.fee}
-            onChange={(e) => onChange({ ...data, fee: e.target.value })}
-          />
+
+          {/* currency row */}
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              marginBottom: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            {CURRENCIES.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                className={`btn btn-sm ${data.currency === value ? "btn-primary" : "btn-ghost"}`}
+                style={{
+                  minWidth: 0,
+                  padding: "4px 10px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+                onClick={() => setCurrency(value)}
+                title={label}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+
+          {/* fee amount input */}
+          <div style={{ position: "relative" }}>
+            <span
+              style={{
+                position: "absolute",
+                left: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                fontSize: 14,
+                fontWeight: 700,
+                color: "var(--text-muted)",
+                pointerEvents: "none",
+                userSelect: "none",
+              }}
+            >
+              {data.currency}
+            </span>
+            <input
+              className="input"
+              style={{ paddingLeft: data.currency.length > 1 ? 30 : 24 }}
+              placeholder="85m, 120m, Undisclosed…"
+              value={data.fee}
+              onChange={(e) => onChange({ ...data, fee: e.target.value })}
+            />
+          </div>
         </div>
       )}
     </div>

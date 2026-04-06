@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Competition } from "@types";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { squarePad } from "../utils/squarePad";
 import { competitionsService } from "../services/competitionsService";
 import { PRESET_COLORS } from "../constants/colors";
 
@@ -20,9 +21,15 @@ export function CompetitionManager({ competitions, onUpdate }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const iconUpload = useFileUpload((url, file) => {
-    setNewIcon(url);
-    setNewIconFile(file);
+  const iconUpload = useFileUpload(async (url, file) => {
+    try {
+      const { dataUrl, file: padded } = await squarePad(file);
+      setNewIcon(dataUrl);
+      setNewIconFile(padded);
+    } catch {
+      setNewIcon(url);
+      setNewIconFile(file);
+    }
   });
 
   const openAdd = () => {
