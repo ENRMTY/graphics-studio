@@ -17,7 +17,9 @@ export const loadTeams = (): Team[] => {
 };
 
 export const saveTeams = (teams: Team[]): void => {
-  localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+  // strip logoFile before saving, as it can't be serialised and is only needed temporarily while editing
+  const serialisable = teams.map(({ logoFile: _f, ...rest }) => rest);
+  localStorage.setItem(TEAMS_KEY, JSON.stringify(serialisable));
 };
 
 // competitions

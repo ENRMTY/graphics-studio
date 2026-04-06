@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Team } from "@types";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { squarePad } from "../utils/squarePad";
 import { teamsService } from "../services/teamsService";
 
 interface Props {
@@ -19,9 +20,15 @@ export function TeamManager({ teams, onUpdate }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const logoUpload = useFileUpload((url, file) => {
-    setNewLogo(url);
-    setNewLogoFile(file);
+  const logoUpload = useFileUpload(async (url, file) => {
+    try {
+      const { dataUrl, file: padded } = await squarePad(file);
+      setNewLogo(dataUrl);
+      setNewLogoFile(padded);
+    } catch {
+      setNewLogo(url);
+      setNewLogoFile(file);
+    }
   });
 
   const filtered = teams.filter((t) =>

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import type { Team } from "@types";
 import { Icons } from "./Icons";
+import { squarePad } from "../utils/squarePad";
 
 interface Props {
   label: string;
@@ -21,21 +22,30 @@ export function TeamPicker({
   const [search, setSearch] = useState("");
   const [newName, setNewName] = useState("");
   const [newLogo, setNewLogo] = useState<string | null>(null);
+  const [newLogoFile, setNewLogoFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const filtered = teams.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
       return;
     }
-    const reader = new FileReader();
-    reader.onload = (ev) => setNewLogo(ev.target?.result as string);
-    reader.readAsDataURL(file);
     e.target.value = "";
+    try {
+      const { dataUrl, file: paddedFile } = await squarePad(file);
+      setNewLogo(dataUrl);
+      setNewLogoFile(paddedFile);
+    } catch {
+      // fallback: read as-is
+      const reader = new FileReader();
+      reader.onload = (ev) => setNewLogo(ev.target?.result as string);
+      reader.readAsDataURL(file);
+      setNewLogoFile(file);
+    }
   };
 
   const handleSaveNew = () => {
@@ -43,12 +53,18 @@ export function TeamPicker({
     if (!name) {
       return;
     }
-    const team: Team = { id: Date.now().toString(), name, logo: newLogo };
+    const team: Team = {
+      id: Date.now().toString(),
+      name,
+      logo: newLogo,
+      logoFile: newLogoFile ?? undefined,
+    };
     onNewTeamSave(team);
     onChange(team);
     setOpen(false);
     setNewName("");
     setNewLogo(null);
+    setNewLogoFile(null);
     setSearch("");
   };
 

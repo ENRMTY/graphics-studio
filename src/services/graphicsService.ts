@@ -207,6 +207,7 @@ export function apiGraphicToTransfer(
     transferKind:
       (g.transferKind as TransferData["transferKind"]) ?? "transfer",
     fee: g.transferFee ?? "",
+    currency: (g.accentColor as TransferData["currency"]) ?? "£",
     status: (g.transferStatus as TransferData["status"]) ?? "confirmed",
   };
 }
@@ -309,6 +310,7 @@ function transferToPayload(data: TransferData) {
     transferKind: data.transferKind,
     transferFee: data.transferKind === "loan" ? null : data.fee || null,
     transferStatus: data.status,
+    accentColor: data.currency || null,
   };
 }
 
