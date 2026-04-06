@@ -299,12 +299,10 @@ function transferToPayload(data: TransferData) {
   return {
     graphicType: "transfer",
     playerName: data.playerName || null,
-    homeTeamId: isValidUUID(data.fromTeam?.id)
-      ? (data.fromTeam?.id ?? null)
-      : null,
+    homeTeamId: isValidUUID(data.fromTeam?.id) ? data.fromTeam!.id : null,
     homeTeamName: data.fromTeam?.name ?? null,
     homeTeamLogoUrl: safeUrl(data.fromTeam?.logo),
-    awayTeamId: isValidUUID(data.toTeam?.id) ? (data.toTeam?.id ?? null) : null,
+    awayTeamId: isValidUUID(data.toTeam?.id) ? data.toTeam!.id : null,
     awayTeamName: data.toTeam?.name ?? null,
     awayTeamLogoUrl: safeUrl(data.toTeam?.logo),
     transferKind: data.transferKind,

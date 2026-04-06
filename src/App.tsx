@@ -356,6 +356,34 @@ export default function App() {
     try {
       const created = await teamsService.create(team.name, team.logoFile);
       setTeams((prev) => [...prev, created]);
+      
+      const patch = (
+        t: { id: string; name: string; logo: string | null } | null,
+      ) =>
+        t?.id === team.id
+          ? { id: created.id, name: created.name, logo: created.logo }
+          : t;
+
+      setFtData((p) => ({
+        ...p,
+        homeTeam: patch(p.homeTeam),
+        awayTeam: patch(p.awayTeam),
+      }));
+      setHtData((p) => ({
+        ...p,
+        homeTeam: patch(p.homeTeam),
+        awayTeam: patch(p.awayTeam),
+      }));
+      setMdData((p) => ({
+        ...p,
+        homeTeam: patch(p.homeTeam),
+        awayTeam: patch(p.awayTeam),
+      }));
+      setTransferData((p) => ({
+        ...p,
+        fromTeam: patch(p.fromTeam),
+        toTeam: patch(p.toTeam),
+      }));
     } catch (err) {
       console.error("Team save failed:", err);
     }
