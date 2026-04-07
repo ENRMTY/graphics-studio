@@ -64,7 +64,7 @@ export function drawPlayerDot(
     layer.add(
       new Konva.Text({
         x: bx - dotR,
-        y: by - dotR * 0.7,
+        y: by - dotR * 0.5,
         width: dotR * 2,
         text: String(player.number),
         fontSize: dotR * 1.0,

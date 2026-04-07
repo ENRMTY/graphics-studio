@@ -41,7 +41,7 @@ import { LineupPanel } from "./components/LineupPanel";
 import { TransferPanel } from "./components/TransferPanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
-import { Canvas, getFullDimensions } from "./components/Canvas";
+import { Canvas, getFullDimensions, triggerRender } from "./components/Canvas";
 import type { CanvasSize } from "./components/Canvas";
 import { Icons } from "./components/Icons";
 import { AuthModal } from "./components/AuthModal";
@@ -356,7 +356,7 @@ export default function App() {
     try {
       const created = await teamsService.create(team.name, team.logoFile);
       setTeams((prev) => [...prev, created]);
-      
+
       const patch = (
         t: { id: string; name: string; logo: string | null } | null,
       ) =>
@@ -426,7 +426,14 @@ export default function App() {
       };
       stage.size({ width: fullW, height: fullH });
       stage.scale({ x: 1, y: 1 });
-      stage.draw();
+
+      // lineup uses async image loading - re-render at full res before capture
+      if (view === "lineup") {
+        await triggerRender(stage, lineupRef.current, canvasSize);
+      } else {
+        stage.draw();
+      }
+
       const dataURL = stage.toDataURL({ pixelRatio: 1, mimeType: "image/png" });
       stage.size({ width: prev.w, height: prev.h });
       stage.scale({ x: prev.sx, y: prev.sy });

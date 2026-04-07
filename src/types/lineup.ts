@@ -20,6 +20,7 @@ export interface LineupData {
   competition: string;
   competitionIcon: string | null;
   competitionColor: string;
+  dotColor?: string;
   homeTeam: Team | null;
   awayTeam: Team | null;
   players: LineupPlayer[];

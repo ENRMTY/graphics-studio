@@ -5,6 +5,7 @@ const TEAMS_KEY = "lfc_teams_v3";
 const COMPETITIONS_KEY = "lfc_competitions_v1";
 const PLAYERS_KEY = "lfc_players_v1";
 const LINEUP_SNAPSHOT_KEY = "lfc_lineup_snapshot_v1";
+const DOT_COLORS_KEY = "lfc_dot_colors_v1";
 
 // teams
 export const loadTeams = (): Team[] => {
@@ -116,4 +117,19 @@ export const loadLineupSnapshot = (): {
   } catch {
     return null;
   }
+};
+
+// dot colors palette
+export const loadDotColors = (): string[] => {
+  try {
+    const raw = localStorage.getItem(DOT_COLORS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+export const saveDotColors = (colors: string[]): void => {
+  localStorage.setItem(DOT_COLORS_KEY, JSON.stringify(colors));
 };
