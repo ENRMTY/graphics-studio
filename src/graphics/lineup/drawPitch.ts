@@ -163,8 +163,8 @@ export function drawPitch(
   const cornerR = pw * 0.03;
   [
     { x: px, y: py, rot: 0 },
-    { x: px + pw, y: py, rot: 270 },
-    { x: px, y: py + ph, rot: 90 },
+    { x: px + pw, y: py, rot: 90 },
+    { x: px, y: py + ph, rot: 270 },
     { x: px + pw, y: py + ph, rot: 180 },
   ].forEach(({ x, y, rot }) => {
     layer.add(

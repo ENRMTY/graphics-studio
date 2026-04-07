@@ -15,7 +15,7 @@ export async function renderLineup(
   const layer = new Konva.Layer();
   stage.add(layer);
 
-  const ACCENT = data.competitionColor || "#C8102E";
+  const ACCENT = data.dotColor || data.competitionColor || "#C8102E";
   const PAD = 44;
 
   // dark base

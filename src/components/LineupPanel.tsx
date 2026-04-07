@@ -12,7 +12,12 @@ import { TeamPicker } from "./TeamPicker";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { buildDefaultLineup } from "@defaults";
-import { loadSavedPlayers, type SavedPlayer } from "../utils/storage";
+import {
+  loadSavedPlayers,
+  type SavedPlayer,
+  loadDotColors,
+  saveDotColors,
+} from "../utils/storage";
 
 interface Props {
   data: LineupData;
@@ -256,11 +261,39 @@ export function LineupPanel({
   onTeamSave,
 }: Props) {
   const [savedPlayers, setSavedPlayers] = useState<SavedPlayer[]>([]);
+  const [dotColors, setDotColors] = useState<string[]>([]);
+  const [newColor, setNewColor] = useState("#C8102E");
 
   // load saved players on mount
   useEffect(() => {
     setSavedPlayers(loadSavedPlayers());
+    setDotColors(loadDotColors());
   }, []);
+
+  const addDotColor = () => {
+    const hex = newColor.trim().toUpperCase();
+    if (!hex.match(/^#[0-9A-F]{6}$/i)) return;
+    if (dotColors.includes(hex)) return;
+    const updated = [...dotColors, hex];
+    setDotColors(updated);
+    saveDotColors(updated);
+  };
+
+  const removeDotColor = (color: string) => {
+    const updated = dotColors.filter((c) => c !== color);
+    setDotColors(updated);
+    saveDotColors(updated);
+    if (data.dotColor === color) {
+      onChange({ ...data, dotColor: undefined });
+    }
+  };
+
+  const selectDotColor = (color: string) => {
+    onChange({
+      ...data,
+      dotColor: data.dotColor === color ? undefined : color,
+    });
+  };
 
   const bgUpload = useFileUpload((url, file) =>
     onChange({ ...data, bgImage: url, bgImageFile: file }),
@@ -381,6 +414,125 @@ export function LineupPanel({
         }
         onCompetitionsChange={onCompetitionsChange}
       />
+
+      {/* dot color palette */}
+      <div>
+        <div className="section-label">Player Dot Colour</div>
+        <p className="help-text" style={{ marginBottom: 8 }}>
+          Pick a shirt colour for today's kit. Overrides competition colour.
+        </p>
+
+        {/* saved swatches */}
+        {dotColors.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              marginBottom: 10,
+            }}
+          >
+            {dotColors.map((color) => (
+              <div key={color} style={{ position: "relative" }}>
+                <button
+                  title={`Select ${color}`}
+                  onClick={() => selectDotColor(color)}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 6,
+                    background: color,
+                    border:
+                      data.dotColor === color
+                        ? "3px solid #fff"
+                        : "2px solid rgba(255,255,255,0.15)",
+                    cursor: "pointer",
+                    boxShadow:
+                      data.dotColor === color ? `0 0 0 2px ${color}` : "none",
+                    transition: "all 0.15s",
+                  }}
+                />
+                <button
+                  title={`Remove ${color}`}
+                  onClick={() => removeDotColor(color)}
+                  style={{
+                    position: "absolute",
+                    top: -5,
+                    right: -5,
+                    width: 14,
+                    height: 14,
+                    borderRadius: "50%",
+                    background: "rgba(0,0,0,0.8)",
+                    border: "1px solid rgba(255,255,255,0.3)",
+                    color: "#fff",
+                    fontSize: 9,
+                    lineHeight: "14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 0,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            {data.dotColor && (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => onChange({ ...data, dotColor: undefined })}
+                style={{ fontSize: 11, alignSelf: "center" }}
+                title="Use competition colour instead"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Add new colour */}
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <input
+            type="color"
+            value={newColor}
+            onChange={(e) => setNewColor(e.target.value)}
+            style={{
+              width: 36,
+              height: 32,
+              padding: 2,
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 6,
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          />
+          <input
+            className="input"
+            value={newColor}
+            onChange={(e) => setNewColor(e.target.value)}
+            placeholder="#C8102E"
+            style={{ fontSize: 12, fontFamily: "var(--font-mono)", flex: 1 }}
+            maxLength={7}
+          />
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={addDotColor}
+            style={{ fontSize: 11, whiteSpace: "nowrap" }}
+          >
+            <Icons.Plus style={{ width: 11, height: 11 }} /> Save
+          </button>
+        </div>
+
+        {data.dotColor && (
+          <p
+            className="help-text"
+            style={{ marginTop: 6, color: "var(--accent)" }}
+          >
+            Using custom colour: {data.dotColor}
+          </p>
+        )}
+      </div>
 
       {/* Teams */}
       <TeamPicker

@@ -104,7 +104,7 @@ export function Canvas({ data, stageRef, canvasSize }: Props) {
   );
 }
 
-function triggerRender(
+export async function triggerRender(
   stage: Konva.Stage,
   data: CanvasData,
   canvasSize: CanvasSize,
@@ -117,7 +117,7 @@ function triggerRender(
   } else if (data.type === "quote") {
     renderQuote(stage, data, fullW, fullH);
   } else if (data.type === "lineup") {
-    renderLineup(stage, data, fullW, fullH);
+    await renderLineup(stage, data, fullW, fullH);
   } else if (data.type === "transfer") {
     renderTransfer(stage, data, fullW, fullH);
   } else {
