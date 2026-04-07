@@ -9,7 +9,12 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
     const img = new window.Image();
     img.onload = () => res(img);
     img.onerror = rej;
-    img.src = src;
+    img.crossOrigin = "anonymous";
+    const cacheBusted =
+      src.startsWith("data:") || src.startsWith("blob:")
+        ? src
+        : src + (src.includes("?") ? "&" : "?") + "_cb=1";
+    img.src = cacheBusted;
   });
 }
 
