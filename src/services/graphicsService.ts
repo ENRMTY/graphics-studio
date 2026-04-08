@@ -32,6 +32,8 @@ export interface ApiGraphic {
   awayTeamLogoUrl: string | null;
   homeScore: number | null;
   awayScore: number | null;
+  aggScoreHome: number | null;
+  aggScoreAway: number | null;
   events: FullTimeData["events"];
   matchDate: string | null;
   kickoffTime: string | null;
@@ -109,6 +111,8 @@ export function apiGraphicToFT(
       : null,
     homeScore: g.homeScore ?? 0,
     awayScore: g.awayScore ?? 0,
+    aggScoreHome: g.aggScoreHome ?? null,
+    aggScoreAway: g.aggScoreAway ?? null,
     events: g.events ?? [],
   };
 }
@@ -243,6 +247,8 @@ function ftToPayload(data: FullTimeData) {
     awayTeamLogoUrl: safeUrl(data.awayTeam?.logo),
     homeScore: data.homeScore,
     awayScore: data.awayScore,
+    aggScoreHome: data.aggScoreHome ?? null,
+    aggScoreAway: data.aggScoreAway ?? null,
     events: data.events,
   };
 }

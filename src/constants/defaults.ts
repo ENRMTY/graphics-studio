@@ -18,6 +18,8 @@ export const DEFAULT_FT: FullTimeData = {
   awayTeam: null,
   homeScore: 0,
   awayScore: 0,
+  aggScoreHome: null,
+  aggScoreAway: null,
   events: [],
 };
 
@@ -31,6 +33,8 @@ export const DEFAULT_HT: FullTimeData = {
   awayTeam: null,
   homeScore: 0,
   awayScore: 0,
+  aggScoreHome: null,
+  aggScoreAway: null,
   events: [],
 };
 

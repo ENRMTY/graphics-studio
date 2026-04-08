@@ -14,6 +14,8 @@ export interface FullTimeData {
   awayTeam: Team | null;
   homeScore: number;
   awayScore: number;
+  aggScoreHome: number | null;
+  aggScoreAway: number | null;
   events: MatchEvent[];
   logoStyle?: LogoStyle;
 }

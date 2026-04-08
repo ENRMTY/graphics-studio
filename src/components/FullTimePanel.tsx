@@ -192,6 +192,55 @@ export function FullTimePanel({
         </div>
       </div>
 
+      {/* aggregate score */}
+      <div>
+        <div className="section-label">Aggregate Score (2-legged ties)</div>
+        <div className="score-row">
+          <input
+            className="score-digit"
+            type="number"
+            min={0}
+            max={99}
+            placeholder="–"
+            value={data.aggScoreHome ?? ""}
+            onChange={(e) =>
+              onChange({
+                ...data,
+                aggScoreHome:
+                  e.target.value === "" ? null : parseInt(e.target.value) || 0,
+              })
+            }
+          />
+          <div className="score-dash">–</div>
+          <input
+            className="score-digit"
+            type="number"
+            min={0}
+            max={99}
+            placeholder="–"
+            value={data.aggScoreAway ?? ""}
+            onChange={(e) =>
+              onChange({
+                ...data,
+                aggScoreAway:
+                  e.target.value === "" ? null : parseInt(e.target.value) || 0,
+              })
+            }
+          />
+        </div>
+        {(data.aggScoreHome !== null || data.aggScoreAway !== null) && (
+          <button
+            className="btn btn-ghost btn-sm"
+            style={{ marginTop: 6 }}
+            onClick={() =>
+              onChange({ ...data, aggScoreHome: null, aggScoreAway: null })
+            }
+          >
+            Clear aggregate
+          </button>
+        )}
+      </div>
+
       {/* events */}
       <div>
         <div className="section-label">Match Events</div>
