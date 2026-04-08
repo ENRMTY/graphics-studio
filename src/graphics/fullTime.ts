@@ -142,7 +142,7 @@ export async function renderFullTime(
       new Konva.Text({
         text: `AGG: ${data.aggScoreHome} – ${data.aggScoreAway}`,
         x: 0,
-        y: scoreRowCY - 72,
+        y: scoreRowCY - 86,
         width: W,
         align: "center",
         fontSize: 22,
