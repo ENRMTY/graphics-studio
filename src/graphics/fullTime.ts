@@ -136,7 +136,7 @@ export async function renderFullTime(
 
   cursorY -= SCORE_H;
   const scoreRowCY = cursorY + SCORE_H / 2;
-  // aggregate score line (two-legged ties) — sits above the main score
+  // aggregate score line (two-legged ties) - sits above the main score
   if (data.aggScoreHome !== null && data.aggScoreAway !== null) {
     layer.add(
       new Konva.Text({

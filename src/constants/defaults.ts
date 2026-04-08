@@ -120,7 +120,24 @@ export function buildDefaultLineup(formation = "4-3-3"): LineupPlayer[] {
       return [
         ...blankRow(["GK"], GK_Y),
         ...blankRow(["LB", "CB", "CB", "RB"], DEF_Y),
-        ...blankRow(["DM", "DM"], 0.62),
+        {
+          id: `p-DM-0-${Date.now()}`,
+          name: "",
+          number: null,
+          position: "DM",
+          x: 0.35,
+          y: 0.62,
+          isCaptain: false,
+        },
+        {
+          id: `p-DM-1-${Date.now()}`,
+          name: "",
+          number: null,
+          position: "DM",
+          x: 0.64,
+          y: 0.62,
+          isCaptain: false,
+        },
         ...blankRow(["LAM", "CAM", "RAM"], MID_Y),
         ...blankRow(["ST"], FWD_Y),
       ];
