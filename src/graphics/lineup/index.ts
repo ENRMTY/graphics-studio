@@ -114,7 +114,7 @@ export async function renderLineup(
         new Konva.Image({
           image: ci,
           x: headerX,
-          y: 18,
+          y: 20,
           width: 36,
           height: 36,
         }),
@@ -130,7 +130,7 @@ export async function renderLineup(
       new Konva.Text({
         text: data.competition.toUpperCase(),
         x: data.competitionIcon ? headerX : PAD,
-        y: 26,
+        y: 34,
         fontSize: 13,
         fontFamily: "DM Sans",
         fontStyle: "600",
@@ -148,7 +148,7 @@ export async function renderLineup(
     new Konva.Text({
       text: matchText,
       x: PAD,
-      y: 50,
+      y: 64,
       width: W - PAD * 2 - 120,
       fontSize: 24,
       fontFamily: "Bebas Neue",

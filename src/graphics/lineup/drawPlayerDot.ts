@@ -32,7 +32,7 @@ export function drawPlayerDot(
     new Konva.Circle({ x: bx, y: by, radius: dotR, fill: accentColor }),
   );
 
-  // captain armband "C" badge (top-right of dot)
+  // captain armband badge
   if (player.isCaptain) {
     const badgeR = dotR * 0.45;
     const badgeX = bx + dotR * 0.65;
