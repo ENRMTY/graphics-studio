@@ -83,7 +83,7 @@ function PlayerNameInput({
 
   return (
     <div style={{ position: "relative", flex: 1 }}>
-      {/* ghost layer — shows completion in faded colour */}
+      {/* ghost layer - shows completion in faded colour */}
       {ghost && (
         <div
           aria-hidden="true"
@@ -210,7 +210,7 @@ function PlayerRow({
         style={{ padding: "4px 5px", fontSize: 12, textAlign: "center" }}
       />
 
-      {/* Captain toggle */}
+      {/* captain toggle */}
       <button
         title={player.isCaptain ? "Remove captain" : "Set as captain"}
         onClick={() => onUpdate({ ...player, isCaptain: !player.isCaptain })}
@@ -272,8 +272,12 @@ export function LineupPanel({
 
   const addDotColor = () => {
     const hex = newColor.trim().toUpperCase();
-    if (!hex.match(/^#[0-9A-F]{6}$/i)) return;
-    if (dotColors.includes(hex)) return;
+    if (!hex.match(/^#[0-9A-F]{6}$/i)) {
+      return;
+    }
+    if (dotColors.includes(hex)) {
+      return;
+    }
     const updated = [...dotColors, hex];
     setDotColors(updated);
     saveDotColors(updated);
@@ -371,7 +375,7 @@ export function LineupPanel({
 
   return (
     <div className="panel-body">
-      {/* Background */}
+      {/* background */}
       <div>
         <div className="section-label">Background Image</div>
         <input {...bgUpload.inputProps} />
@@ -398,7 +402,7 @@ export function LineupPanel({
         )}
       </div>
 
-      {/* Competition */}
+      {/* competition */}
       <CompetitionPicker
         competitions={competitions}
         selected={data.competition}
@@ -491,7 +495,7 @@ export function LineupPanel({
           </div>
         )}
 
-        {/* Add new colour */}
+        {/* add new colour */}
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <input
             type="color"
@@ -534,7 +538,7 @@ export function LineupPanel({
         )}
       </div>
 
-      {/* Teams */}
+      {/* teams */}
       <TeamPicker
         label="Home Team"
         value={data.homeTeam}
@@ -550,7 +554,7 @@ export function LineupPanel({
         onNewTeamSave={onTeamSave}
       />
 
-      {/* Manager */}
+      {/* manager */}
       <div>
         <div className="section-label">Manager</div>
         <input
@@ -561,7 +565,7 @@ export function LineupPanel({
         />
       </div>
 
-      {/* Formation */}
+      {/* formation */}
       <div>
         <div className="section-label">Formation</div>
         <div className="tab-row" style={{ flexWrap: "wrap", gap: 6 }}>
@@ -582,7 +586,7 @@ export function LineupPanel({
         </p>
       </div>
 
-      {/* Starting XI */}
+      {/* starting XI */}
       <div>
         <div className="section-label">Starting XI</div>
         <div
@@ -635,7 +639,7 @@ export function LineupPanel({
         ))}
       </div>
 
-      {/* Subs */}
+      {/* subs */}
       <div>
         <div
           className="section-label"

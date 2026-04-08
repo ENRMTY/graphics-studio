@@ -27,7 +27,7 @@ export function MatchdayPanel({
 
   return (
     <div className="panel-body">
-      {/* Background */}
+      {/* background */}
       <div>
         <div className="section-label">Background Image</div>
         <input {...bgUpload.inputProps} />
@@ -54,7 +54,7 @@ export function MatchdayPanel({
         )}
       </div>
 
-      {/* Competition */}
+      {/* competition */}
       <CompetitionPicker
         competitions={competitions}
         selected={data.competition}
@@ -71,7 +71,7 @@ export function MatchdayPanel({
         onCompetitionsChange={onCompetitionsChange}
       />
 
-      {/* Teams */}
+      {/* teams */}
       <TeamPicker
         label="Home Team"
         value={data.homeTeam}
@@ -87,7 +87,7 @@ export function MatchdayPanel({
         onNewTeamSave={onTeamSave}
       />
 
-              {/* Logo style */}
+              {/* logo style */}
               <div>
           <div className="section-label">Team Logo Style</div>
           <div className="tab-row">
@@ -108,7 +108,7 @@ export function MatchdayPanel({
           </div>
         </div>
 
-      {/* Match info */}
+      {/* match info */}
       <div>
         <div className="section-label">Match Info</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

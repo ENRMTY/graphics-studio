@@ -46,7 +46,7 @@ export function AuthModal({ onClose }: Props) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="modal auth-modal">
-        {/* Header */}
+        {/* header */}
         <div className="auth-modal-header">
           <h3>{mode === "login" ? "Sign In" : "Create Account"}</h3>
           <button
@@ -58,7 +58,7 @@ export function AuthModal({ onClose }: Props) {
           </button>
         </div>
 
-        {/* Body */}
+        {/* body */}
         <form onSubmit={handleSubmit}>
           {mode === "register" && (
             <div className="form-group">
@@ -119,7 +119,7 @@ export function AuthModal({ onClose }: Props) {
           </button>
         </form>
 
-        {/* Footer toggle */}
+        {/* footer toggle */}
         <div className="auth-modal-footer">
           {mode === "login" ? (
             <span>
@@ -150,7 +150,7 @@ export function AuthModal({ onClose }: Props) {
           )}
         </div>
 
-        {/* Info note */}
+        {/* info note */}
         <div className="auth-info-note">
           Sign in to sync your teams, competitions and drafts, and access them from any device.
           Without an account your data is saved locally only.

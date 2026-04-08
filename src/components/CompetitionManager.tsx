@@ -54,7 +54,9 @@ export function CompetitionManager({ competitions, onUpdate }: Props) {
 
   const handleSave = async () => {
     const name = newName.trim();
-    if (!name) return;
+    if (!name) {
+      return;
+    }
     setSaving(true);
     setError(null);
     try {

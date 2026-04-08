@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import type { Competition } from "@types";
 import { Icons } from "./Icons";
+import { PRESET_COLORS } from "../constants/colors";
 
 interface Props {
   competitions: Competition[];
@@ -10,17 +11,6 @@ interface Props {
   onSelect: (name: string, icon: string | null, color: string) => void;
   onCompetitionsChange: (comps: Competition[]) => void;
 }
-
-const PRESET_COLORS = [
-  "#C8102E",
-  "#3d195b",
-  "#001489",
-  "#00A550",
-  "#F57F17",
-  "#0070B8",
-  "#D4AF37",
-  "#555558",
-];
 
 export function CompetitionPicker({
   competitions,

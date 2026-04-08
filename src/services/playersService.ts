@@ -21,7 +21,7 @@ interface ListResponse {
 }
 
 export const playersService = {
-  // Load saved players - local-first, background sync from server
+  // load saved players - local-first, background sync from server
   async getAll(): Promise<SavedPlayer[]> {
     const local = loadSavedPlayers();
 
@@ -73,7 +73,7 @@ export const playersService = {
         })),
       })
       .catch(() => {
-        // local data is already updated, so we can ignore server failures here
+        // local data is already updated so we can ignore server failures
       });
   },
 };

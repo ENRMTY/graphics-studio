@@ -35,7 +35,7 @@ export function QuotePanel({
 
   return (
     <div className="panel-body">
-      {/* Background */}
+      {/* background */}
       <div>
         <div className="section-label">Background Image</div>
         <input {...bgUpload.inputProps} />
@@ -62,7 +62,7 @@ export function QuotePanel({
         )}
       </div>
 
-      {/* Player Image */}
+      {/* player image */}
       <div>
         <div className="section-label">Player Image</div>
         <input {...playerImgUpload.inputProps} />
@@ -92,7 +92,7 @@ export function QuotePanel({
         )}
       </div>
 
-      {/* Player Name */}
+      {/* player Name */}
       <div>
         <div className="section-label">Player Name</div>
         <input
@@ -103,7 +103,7 @@ export function QuotePanel({
         />
       </div>
 
-      {/* Player Role */}
+      {/* player role */}
       <div>
         <div className="section-label">Player Role / Subtitle</div>
         <input
@@ -114,7 +114,7 @@ export function QuotePanel({
         />
       </div>
 
-      {/* Quote Text */}
+      {/* quote text */}
       <div>
         <div className="section-label">Quote</div>
         <textarea
@@ -131,7 +131,7 @@ export function QuotePanel({
         />
       </div>
 
-      {/* Competition */}
+      {/* competition */}
       <CompetitionPicker
         competitions={competitions}
         selected={data.competition}
@@ -148,7 +148,7 @@ export function QuotePanel({
         onCompetitionsChange={onCompetitionsChange}
       />
 
-      {/* Accent Colour */}
+      {/* accent colour */}
       <div>
         <div className="section-label">Accent Colour</div>
         <div

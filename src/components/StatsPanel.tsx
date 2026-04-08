@@ -77,7 +77,7 @@ export function StatsPanel({
 
   return (
     <div className="panel-body">
-      {/* Background */}
+      {/* background */}
       <div>
         <div className="section-label">Background Image</div>
         <input {...bgUpload.inputProps} />
@@ -104,7 +104,7 @@ export function StatsPanel({
         )}
       </div>
 
-      {/* Player Image */}
+      {/* player Image */}
       <div>
         <div className="section-label">Player Image</div>
         <input {...playerImgUpload.inputProps} />
@@ -134,7 +134,7 @@ export function StatsPanel({
         )}
       </div>
 
-      {/* Player Name */}
+      {/* player Name */}
       <div>
         <div className="section-label">Player Name</div>
         <input
@@ -145,7 +145,7 @@ export function StatsPanel({
         />
       </div>
 
-      {/* Competition */}
+      {/* competition */}
       <CompetitionPicker
         competitions={competitions}
         selected={data.competition}
@@ -170,7 +170,7 @@ export function StatsPanel({
         </p>
       </div>
 
-      {/* Accent Colour */}
+      {/* accent colour */}
       <div>
         <div className="section-label">Accent Colour</div>
         <div
@@ -220,7 +220,7 @@ export function StatsPanel({
         </div>
       </div>
 
-      {/* Stats */}
+      {/* stats */}
       <div>
         <div
           style={{

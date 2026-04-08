@@ -83,7 +83,7 @@ export function FullTimePanel({
           </button>
         </div>
       </div>
-      {/* Background */}
+      {/* background */}
       <div>
         <div className="section-label">Background Image</div>
         <input {...bgUpload.inputProps} />
@@ -110,7 +110,7 @@ export function FullTimePanel({
         )}
       </div>
 
-      {/* Competition */}
+      {/* competition */}
       <CompetitionPicker
         competitions={competitions}
         selected={data.competition}
@@ -127,7 +127,7 @@ export function FullTimePanel({
         onCompetitionsChange={onCompetitionsChange}
       />
 
-      {/* Teams */}
+      {/* teams */}
       <TeamPicker
         label="Home Team"
         value={data.homeTeam}
@@ -143,7 +143,7 @@ export function FullTimePanel({
         onNewTeamSave={onTeamSave}
       />
 
-      {/* Logo style */}
+      {/* logo style */}
       <div>
         <div className="section-label">Team Logo Style</div>
         <div className="tab-row">
@@ -164,7 +164,7 @@ export function FullTimePanel({
         </div>
       </div>
 
-      {/* Score */}
+      {/* score */}
       <div>
         <div className="section-label">Scoreline</div>
         <div className="score-row">
@@ -192,7 +192,7 @@ export function FullTimePanel({
         </div>
       </div>
 
-      {/* Events */}
+      {/* events */}
       <div>
         <div className="section-label">Match Events</div>
         {data.events.length === 0 && (
