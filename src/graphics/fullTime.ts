@@ -136,6 +136,23 @@ export async function renderFullTime(
 
   cursorY -= SCORE_H;
   const scoreRowCY = cursorY + SCORE_H / 2;
+  // aggregate score line (two-legged ties) — sits above the main score
+  if (data.aggScoreHome !== null && data.aggScoreAway !== null) {
+    layer.add(
+      new Konva.Text({
+        text: `AGG: ${data.aggScoreHome} – ${data.aggScoreAway}`,
+        x: 0,
+        y: scoreRowCY - 72,
+        width: W,
+        align: "center",
+        fontSize: 22,
+        fontFamily: FONT_DISPLAY,
+        fill: "rgba(255,255,255,0.55)",
+        letterSpacing: 3,
+      }),
+    );
+  }
+
   layer.add(
     new Konva.Text({
       text: `${data.homeScore ?? 0}   –   ${data.awayScore ?? 0}`,
@@ -149,23 +166,6 @@ export async function renderFullTime(
       letterSpacing: 2,
     }),
   );
-
-  // aggregate score line (two-legged ties)
-  if (data.aggScoreHome !== null && data.aggScoreAway !== null) {
-    layer.add(
-      new Konva.Text({
-        text: `AGG: ${data.aggScoreHome} – ${data.aggScoreAway}`,
-        x: 0,
-        y: scoreRowCY + 58,
-        width: W,
-        align: "center",
-        fontSize: 22,
-        fontFamily: FONT_DISPLAY,
-        fill: "rgba(255,255,255,0.55)",
-        letterSpacing: 3,
-      }),
-    );
-  }
 
   const LOGO_SIZE = 82;
   await drawTeamLogo(
