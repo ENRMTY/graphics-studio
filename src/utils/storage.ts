@@ -1,6 +1,7 @@
 import type { Team, Competition } from "@types";
 import type { LineupPlayer } from "../types/lineup";
 
+// key names for local storage
 const TEAMS_KEY = "lfc_teams_v3";
 const COMPETITIONS_KEY = "lfc_competitions_v1";
 const PLAYERS_KEY = "lfc_players_v1";

@@ -502,7 +502,7 @@ export default function App() {
       >
         <div className="spinner" />
         <span style={{ fontSize: 13, color: "var(--text-muted)" }}>
-          Connecting to server…
+          Crunching your data…
         </span>
       </div>
     );
@@ -633,7 +633,7 @@ export default function App() {
                     <span className="save-badge saving">Saving…</span>
                   )}
                   {saveStatus === "saved" && (
-                    <span className="save-badge saved">✓ Saved</span>
+                    <span className="save-badge saved">Saved</span>
                   )}
                   {saveStatus === "error" && (
                     <span className="save-badge error">Save failed</span>
