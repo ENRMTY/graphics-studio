@@ -138,6 +138,15 @@ export function StatsPanel({
             <button className="btn btn-ghost btn-sm" onClick={bgUpload.open}>
               Replace
             </button>
+            <button
+              className="btn btn-icon danger"
+              title="Remove background"
+              onClick={() =>
+                onChange({ ...data, bgImage: null, bgImageFile: undefined })
+              }
+            >
+              <Icons.Trash style={{ width: 13, height: 13 }} />
+            </button>
           </div>
         ) : (
           <div className="upload-zone" onClick={bgUpload.open}>
@@ -167,6 +176,19 @@ export function StatsPanel({
               onClick={playerImgUpload.open}
             >
               Replace
+            </button>
+            <button
+              className="btn btn-icon danger"
+              title="Remove player image"
+              onClick={() =>
+                onChange({
+                  ...data,
+                  playerImage: null,
+                  playerImageFile: undefined,
+                })
+              }
+            >
+              <Icons.Trash style={{ width: 13, height: 13 }} />
             </button>
           </div>
         ) : (
