@@ -497,7 +497,7 @@ async function renderStatsOverlay(
   cursorY -= LABEL_H;
   layer.add(
     new Konva.Text({
-      text: "STATS",
+      // text: "", // no label for now, but could add one later if desired
       x: PAD,
       y: cursorY,
       fontSize: 24,
