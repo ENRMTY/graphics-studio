@@ -462,6 +462,20 @@ export const graphicsService = {
     return res.data;
   },
 
+  async clearStatsBgImage(id: string): Promise<ApiGraphic> {
+    const res = await api.delete<SingleResponse>(
+      `/api/graphics/${id}/background`,
+    );
+    return res.data;
+  },
+
+  async clearStatsPlayerImage(id: string): Promise<ApiGraphic> {
+    const res = await api.delete<SingleResponse>(
+      `/api/graphics/${id}/player-image`,
+    );
+    return res.data;
+  },
+
   // quote
   async saveQuoteDraft(data: QuoteData, id?: string): Promise<ApiGraphic> {
     if (id) {
@@ -494,6 +508,20 @@ export const graphicsService = {
     const res = await api.patchForm<SingleResponse>(
       `/api/graphics/${id}/background`,
       form,
+    );
+    return res.data;
+  },
+
+  async clearQuoteBgImage(id: string): Promise<ApiGraphic> {
+    const res = await api.delete<SingleResponse>(
+      `/api/graphics/${id}/background`,
+    );
+    return res.data;
+  },
+
+  async clearQuotePlayerImage(id: string): Promise<ApiGraphic> {
+    const res = await api.delete<SingleResponse>(
+      `/api/graphics/${id}/player-image`,
     );
     return res.data;
   },

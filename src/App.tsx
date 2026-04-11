@@ -330,12 +330,66 @@ export default function App() {
     [scheduleAutoSave],
   );
 
+  const handleStatsClearImage = useCallback(
+    async (field: "bgImage" | "playerImage") => {
+      const id = statsRef.current._id;
+      if (!id) return;
+      try {
+        if (field === "bgImage") {
+          await graphicsService.clearStatsBgImage(id);
+          setStatsData((p) => ({
+            ...p,
+            bgImage: null,
+            bgImageFile: undefined,
+          }));
+        } else {
+          await graphicsService.clearStatsPlayerImage(id);
+          setStatsData((p) => ({
+            ...p,
+            playerImage: null,
+            playerImageFile: undefined,
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to clear image", e);
+      }
+    },
+    [],
+  );
+
   const handleQuoteChange = useCallback(
     (data: QuoteData) => {
       setQuoteData(data);
       scheduleAutoSave();
     },
     [scheduleAutoSave],
+  );
+
+  const handleQuoteClearImage = useCallback(
+    async (field: "bgImage" | "playerImage") => {
+      const id = quoteRef.current._id;
+      if (!id) return;
+      try {
+        if (field === "bgImage") {
+          await graphicsService.clearQuoteBgImage(id);
+          setQuoteData((p) => ({
+            ...p,
+            bgImage: null,
+            bgImageFile: undefined,
+          }));
+        } else {
+          await graphicsService.clearQuotePlayerImage(id);
+          setQuoteData((p) => ({
+            ...p,
+            playerImage: null,
+            playerImageFile: undefined,
+          }));
+        }
+      } catch (e) {
+        console.error("Failed to clear image", e);
+      }
+    },
+    [],
   );
 
   const handleTransferChange = useCallback(
@@ -573,6 +627,7 @@ export default function App() {
                 <StatsPanel
                   data={statsData}
                   onChange={handleStatsChange}
+                  onClearImage={handleStatsClearImage}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
                 />
@@ -580,6 +635,7 @@ export default function App() {
                 <QuotePanel
                   data={quoteData}
                   onChange={handleQuoteChange}
+                  onClearImage={handleQuoteClearImage}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
                 />

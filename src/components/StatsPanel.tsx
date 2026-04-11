@@ -6,6 +6,7 @@ import { useFileUpload } from "../hooks/useFileUpload";
 interface Props {
   data: StatsData;
   onChange: (d: StatsData) => void;
+  onClearImage: (field: "bgImage" | "playerImage") => void;
   competitions: Competition[];
   onCompetitionsChange: (c: Competition[]) => void;
 }
@@ -29,6 +30,7 @@ const PRESET_ACCENT_COLORS = [
 export function StatsPanel({
   data,
   onChange,
+  onClearImage,
   competitions,
   onCompetitionsChange,
 }: Props) {
@@ -141,9 +143,10 @@ export function StatsPanel({
             <button
               className="btn btn-icon danger"
               title="Remove background"
-              onClick={() =>
-                onChange({ ...data, bgImage: null, bgImageFile: undefined })
-              }
+              onClick={() => {
+                onChange({ ...data, bgImage: null, bgImageFile: undefined });
+                onClearImage("bgImage");
+              }}
             >
               <Icons.Trash style={{ width: 13, height: 13 }} />
             </button>
@@ -180,13 +183,14 @@ export function StatsPanel({
             <button
               className="btn btn-icon danger"
               title="Remove player image"
-              onClick={() =>
+              onClick={() => {
                 onChange({
                   ...data,
                   playerImage: null,
                   playerImageFile: undefined,
-                })
-              }
+                });
+                onClearImage("playerImage");
+              }}
             >
               <Icons.Trash style={{ width: 13, height: 13 }} />
             </button>

@@ -448,7 +448,7 @@ async function renderQuoteOverlay(
   // divider
   cursorY -= DIVIDER_H;
   const divY = cursorY + DIVIDER_H / 2;
-  const GLYPH_W = 30;
+  const GLYPH_W = 65; // ← widened to comfortably fit two quotes
   const LINE_GAP = 10;
   const glyphX = PAD + overlayTextW * 0.36;
 
@@ -459,10 +459,12 @@ async function renderQuoteOverlay(
       strokeWidth: 1,
     }),
   );
+
+  // Left quote “
   layer.add(
     new Konva.Text({
       text: "\u201C",
-      x: glyphX - 4,
+      x: glyphX + 3,
       y: divY - 24,
       fontSize: 38,
       fontFamily: FONT_DISPLAY,
@@ -470,6 +472,20 @@ async function renderQuoteOverlay(
       opacity: 0.95,
     }),
   );
+
+  // Right quote ” (facing the first one)
+  layer.add(
+    new Konva.Text({
+      text: "\u201D",
+      x: glyphX + GLYPH_W - 29,
+      y: divY - 24,
+      fontSize: 38,
+      fontFamily: FONT_DISPLAY,
+      fill: ACCENT,
+      opacity: 0.95,
+    }),
+  );
+
   layer.add(
     new Konva.Line({
       points: [
