@@ -46,6 +46,8 @@ export interface ApiGraphic {
   accentColor: string | null;
   playerRole: string | null;
   quoteText: string | null;
+  matchContext: string | null;
+  graphicLayout: string | null;
   transferKind: string | null;
   transferFee: string | null;
   transferStatus: string | null;
@@ -159,9 +161,11 @@ export function apiGraphicToStats(g: ApiGraphic): StatsData & { _id?: string } {
   return {
     _id: g.id,
     type: "stats",
+    layout: (g.graphicLayout as "classic" | "overlay") ?? "classic",
     bgImage: g.bgImageUrl,
     playerName: g.playerName ?? "",
     playerImage: g.playerImageUrl,
+    matchContext: g.matchContext ?? "",
     competition: g.competitionName ?? "",
     competitionIcon: g.competitionIconUrl ?? null,
     competitionColor: g.competitionColor ?? "",
@@ -174,11 +178,13 @@ export function apiGraphicToQuote(g: ApiGraphic): QuoteData & { _id?: string } {
   return {
     _id: g.id,
     type: "quote",
+    layout: (g.graphicLayout as "classic" | "overlay") ?? "classic",
     bgImage: g.bgImageUrl,
     playerName: g.playerName ?? "",
     playerRole: g.playerRole ?? "",
     playerImage: g.playerImageUrl,
     quoteText: g.quoteText ?? "",
+    matchContext: g.matchContext ?? "",
     competition: g.competitionName ?? "",
     competitionIcon: g.competitionIconUrl ?? null,
     competitionColor: g.competitionColor ?? "",
@@ -279,10 +285,12 @@ function mdToPayload(data: MatchdayData) {
 function statsToPayload(data: StatsData) {
   return {
     graphicType: "stats",
+    graphicLayout: data.layout ?? "classic",
     competitionName: data.competition || null,
     competitionIconUrl: safeUrl(data.competitionIcon),
     competitionColor: data.competitionColor || null,
     playerName: data.playerName || null,
+    matchContext: data.matchContext || null,
     statsData: data.stats ?? [],
     accentColor: data.accentColor || null,
   };
@@ -291,12 +299,14 @@ function statsToPayload(data: StatsData) {
 function quoteToPayload(data: QuoteData) {
   return {
     graphicType: "quote",
+    graphicLayout: data.layout ?? "classic",
     competitionName: data.competition || null,
     competitionIconUrl: safeUrl(data.competitionIcon),
     competitionColor: data.competitionColor || null,
     playerName: data.playerName || null,
     playerRole: data.playerRole || null,
     quoteText: data.quoteText || null,
+    matchContext: data.matchContext || null,
     accentColor: data.accentColor || null,
   };
 }

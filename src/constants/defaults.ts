@@ -53,9 +53,11 @@ export const DEFAULT_MD: MatchdayData = {
 
 export const DEFAULT_STATS: StatsData = {
   type: "stats",
+  layout: "classic",
   bgImage: null,
   playerName: "",
   playerImage: null,
+  matchContext: "",
   competition: "",
   competitionIcon: null,
   competitionColor: "",
@@ -65,11 +67,13 @@ export const DEFAULT_STATS: StatsData = {
 
 export const DEFAULT_QUOTE: QuoteData = {
   type: "quote",
+  layout: "classic",
   bgImage: null,
   playerName: "",
   playerRole: "",
   playerImage: null,
   quoteText: "",
+  matchContext: "",
   competition: "",
   competitionIcon: null,
   competitionColor: "",

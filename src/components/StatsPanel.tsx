@@ -75,8 +75,52 @@ export function StatsPanel({
     }
   };
 
+  const layout = data.layout ?? "classic";
+
   return (
     <div className="panel-body">
+      {/* Layout switcher */}
+      <div>
+        <div className="section-label">Design Layout</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {(["classic", "overlay"] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => onChange({ ...data, layout: l })}
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                borderRadius: "var(--radius)",
+                border:
+                  layout === l
+                    ? "2px solid var(--red)"
+                    : "2px solid var(--border2)",
+                background:
+                  layout === l ? "rgba(200,16,46,0.12)" : "var(--surface2)",
+                color: layout === l ? "#fff" : "var(--text-muted)",
+                fontFamily: "var(--font-body)",
+                fontSize: 13,
+                fontWeight: layout === l ? 700 : 400,
+                cursor: "pointer",
+                textTransform: "capitalize",
+                letterSpacing: 0.5,
+              }}
+            >
+              {l === "classic" ? "🖼 Classic" : "📺 Overlay"}
+            </button>
+          ))}
+        </div>
+        {layout === "overlay" && (
+          <p
+            className="help-text"
+            style={{ marginTop: 6, fontSize: 11, color: "var(--text-muted)" }}
+          >
+            Full photo background with a bottom gradient panel — like the Full
+            Time &amp; Match Day graphics.
+          </p>
+        )}
+      </div>
+
       {/* background */}
       <div>
         <div className="section-label">Background Image</div>
@@ -144,6 +188,32 @@ export function StatsPanel({
           onChange={(e) => onChange({ ...data, playerName: e.target.value })}
         />
       </div>
+
+      {/* match context (overlay only) */}
+      {layout === "overlay" && (
+        <div>
+          <div className="section-label">
+            Match Context{" "}
+            <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+              (optional)
+            </span>
+          </div>
+          <input
+            className="input"
+            placeholder="e.g. yesterday's game · vs Man City"
+            value={data.matchContext ?? ""}
+            onChange={(e) =>
+              onChange({ ...data, matchContext: e.target.value })
+            }
+          />
+          <p
+            className="help-text"
+            style={{ marginTop: 4, fontSize: 11, color: "var(--text-muted)" }}
+          >
+            Shown as "on [your text]" beneath the player name
+          </p>
+        </div>
+      )}
 
       {/* competition */}
       <CompetitionPicker

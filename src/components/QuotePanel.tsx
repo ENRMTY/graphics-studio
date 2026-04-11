@@ -33,8 +33,52 @@ export function QuotePanel({
     onChange({ ...data, playerImage: url, playerImageFile: file }),
   );
 
+  const layout = data.layout ?? "classic";
+
   return (
     <div className="panel-body">
+      {/* Layout switcher */}
+      <div>
+        <div className="section-label">Design Layout</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {(["classic", "overlay"] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => onChange({ ...data, layout: l })}
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                borderRadius: "var(--radius)",
+                border:
+                  layout === l
+                    ? "2px solid var(--red)"
+                    : "2px solid var(--border2)",
+                background:
+                  layout === l ? "rgba(200,16,46,0.12)" : "var(--surface2)",
+                color: layout === l ? "#fff" : "var(--text-muted)",
+                fontFamily: "var(--font-body)",
+                fontSize: 13,
+                fontWeight: layout === l ? 700 : 400,
+                cursor: "pointer",
+                textTransform: "capitalize",
+                letterSpacing: 0.5,
+              }}
+            >
+              {l === "classic" ? "🖼 Classic" : "📺 Overlay"}
+            </button>
+          ))}
+        </div>
+        {layout === "overlay" && (
+          <p
+            className="help-text"
+            style={{ marginTop: 6, fontSize: 11, color: "var(--text-muted)" }}
+          >
+            Full photo background with a bottom gradient panel — like the Full
+            Time &amp; Match Day graphics.
+          </p>
+        )}
+      </div>
+
       {/* background */}
       <div>
         <div className="section-label">Background Image</div>
@@ -87,7 +131,11 @@ export function QuotePanel({
           <div className="upload-zone" onClick={playerImgUpload.open}>
             <Icons.Image style={{ width: 20, height: 20 }} />
             <span>Upload player image</span>
-            <p>PNG cutout or portrait works best</p>
+            <p>
+              {layout === "overlay"
+                ? "PNG cutout or portrait"
+                : "PNG cutout or portrait works best"}
+            </p>
           </div>
         )}
       </div>
@@ -97,22 +145,48 @@ export function QuotePanel({
         <div className="section-label">Player Name</div>
         <input
           className="input"
-          placeholder="e.g. Mohamed Salah"
+          placeholder="e.g. Virgil van Dijk"
           value={data.playerName}
           onChange={(e) => onChange({ ...data, playerName: e.target.value })}
         />
       </div>
 
-      {/* player role */}
-      <div>
-        <div className="section-label">Player Role / Subtitle</div>
-        <input
-          className="input"
-          placeholder="e.g. Liverpool FC · Forward"
-          value={data.playerRole}
-          onChange={(e) => onChange({ ...data, playerRole: e.target.value })}
-        />
-      </div>
+      {/* match context (overlay only) */}
+      {layout === "overlay" ? (
+        <div>
+          <div className="section-label">
+            Match Context{" "}
+            <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+              (optional)
+            </span>
+          </div>
+          <input
+            className="input"
+            placeholder="e.g. yesterday's game · vs Man City"
+            value={data.matchContext ?? ""}
+            onChange={(e) =>
+              onChange({ ...data, matchContext: e.target.value })
+            }
+          />
+          <p
+            className="help-text"
+            style={{ marginTop: 4, fontSize: 11, color: "var(--text-muted)" }}
+          >
+            Shown as "on [your text]" beneath the player name
+          </p>
+        </div>
+      ) : (
+        /* player role (classic only) */
+        <div>
+          <div className="section-label">Player Role / Subtitle</div>
+          <input
+            className="input"
+            placeholder="e.g. Liverpool FC · Forward"
+            value={data.playerRole}
+            onChange={(e) => onChange({ ...data, playerRole: e.target.value })}
+          />
+        </div>
+      )}
 
       {/* quote text */}
       <div>
