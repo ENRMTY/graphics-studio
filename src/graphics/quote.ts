@@ -448,14 +448,14 @@ async function renderQuoteOverlay(
   // divider
   cursorY -= DIVIDER_H;
   const divY = cursorY + DIVIDER_H / 2;
-  const GLYPH_W = 65;
-  const LINE_GAP = 10;
+  const GLYPH_W = 55;
+  const LINE_GAP = 8;
   const glyphX = PAD + overlayTextW * 0.36;
 
   layer.add(
     new Konva.Line({
       points: [PAD, divY + 1, glyphX - LINE_GAP, divY + 1],
-      stroke: "rgba(255,255,255,0.22)",
+      stroke: "rgba(255,255,255,0.5)",
       strokeWidth: 1,
     }),
   );
@@ -466,7 +466,7 @@ async function renderQuoteOverlay(
       text: "\u201C",
       x: glyphX + 3,
       y: divY - 24,
-      fontSize: 38,
+      fontSize: 54,
       fontFamily: FONT_DISPLAY,
       fill: ACCENT,
       opacity: 0.95,
@@ -477,9 +477,9 @@ async function renderQuoteOverlay(
   layer.add(
     new Konva.Text({
       text: "\u201D",
-      x: glyphX + GLYPH_W - 29,
+      x: glyphX + GLYPH_W - 18,
       y: divY - 24,
-      fontSize: 38,
+      fontSize: 54,
       fontFamily: FONT_DISPLAY,
       fill: ACCENT,
       opacity: 0.95,
@@ -494,7 +494,7 @@ async function renderQuoteOverlay(
         PAD + overlayTextW,
         divY + 1,
       ],
-      stroke: "rgba(255,255,255,0.22)",
+      stroke: "rgba(255,255,255,0.5)",
       strokeWidth: 1,
     }),
   );
