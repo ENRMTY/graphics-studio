@@ -66,7 +66,7 @@ export function QuotePanel({
                 letterSpacing: 0.5,
               }}
             >
-              {l === "classic" ? "🖼 Classic" : "📺 Overlay"}
+              {l === "classic" ? "Classic" : "Overlay"}
             </button>
           ))}
         </div>
