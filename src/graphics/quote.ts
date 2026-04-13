@@ -334,7 +334,7 @@ async function renderQuoteOverlay(
     NAME_H +
     LABEL_H +
     TOP_BREATHING;
-  const OVERLAY_H = Math.min(CONTENT_H + 80, H * 0.9);
+  const OVERLAY_H = Math.min(CONTENT_H + 180, H * 0.9);
 
   // gradient overlay
   layer.add(
@@ -351,17 +351,17 @@ async function renderQuoteOverlay(
         0.08,
         "rgba(0,0,0,0.03)",
         0.18,
-        "rgba(0,0,0,0.14)",
+        "rgba(0,0,0,0.09)",
         0.3,
-        "rgba(0,0,0,0.38)",
+        "rgba(0,0,0,0.18)",
         0.45,
-        "rgba(0,0,0,0.65)",
+        "rgba(0,0,0,0.45)",
         0.6,
-        "rgba(0,0,0,0.83)",
+        "rgba(0,0,0,0.63)",
         0.75,
-        "rgba(0,0,0,0.93)",
+        "rgba(0,0,0,0.74)",
         1,
-        "rgba(0,0,0,0.97)",
+        "rgba(0,0,0,0.8)",
       ],
     }),
   );

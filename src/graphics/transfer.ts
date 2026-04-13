@@ -35,7 +35,7 @@ export async function renderTransfer(
   }
 
   // left side dark gradient overlay, to ensure text is visible
-  const OVERLAY_W = Math.round(W * 0.52);
+  const OVERLAY_W = Math.round(W * 0.4);
 
   // multi-stop gradient: opaque on left, fully transparent on right
   layer.add(
@@ -48,15 +48,15 @@ export async function renderTransfer(
       fillLinearGradientEndPoint: { x: OVERLAY_W, y: 0 },
       fillLinearGradientColorStops: [
         0,
-        "rgba(0,0,0,0.97)",
+        "rgba(0,0,0,0.53)",
         0.35,
-        "rgba(0,0,0,0.92)",
+        "rgba(0,0,0,0.46)",
         0.55,
-        "rgba(0,0,0,0.80)",
+        "rgba(0,0,0,0.36)",
         0.72,
-        "rgba(0,0,0,0.55)",
+        "rgba(0,0,0,0.28)",
         0.85,
-        "rgba(0,0,0,0.25)",
+        "rgba(0,0,0,0.11)",
         1,
         "rgba(0,0,0,0)",
       ],

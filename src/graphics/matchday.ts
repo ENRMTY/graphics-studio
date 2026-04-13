@@ -49,7 +49,7 @@ export async function renderMatchday(
     MD_COMP_H +
     36 + // match day label
     30; // top breathing room
-  const OVERLAY_H = Math.min(MD_CONTENT_H + 100, H * 0.88);
+  const OVERLAY_H = Math.min(MD_CONTENT_H + 150, H * 0.88);
 
   layer.add(
     new Konva.Rect({
@@ -65,17 +65,17 @@ export async function renderMatchday(
         0.08,
         "rgba(0,0,0,0.03)",
         0.18,
-        "rgba(0,0,0,0.14)",
+        "rgba(0,0,0,0.09)",
         0.3,
-        "rgba(0,0,0,0.38)",
+        "rgba(0,0,0,0.18)",
         0.45,
-        "rgba(0,0,0,0.64)",
+        "rgba(0,0,0,0.45)",
         0.6,
-        "rgba(0,0,0,0.82)",
+        "rgba(0,0,0,0.63)",
         0.75,
-        "rgba(0,0,0,0.92)",
+        "rgba(0,0,0,0.74)",
         1,
-        "rgba(0,0,0,0.97)",
+        "rgba(0,0,0,0.8)",
       ],
     }),
   );

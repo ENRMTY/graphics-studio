@@ -319,7 +319,7 @@ async function renderStatsOverlay(
     NAME_H +
     LABEL_H +
     TOP_BREATHING;
-  const OVERLAY_H = Math.min(CONTENT_H + 80, H * 0.88);
+  const OVERLAY_H = Math.min(CONTENT_H + 150, H * 0.88);
 
   // gradient overlay
   layer.add(
@@ -336,17 +336,17 @@ async function renderStatsOverlay(
         0.08,
         "rgba(0,0,0,0.03)",
         0.18,
-        "rgba(0,0,0,0.14)",
+        "rgba(0,0,0,0.09)",
         0.3,
-        "rgba(0,0,0,0.38)",
+        "rgba(0,0,0,0.18)",
         0.45,
-        "rgba(0,0,0,0.65)",
+        "rgba(0,0,0,0.45)",
         0.6,
-        "rgba(0,0,0,0.83)",
+        "rgba(0,0,0,0.63)",
         0.75,
-        "rgba(0,0,0,0.93)",
+        "rgba(0,0,0,0.74)",
         1,
-        "rgba(0,0,0,0.97)",
+        "rgba(0,0,0,0.8)",
       ],
     }),
   );
@@ -377,15 +377,15 @@ async function renderStatsOverlay(
     }),
   );
 
-  // competition
+  // competition — pinned to top-left corner
   if (data.competitionIcon) {
     try {
       const ci = await loadImage(data.competitionIcon);
       layer.add(
         new Konva.Image({
           image: ci,
-          x: W - PAD - 28,
-          y: H - OVERLAY_H + 20,
+          x: PAD,
+          y: PAD - 8,
           width: 28,
           height: 28,
         }),
@@ -398,9 +398,9 @@ async function renderStatsOverlay(
       new Konva.Text({
         text: data.competition.toUpperCase(),
         x: PAD,
-        y: H - OVERLAY_H + 22,
+        y: PAD - 2,
         width: W - PAD * 2,
-        align: "right",
+        align: "left",
         fontSize: 13,
         fontFamily: FONT_BODY,
         fill: "rgba(255,255,255,0.45)",

@@ -57,7 +57,7 @@ export async function renderFullTime(
     COMP_H +
     FT_LABEL_H +
     TOP_BLOCK_PAD;
-  const OVERLAY_H = Math.min(CONTENT_H + 150, H * 0.9);
+  const OVERLAY_H = Math.min(CONTENT_H + 230, H * 0.9); // height of the gradient overlay
 
   layer.add(
     new Konva.Rect({
@@ -73,17 +73,17 @@ export async function renderFullTime(
         0.08,
         "rgba(0,0,0,0.03)",
         0.18,
-        "rgba(0,0,0,0.12)",
+        "rgba(0,0,0,0.09)",
         0.3,
-        "rgba(0,0,0,0.35)",
+        "rgba(0,0,0,0.18)",
         0.45,
-        "rgba(0,0,0,0.62)",
+        "rgba(0,0,0,0.45)",
         0.6,
-        "rgba(0,0,0,0.80)",
+        "rgba(0,0,0,0.63)",
         0.75,
-        "rgba(0,0,0,0.91)",
+        "rgba(0,0,0,0.74)",
         1,
-        "rgba(0,0,0,0.97)",
+        "rgba(0,0,0,0.8)",
       ],
     }),
   );
