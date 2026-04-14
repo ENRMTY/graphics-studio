@@ -3,7 +3,7 @@ import Konva from "konva";
 /**
  * draws the DEFENSIVE HALF of the pitch only
  * py            = halfway line (top of canvas area)
- * py + ph       = goal line / GK end (bottom of canvas area)
+ * py + ph       = goal line / gk end (bottom of canvas area)
  *
  * layout (top to bottom):
  *   - halfway line
@@ -22,7 +22,7 @@ export function drawPitch(
   const lc = "rgba(255,255,255,0.30)";
   const lw = 2;
   const cx = px + pw / 2;
-  const goalLineY = py + ph; // bottom edge - GK goal line
+  const goalLineY = py + ph; // bottom edge - gk goal line
 
   // touchline
   layer.add(
