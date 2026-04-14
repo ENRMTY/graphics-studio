@@ -1,5 +1,17 @@
 import Konva from "konva";
 
+/**
+ * draws the DEFENSIVE HALF of the pitch only
+ * py            = halfway line (top of canvas area)
+ * py + ph       = goal line / GK end (bottom of canvas area)
+ *
+ * layout (top to bottom):
+ *   - halfway line
+ *   - open pitch
+ *   - penalty area
+ *   - 6-yard box
+ *   - goal line
+ */
 export function drawPitch(
   layer: Konva.Layer,
   px: number,
@@ -7,57 +19,70 @@ export function drawPitch(
   pw: number,
   ph: number,
 ) {
-  const lc = "rgba(255,255,255,0.30)"; // line colour
+  const lc = "rgba(255,255,255,0.30)";
   const lw = 2;
+  const cx = px + pw / 2;
+  const goalLineY = py + ph; // bottom edge - GK goal line
 
-  // outer boundary
-  layer.add(
-    new Konva.Rect({
-      x: px,
-      y: py,
-      width: pw,
-      height: ph,
-      stroke: lc,
-      strokeWidth: lw,
-      fill: "rgba(0,0,0,0)",
-    }),
-  );
-
-  // halfway line
+  // touchline
   layer.add(
     new Konva.Line({
-      points: [px, py + ph / 2, px + pw, py + ph / 2],
+      points: [px, py, px, goalLineY],
       stroke: lc,
       strokeWidth: lw,
     }),
   );
-
-  // centre circle
-  const cx = px + pw / 2;
-  const cy = py + ph / 2;
-  const cr = pw * 0.13;
   layer.add(
-    new Konva.Circle({
-      x: cx,
-      y: cy,
-      radius: cr,
+    new Konva.Line({
+      points: [px + pw, py, px + pw, goalLineY],
       stroke: lc,
       strokeWidth: lw,
-      fill: "rgba(0,0,0,0)",
     }),
   );
-  layer.add(new Konva.Circle({ x: cx, y: cy, radius: 3, fill: lc }));
 
-  // penalty areas
+  // half-way line
+  layer.add(
+    new Konva.Line({
+      points: [px, py, px + pw, py],
+      stroke: lc,
+      strokeWidth: lw,
+      // dash: [8, 6],
+    }),
+  );
+
+  // center circle arc
+  const circleR = pw * 0.13;
+  const arcStartX = cx - circleR;
+  const arcEndX = cx + circleR;
+  layer.add(
+    new Konva.Path({
+      data: `M ${arcStartX} ${py} A ${circleR} ${circleR} 0 0 0 ${arcEndX} ${py}`,
+      stroke: lc,
+      strokeWidth: lw,
+      fill: "",
+    }),
+  );
+  // centre spot
+  layer.add(new Konva.Circle({ x: cx, y: py, radius: 3, fill: lc }));
+
+  // goal line
+  layer.add(
+    new Konva.Line({
+      points: [px, goalLineY, px + pw, goalLineY],
+      stroke: lc,
+      strokeWidth: lw,
+    }),
+  );
+
+  // penalty area
   const paw = pw * 0.6;
-  const pah = ph * 0.18;
+  const pah = ph * 0.3;
   const pax = px + (pw - paw) / 2;
-
-  // attacking end (top)
+  const penAreaTopY = goalLineY - pah;
   layer.add(
     new Konva.Rect({
       x: pax,
-      y: py,
+      y: penAreaTopY,
       width: paw,
       height: pah,
       stroke: lc,
@@ -66,14 +91,14 @@ export function drawPitch(
     }),
   );
 
-  // 6-yard box - top
+  // 6-yard box
   const syw = pw * 0.28;
-  const syh = ph * 0.07;
+  const syh = ph * 0.1;
   const syx = px + (pw - syw) / 2;
   layer.add(
     new Konva.Rect({
       x: syx,
-      y: py,
+      y: goalLineY - syh,
       width: syw,
       height: syh,
       stroke: lc,
@@ -82,47 +107,39 @@ export function drawPitch(
     }),
   );
 
-  // penalty spot - top
-  const penSpotTopY = py + ph * 0.115;
-  layer.add(new Konva.Circle({ x: cx, y: penSpotTopY, radius: 3, fill: lc }));
+  // penalty spot
+  const penSpotY = goalLineY - ph * 0.2;
+  layer.add(new Konva.Circle({ x: cx, y: penSpotY, radius: 3, fill: lc }));
 
-  // defending end (bottom)
+  // penalty arc
+  // the D is centered on the penalty spot. only the portion above the penalty
+  // area top line is drawn. we compute the chord angle mathematically.
+  const dR = circleR;
+  const dToTop = penSpotY - penAreaTopY; // vertical distance
+  const cosHalfAngle = Math.min(1, Math.max(-1, dToTop / dR));
+  const halfAngleDeg = (Math.acos(cosHalfAngle) * 180) / Math.PI;
+  const arcStartAngle = 270 - halfAngleDeg;
+  const arcSpan = halfAngleDeg * 2;
+
   layer.add(
-    new Konva.Rect({
-      x: pax,
-      y: py + ph - pah,
-      width: paw,
-      height: pah,
-      stroke: lc,
-      strokeWidth: lw,
-      fill: "rgba(0,0,0,0)",
+    new Konva.Arc({
+      x: cx,
+      y: penSpotY,
+      innerRadius: dR - lw / 2,
+      outerRadius: dR + lw / 2,
+      angle: arcSpan,
+      rotation: arcStartAngle,
+      fill: lc,
+      stroke: "",
+      strokeWidth: 0,
     }),
   );
-
-  // 6-yard box - bottom
-  layer.add(
-    new Konva.Rect({
-      x: syx,
-      y: py + ph - syh,
-      width: syw,
-      height: syh,
-      stroke: lc,
-      strokeWidth: lw,
-      fill: "rgba(0,0,0,0)",
-    }),
-  );
-
-  // penalty spot - bottom
-  const penSpotBotY = py + ph - ph * 0.115;
-  layer.add(new Konva.Circle({ x: cx, y: penSpotBotY, radius: 3, fill: lc }));
 
   // corner arcs
   const cornerR = pw * 0.03;
   [
-    { x: px, y: py, rot: 0 },
-    { x: px + pw, y: py, rot: 90 },
-    { x: px, y: py + ph, rot: 270 },
-    { x: px + pw, y: py + ph, rot: 180 },
+    { x: px, y: goalLineY, rot: 270 },
+    { x: px + pw, y: goalLineY, rot: 180 },
   ].forEach(({ x, y, rot }) => {
     layer.add(
       new Konva.Arc({

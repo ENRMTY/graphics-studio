@@ -94,7 +94,7 @@ export const DEFAULT_TRANSFER: TransferData = {
 
 const GK_Y = 0.88;
 const DEF_Y = 0.72;
-const MID_Y = 0.52;
+const MID_Y = 0.45;
 const ATT_Y = 0.28;
 const FWD_Y = 0.16;
 
@@ -130,7 +130,7 @@ export function buildDefaultLineup(formation = "4-3-3"): LineupPlayer[] {
           number: null,
           position: "DM",
           x: 0.35,
-          y: 0.62,
+          y: 0.60,
           isCaptain: false,
         },
         {
@@ -139,7 +139,7 @@ export function buildDefaultLineup(formation = "4-3-3"): LineupPlayer[] {
           number: null,
           position: "DM",
           x: 0.64,
-          y: 0.62,
+          y: 0.60,
           isCaptain: false,
         },
         ...blankRow(["LAM", "CAM", "RAM"], MID_Y),

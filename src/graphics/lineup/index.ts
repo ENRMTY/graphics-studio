@@ -98,10 +98,18 @@ export async function renderLineup(
   // draw pitch lines
   drawPitch(layer, px, py, pw, ph);
 
-  // players
+  // players - remap y coords from full-pitch space (0=attack top, 1=GK bottom)
+  // to half-pitch space. Full pitch y range used: ~0.10 (ST) to ~0.92 (GK).
+  // We stretch that range to fill the half-pitch canvas.
+  const Y_TOP = 0.08; // y value that maps to the top of the half-pitch
+  const Y_BOT = 0.95; // y value that maps to the bottom of the half-pitch
   const dotR = W > 1080 ? 26 : 22;
   for (const player of data.players) {
-    drawPlayerDot(layer, px, py, pw, ph, player, dotR, ACCENT);
+    const remappedPlayer = {
+      ...player,
+      y: Math.max(0, Math.min(1, (player.y - Y_TOP) / (Y_BOT - Y_TOP))),
+    };
+    drawPlayerDot(layer, px, py, pw, ph, remappedPlayer, dotR, ACCENT);
   }
 
   // header: competition + match info
@@ -157,13 +165,14 @@ export async function renderLineup(
     }),
   );
 
-  // formation badge (top right)
+  // formation badge (top right) - wide enough for longest formation e.g. "4-2-3-1"
+  const BADGE_W = 130;
   layer.add(
     new Konva.Text({
       text: data.formation,
-      x: W - PAD - 90,
+      x: W - PAD - BADGE_W,
       y: 18,
-      width: 90,
+      width: BADGE_W,
       fontSize: 32,
       fontFamily: "Bebas Neue",
       fill: ACCENT,
@@ -176,9 +185,9 @@ export async function renderLineup(
   layer.add(
     new Konva.Text({
       text: "STARTING XI",
-      x: W - PAD - 90,
+      x: W - PAD - BADGE_W,
       y: 54,
-      width: 90,
+      width: BADGE_W,
       fontSize: 11,
       fontFamily: "DM Sans",
       fontStyle: "600",
