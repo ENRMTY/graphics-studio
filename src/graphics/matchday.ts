@@ -49,7 +49,7 @@ export async function renderMatchday(
     MD_COMP_H +
     36 + // match day label
     30; // top breathing room
-  const OVERLAY_H = Math.min(MD_CONTENT_H + 150, H * 0.88);
+  const OVERLAY_H = Math.min(MD_CONTENT_H + 180, H * 0.88);
 
   layer.add(
     new Konva.Rect({
