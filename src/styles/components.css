@@ -1025,6 +1025,13 @@
   margin: 0;
 }
 
+.auth-modal-description {
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: -8px 0 18px;
+}
+
 .auth-modal-close {
   width: 28px;
   height: 28px;
@@ -1047,6 +1054,15 @@
   text-align: center;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.auth-forgot-row {
+  margin-top: 10px;
+}
+
+.reset-otp-input {
+  letter-spacing: 4px;
+  text-align: center;
 }
 
 .auth-link {

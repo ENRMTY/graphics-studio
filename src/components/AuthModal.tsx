@@ -4,9 +4,10 @@ import { ApiError } from "../services/apiClient";
 
 interface Props {
   onClose: () => void;
+  onForgotPassword: () => void;
 }
 
-export function AuthModal({ onClose }: Props) {
+export function AuthModal({ onClose, onForgotPassword }: Props) {
   const { login, register } = useAuth();
 
   // use states
@@ -150,10 +151,22 @@ export function AuthModal({ onClose }: Props) {
           )}
         </div>
 
+        {mode === "login" && (
+          <div className="auth-modal-footer auth-forgot-row">
+            <button
+              className="auth-link"
+              onClick={onForgotPassword}
+              type="button"
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
+
         {/* info note */}
         <div className="auth-info-note">
-          Sign in to sync your teams, competitions and drafts, and access them from any device.
-          Without an account your data is saved locally only.
+          Sign in to sync your teams, competitions and drafts, and access them
+          from any device. Without an account your data is saved locally only.
         </div>
       </div>
     </div>
