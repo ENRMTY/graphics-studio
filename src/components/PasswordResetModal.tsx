@@ -4,6 +4,7 @@ import React, { useState } from "react";
 // internal
 import { ApiError } from "../services/apiClient";
 import { authService } from "../services/authService";
+import { Icons } from "./Icons";
 
 interface Props {
   onClose: () => void;
@@ -17,6 +18,9 @@ export function PasswordResetModal({ onClose }: Props) {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +40,10 @@ export function PasswordResetModal({ onClose }: Props) {
         }
         setStep("password");
       } else {
+        if (newPassword !== confirmPassword) {
+          setError("Passwords do not match.");
+          return;
+        }
         await authService.resetPassword(email, otp, newPassword);
         onClose();
       }
@@ -126,21 +134,64 @@ export function PasswordResetModal({ onClose }: Props) {
           )}
 
           {step === "password" && (
-            <div className="form-group">
-              <label className="form-label" htmlFor="reset-password">
-                New password
-              </label>
-              <input
-                id="reset-password"
-                className="input"
-                type="password"
-                minLength={8}
-                placeholder="At least 8 characters"
-                value={newPassword}
-                onChange={(event) => setNewPassword(event.target.value)}
-                required
-                autoFocus
-              />
+            <div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="reset-password">
+                  New password
+                </label>
+                <div className="password-input-wrap">
+                  <input
+                    id="reset-password"
+                    className="input"
+                    type={showNewPassword ? "text" : "password"}
+                    minLength={8}
+                    placeholder="At least 8 characters"
+                    value={newPassword}
+                    onChange={(event) => setNewPassword(event.target.value)}
+                    required
+                    autoFocus
+                  />
+                  <button
+                    className="password-visibility-btn"
+                    type="button"
+                    onClick={() => setShowNewPassword((visible) => !visible)}
+                    aria-label={
+                      showNewPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showNewPassword ? <Icons.EyeOff /> : <Icons.Eye />}
+                  </button>
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label" htmlFor="confirm-password">
+                  Confirm new password
+                </label>
+                <div className="password-input-wrap">
+                  <input
+                    id="confirm-password"
+                    className="input"
+                    type={showConfirmPassword ? "text" : "password"}
+                    minLength={8}
+                    placeholder="Re-enter your password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    required
+                  />
+                  <button
+                    className="password-visibility-btn"
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword((visible) => !visible)
+                    }
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showConfirmPassword ? <Icons.EyeOff /> : <Icons.Eye />}
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

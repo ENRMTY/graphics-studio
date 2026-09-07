@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ApiError } from "../services/apiClient";
+import { Icons } from "./Icons";
 
 interface Props {
   onClose: () => void;
@@ -14,6 +15,7 @@ export function AuthModal({ onClose, onForgotPassword }: Props) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -90,16 +92,28 @@ export function AuthModal({ onClose, onForgotPassword }: Props) {
 
           <div className="form-group">
             <label className="form-label">Password</label>
-            <input
-              className="input"
-              type="password"
-              placeholder={
-                mode === "register" ? "At least 8 characters" : "Your password"
-              }
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="password-input-wrap">
+              <input
+                className="input"
+                type={showPassword ? "text" : "password"}
+                placeholder={
+                  mode === "register"
+                    ? "At least 8 characters"
+                    : "Your password"
+                }
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                className="password-visibility-btn"
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <Icons.EyeOff /> : <Icons.Eye />}
+              </button>
+            </div>
           </div>
 
           {error && <div className="auth-error">{error}</div>}

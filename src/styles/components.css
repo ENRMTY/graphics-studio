@@ -1065,6 +1065,40 @@
   text-align: center;
 }
 
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap .input {
+  padding-right: 40px;
+}
+
+.password-visibility-btn {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.password-visibility-btn:hover {
+  color: var(--text);
+}
+
+.password-visibility-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .auth-link {
   background: none;
   border: none;
