@@ -60,11 +60,11 @@ export async function drawTeamLogo(
           new Konva.Circle({
             x: cx,
             y: cy,
-            radius: r + 10,
-            fill: "rgba(200,16,46,0.22)",
-            shadowColor: "#ff2440",
-            shadowBlur: 28,
-            shadowOpacity: 0.9,
+            radius: r + 4,
+            fill: "rgba(200,16,46,0.12)",
+            shadowColor: "#c8102e",
+            shadowBlur: 10,
+            shadowOpacity: 0.55,
           }),
         );
       }
@@ -72,16 +72,17 @@ export async function drawTeamLogo(
         new Konva.Circle({
           x: cx,
           y: cy,
-          radius: r + (glow ? 3 : 6),
-          fill: glow ? "rgba(8,0,2,0.55)" : "rgba(255,255,255,0.07)",
-          stroke: glow ? "#ff2d45" : "rgba(255,255,255,0.12)",
-          strokeWidth: glow ? 3 : 2,
-          shadowColor: glow ? "#ff1a30" : undefined,
-          shadowBlur: glow ? 18 : 0,
-          shadowOpacity: glow ? 1 : 0,
+          radius: r + (glow ? 2 : 6),
+          fill: glow ? "rgba(8,0,2,0.45)" : "rgba(255,255,255,0.07)",
+          stroke: glow ? "rgba(255,60,80,0.85)" : "rgba(255,255,255,0.12)",
+          strokeWidth: glow ? 2 : 2,
+          shadowColor: glow ? "#c8102e" : undefined,
+          shadowBlur: glow ? 8 : 0,
+          shadowOpacity: glow ? 0.6 : 0,
         }),
       );
-      const clipR = r - (glow ? 1 : 0);
+      const pad = Math.round(size * 0.14);
+      const clipR = r - 1;
       const group = new Konva.Group({
         clipFunc: (ctx) => {
           ctx.arc(cx, cy, clipR, 0, Math.PI * 2, false);
@@ -90,10 +91,10 @@ export async function drawTeamLogo(
       group.add(
         new Konva.Image({
           image: img,
-          x: cx - r,
-          y: cy - r,
-          width: size,
-          height: size,
+          x: cx - r + pad / 2,
+          y: cy - r + pad / 2,
+          width: size - pad,
+          height: size - pad,
         }),
       );
       layer.add(group);
@@ -111,15 +112,18 @@ export async function drawEventColumns(
   SIZE: number,
   lineH: number,
   goalIcon: HTMLImageElement | null,
+  homeEdge: number,
+  awayEdge: number,
 ): Promise<void> {
   const maxRows = Math.max(homeEvents.length, awayEvents.length);
-  const icon = 16;
-  const mid = SIZE / 2;
-  const homeIconX = mid - 22 - icon;
-  const awayIconX = mid + 22;
+  const icon = 15;
+  const fontSize = 18;
+  const iconGap = 7;
 
   for (let i = 0; i < maxRows; i++) {
     const y = startY + i * lineH;
+    const textY = y + 1;
+    const iconY = textY + (fontSize - icon) / 2;
     const homeEv = homeEvents[i];
     const awayEv = awayEvents[i];
 
@@ -129,10 +133,10 @@ export async function drawEventColumns(
         new Konva.Text({
           text: buildEventText(homeEv, "home"),
           x: 0,
-          y: y + 1,
-          width: showIcon ? homeIconX - 8 : mid - 36,
+          y: textY,
+          width: homeEdge,
           align: "right",
-          fontSize: 18,
+          fontSize,
           fontFamily: FONT_BODY,
           fill: "rgba(255,255,255,0.92)",
           fontStyle: "500",
@@ -142,8 +146,8 @@ export async function drawEventColumns(
         layer.add(
           new Konva.Image({
             image: goalIcon,
-            x: homeIconX,
-            y: y + (lineH - icon) / 2 - 2,
+            x: homeEdge + iconGap,
+            y: iconY,
             width: icon,
             height: icon,
           }),
@@ -152,13 +156,13 @@ export async function drawEventColumns(
     }
     if (awayEv) {
       const showIcon = usesGoalIcon(awayEv) && !!goalIcon;
-      const textX = showIcon ? awayIconX + icon + 8 : mid + 36;
+      const textX = awayEdge;
       if (showIcon && goalIcon) {
         layer.add(
           new Konva.Image({
             image: goalIcon,
-            x: awayIconX,
-            y: y + (lineH - icon) / 2 - 2,
+            x: awayEdge - iconGap - icon,
+            y: iconY,
             width: icon,
             height: icon,
           }),
@@ -168,10 +172,10 @@ export async function drawEventColumns(
         new Konva.Text({
           text: buildEventText(awayEv, "away"),
           x: textX,
-          y: y + 1,
+          y: textY,
           width: SIZE - textX - 24,
           align: "left",
-          fontSize: 18,
+          fontSize,
           fontFamily: FONT_BODY,
           fill: "rgba(255,255,255,0.92)",
           fontStyle: "500",

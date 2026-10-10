@@ -27,7 +27,18 @@ function cornerWash(
       fillRadialGradientEndPoint: { x: 0, y: 0 },
       fillRadialGradientStartRadius: 0,
       fillRadialGradientEndRadius: radius,
-      fillRadialGradientColorStops: [0, peak, 0.42, "rgba(160,8,20,0.18)", 1, "rgba(120,0,12,0)"],
+      fillRadialGradientColorStops: [
+        0,
+        peak,
+        0.08,
+        peak,
+        0.32,
+        "rgba(180,12,26,0.32)",
+        0.68,
+        "rgba(150,8,20,0.1)",
+        1,
+        "rgba(120,0,12,0)",
+      ],
     }),
   );
 }
@@ -50,14 +61,23 @@ export async function renderFullTime(
     try {
       const img = await loadImage(data.bgImage);
       const { w, h, x, y } = coverFit(img.width, img.height, W, H);
-      layer.add(new Konva.Image({ image: img, x, y, width: w, height: h }));
+      const photo = new Konva.Image({ image: img, x, y, width: w, height: h });
+      layer.add(photo);
+      try {
+        photo.cache();
+        photo.filters([Konva.Filters.Contrast, Konva.Filters.Brighten]);
+        photo.contrast(8);
+        photo.brightness(-0.03);
+      } catch {
+        photo.clearCache();
+        photo.filters([]);
+      }
     } catch {
       // ignore bad images
     }
   }
 
   const PAD = 56;
-  const TEAM_NAME_MARGIN = 50;
   const homeEvents = data.events.filter((e) => e.side === "home");
   const awayEvents = data.events.filter((e) => e.side === "away");
   const maxEvents = Math.max(homeEvents.length, awayEvents.length, 0);
@@ -67,7 +87,7 @@ export async function renderFullTime(
   const RED_BAR_H = Math.max(12, Math.round(W * 0.014));
   const BOTTOM_PAD = 40;
   const TEAM_NAMES_H = 30;
-  const SCORE_H = 128;
+  const SCORE_H = 150;
   const COMP_H = data.competition ? 40 : 0;
   const FT_LABEL_H = 36;
   const TOP_BLOCK_PAD = 20;
@@ -103,22 +123,25 @@ export async function renderFullTime(
     }),
   );
 
-  // Side washes fade inward. Top and bottom edges stay clean of this colour.
-  const sideW = W * 0.46;
+  // Side washes fade inward. Kept short so the red stays on the edges, not across the face.
+  const sideW = W * 0.38;
+  const leftSideW = W * 0.32;
   layer.add(
     new Konva.Rect({
       x: 0,
       y: 0,
-      width: sideW,
+      width: leftSideW,
       height: H,
       listening: false,
       fillLinearGradientStartPoint: { x: 0, y: 0 },
-      fillLinearGradientEndPoint: { x: sideW, y: 0 },
+      fillLinearGradientEndPoint: { x: leftSideW, y: 0 },
       fillLinearGradientColorStops: [
         0,
-        "rgba(176,10,28,0.72)",
-        0.38,
-        "rgba(150,8,22,0.28)",
+        "rgba(176,10,28,0.5)",
+        0.2,
+        "rgba(160,8,22,0.18)",
+        0.5,
+        "rgba(140,6,18,0.05)",
         1,
         "rgba(120,0,12,0)",
       ],
@@ -135,20 +158,22 @@ export async function renderFullTime(
       fillLinearGradientEndPoint: { x: 0, y: 0 },
       fillLinearGradientColorStops: [
         0,
-        "rgba(150,8,22,0.42)",
-        0.4,
-        "rgba(140,6,18,0.14)",
+        "rgba(160,8,22,0.4)",
+        0.22,
+        "rgba(150,8,20,0.16)",
+        0.55,
+        "rgba(140,6,18,0.05)",
         1,
         "rgba(120,0,12,0)",
       ],
     }),
   );
 
-  const cornerR = W * 0.42;
-  cornerWash(layer, 0, 0, cornerR, "rgba(196,12,32,0.78)");
-  cornerWash(layer, W, 0, cornerR * 0.85, "rgba(170,8,24,0.48)");
-  cornerWash(layer, 0, H, cornerR, "rgba(186,10,28,0.7)");
-  cornerWash(layer, W, H, cornerR * 0.85, "rgba(160,8,22,0.45)");
+  const cornerR = W * 0.48;
+  cornerWash(layer, 0, 0, cornerR, "rgba(210,14,34,0.78)");
+  cornerWash(layer, W, 0, cornerR * 0.86, "rgba(190,10,28,0.5)");
+  cornerWash(layer, 0, H, cornerR, "rgba(200,12,30,0.68)");
+  cornerWash(layer, W, H, cornerR * 0.86, "rgba(180,10,26,0.42)");
 
   layer.add(
     new Konva.Rect({
@@ -169,6 +194,23 @@ export async function renderFullTime(
 
   let cursorY = H - RED_BAR_H - BOTTOM_PAD;
 
+  const SCORE_FONT = 156;
+  const scoreLabel = `${data.homeScore ?? 0} - ${data.awayScore ?? 0}`;
+  const scoreMeasure = new Konva.Text({
+    text: scoreLabel,
+    fontSize: SCORE_FONT,
+    fontFamily: FONT_DISPLAY,
+    letterSpacing: -1,
+  });
+  const scoreW = scoreMeasure.width();
+  const LOGO_SIZE = 100;
+  const LOGO_GAP = 26;
+  const logoR = LOGO_SIZE / 2;
+  const homeLogoX = W / 2 - scoreW / 2 - LOGO_GAP - logoR;
+  const awayLogoX = W / 2 + scoreW / 2 + LOGO_GAP + logoR;
+  const homeNameEdge = W / 2 - Math.max(28, scoreW * 0.16);
+  const awayNameEdge = W / 2 + Math.max(28, scoreW * 0.16);
+
   if (maxEvents > 0) {
     cursorY -= EVENTS_BLOCK_H;
     await drawEventColumns(
@@ -179,6 +221,8 @@ export async function renderFullTime(
       W,
       EVENT_LINE_H,
       goalIcon,
+      homeNameEdge,
+      awayNameEdge,
     );
     cursorY -= 8;
   }
@@ -189,7 +233,7 @@ export async function renderFullTime(
       text: (data.homeTeam?.name || "HOME").toUpperCase(),
       x: 0,
       y: cursorY,
-      width: W / 2 - TEAM_NAME_MARGIN,
+      width: homeNameEdge,
       align: "right",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
@@ -200,9 +244,9 @@ export async function renderFullTime(
   layer.add(
     new Konva.Text({
       text: (data.awayTeam?.name || "AWAY").toUpperCase(),
-      x: W / 2 + TEAM_NAME_MARGIN,
+      x: awayNameEdge,
       y: cursorY,
-      width: W / 2 - TEAM_NAME_MARGIN,
+      width: W - awayNameEdge,
       align: "left",
       fontSize: 18,
       fontFamily: FONT_DISPLAY,
@@ -218,7 +262,7 @@ export async function renderFullTime(
       new Konva.Text({
         text: `AGG: ${data.aggScoreHome} – ${data.aggScoreAway}`,
         x: 0,
-        y: scoreRowCY - 96,
+        y: scoreRowCY - 108,
         width: W,
         align: "center",
         fontSize: 22,
@@ -231,26 +275,27 @@ export async function renderFullTime(
 
   layer.add(
     new Konva.Text({
-      text: `${data.homeScore ?? 0}  -  ${data.awayScore ?? 0}`,
-      x: 0,
-      y: scoreRowCY - 62,
-      width: W,
-      align: "center",
-      fontSize: 128,
+      text: scoreLabel,
+      x: (W - scoreW) / 2,
+      y: scoreRowCY - SCORE_FONT * 0.49,
+      fontSize: SCORE_FONT,
       fontFamily: FONT_DISPLAY,
       fill: "#FFFFFF",
-      letterSpacing: 1,
+      stroke: "#FFFFFF",
+      strokeWidth: 3,
+      fillAfterStrokeEnabled: true,
+      lineJoin: "round",
+      letterSpacing: -1,
       shadowColor: "rgba(0,0,0,0.45)",
       shadowBlur: 8,
       shadowOffsetY: 2,
     }),
   );
 
-  const LOGO_SIZE = 92;
   await drawTeamLogo(
     layer,
     data.homeTeam?.logo ?? null,
-    W / 2 - 230,
+    homeLogoX,
     scoreRowCY - 4,
     LOGO_SIZE,
     data.logoStyle ?? "circled",
@@ -259,7 +304,7 @@ export async function renderFullTime(
   await drawTeamLogo(
     layer,
     data.awayTeam?.logo ?? null,
-    W / 2 + 230,
+    awayLogoX,
     scoreRowCY - 4,
     LOGO_SIZE,
     data.logoStyle ?? "circled",
