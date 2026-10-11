@@ -6,6 +6,8 @@ export const FONT_BODY = "DM Sans";
 
 /** Square PNG in the frontend public folder. Drawn small next to scorers. */
 export const GOAL_ICON_SRC = "/goal-icon.png";
+/** Card PNG in the frontend public folder. Drawn small next to red cards. */
+export const RED_CARD_ICON_SRC = "/red-card-icon.png";
 
 export function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((res, rej) => {
@@ -112,6 +114,7 @@ export async function drawEventColumns(
   SIZE: number,
   lineH: number,
   goalIcon: HTMLImageElement | null,
+  redCardIcon: HTMLImageElement | null,
   homeEdge: number,
   awayEdge: number,
 ): Promise<void> {
@@ -123,15 +126,14 @@ export async function drawEventColumns(
   for (let i = 0; i < maxRows; i++) {
     const y = startY + i * lineH;
     const textY = y + 1;
-    const iconY = textY + (fontSize - icon) / 2;
     const homeEv = homeEvents[i];
     const awayEv = awayEvents[i];
 
     if (homeEv) {
-      const showIcon = usesGoalIcon(homeEv) && !!goalIcon;
+      const iconImg = iconFor(homeEv, goalIcon, redCardIcon);
       layer.add(
         new Konva.Text({
-          text: buildEventText(homeEv, "home"),
+          text: buildEventText(homeEv, "home", !!redCardIcon),
           x: 0,
           y: textY,
           width: homeEdge,
@@ -142,35 +144,37 @@ export async function drawEventColumns(
           fontStyle: "500",
         }),
       );
-      if (showIcon && goalIcon) {
+      if (iconImg) {
+        const { w, h } = iconBox(iconImg, icon);
         layer.add(
           new Konva.Image({
-            image: goalIcon,
+            image: iconImg,
             x: homeEdge + iconGap,
-            y: iconY,
-            width: icon,
-            height: icon,
+            y: textY + (fontSize - h) / 2,
+            width: w,
+            height: h,
           }),
         );
       }
     }
     if (awayEv) {
-      const showIcon = usesGoalIcon(awayEv) && !!goalIcon;
+      const iconImg = iconFor(awayEv, goalIcon, redCardIcon);
       const textX = awayEdge;
-      if (showIcon && goalIcon) {
+      if (iconImg) {
+        const { w, h } = iconBox(iconImg, icon);
         layer.add(
           new Konva.Image({
-            image: goalIcon,
-            x: awayEdge - iconGap - icon,
-            y: iconY,
-            width: icon,
-            height: icon,
+            image: iconImg,
+            x: awayEdge - iconGap - w,
+            y: textY + (fontSize - h) / 2,
+            width: w,
+            height: h,
           }),
         );
       }
       layer.add(
         new Konva.Text({
-          text: buildEventText(awayEv, "away"),
+          text: buildEventText(awayEv, "away", !!redCardIcon),
           x: textX,
           y: textY,
           width: SIZE - textX - 24,
@@ -185,18 +189,35 @@ export async function drawEventColumns(
   }
 }
 
-function usesGoalIcon(ev: MatchEvent): boolean {
-  return ev.type === "goal" || ev.type === "penalty" || ev.type === "og";
+function iconBox(img: HTMLImageElement, height: number) {
+  const ratio = img.width > 0 && img.height > 0 ? img.width / img.height : 1;
+  return { w: Math.max(8, Math.round(height * ratio)), h: height };
 }
 
-export function buildEventText(ev: MatchEvent, side: "home" | "away"): string {
+function iconFor(
+  ev: MatchEvent,
+  goalIcon: HTMLImageElement | null,
+  redCardIcon: HTMLImageElement | null,
+): HTMLImageElement | null {
+  if (ev.type === "red") return redCardIcon;
+  if (ev.type === "goal" || ev.type === "penalty" || ev.type === "og") {
+    return goalIcon;
+  }
+  return null;
+}
+
+export function buildEventText(
+  ev: MatchEvent,
+  side: "home" | "away",
+  redIcon = false,
+): string {
   const min = ev.minute ? `${ev.minute}'` : "";
   const tag =
     ev.type === "penalty"
       ? "(P)"
       : ev.type === "og"
         ? "(OG)"
-        : ev.type === "red"
+        : ev.type === "red" && !redIcon
           ? "RED"
           : "";
   const name = ev.player || "?";

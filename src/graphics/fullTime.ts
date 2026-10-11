@@ -7,6 +7,7 @@ import {
   drawCompetition,
   drawEventColumns,
   GOAL_ICON_SRC,
+  RED_CARD_ICON_SRC,
   FONT_DISPLAY,
 } from "./helpers";
 
@@ -186,10 +187,16 @@ export async function renderFullTime(
   );
 
   let goalIcon: HTMLImageElement | null = null;
+  let redCardIcon: HTMLImageElement | null = null;
   try {
     goalIcon = await loadImage(GOAL_ICON_SRC);
   } catch {
     goalIcon = null;
+  }
+  try {
+    redCardIcon = await loadImage(RED_CARD_ICON_SRC);
+  } catch {
+    redCardIcon = null;
   }
 
   let cursorY = H - RED_BAR_H - BOTTOM_PAD;
@@ -221,6 +228,7 @@ export async function renderFullTime(
       W,
       EVENT_LINE_H,
       goalIcon,
+      redCardIcon,
       homeNameEdge,
       awayNameEdge,
     );
