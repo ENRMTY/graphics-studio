@@ -244,7 +244,7 @@ export async function renderMatchday(
   );
 
   cursorY -= LOGO_SIZE + 8;
-  const logoRowCY = cursorY + logoR;
+  const logoRowCY = cursorY + logoR - 8;
   const glow = (data.logoStyle ?? "circled") !== "plain";
   await drawTeamLogo(
     layer,
