@@ -130,7 +130,7 @@ export function buildDefaultLineup(formation = "4-3-3"): LineupPlayer[] {
           number: null,
           position: "DM",
           x: 0.35,
-          y: 0.60,
+          y: 0.53,
           isCaptain: false,
         },
         {
@@ -139,10 +139,10 @@ export function buildDefaultLineup(formation = "4-3-3"): LineupPlayer[] {
           number: null,
           position: "DM",
           x: 0.64,
-          y: 0.60,
+          y: 0.53,
           isCaptain: false,
         },
-        ...blankRow(["LAM", "CAM", "RAM"], MID_Y),
+        ...blankRow(["LAM", "CAM", "RAM"], 0.36),
         ...blankRow(["ST"], FWD_Y),
       ];
     case "3-4-3":

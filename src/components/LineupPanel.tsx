@@ -434,6 +434,7 @@ export function LineupPanel({
       ...slot,
       name: data.players[i]?.name ?? "",
       number: data.players[i]?.number ?? null,
+      photoUrl: data.players[i]?.photoUrl ?? null,
       isCaptain: data.players[i]?.isCaptain ?? false,
     }));
     onChange({ ...data, formation: f, players: merged });
