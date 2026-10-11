@@ -25,12 +25,12 @@ function PhotoButton({
         onClick={open}
         title="Upload headshot"
         style={{
-          width: 36,
-          height: 36,
+          width: 72,
+          height: 72,
           borderRadius: "50%",
           padding: 0,
           overflow: "hidden",
-          border: "1.5px solid rgba(200,16,46,0.85)",
+          border: "2px solid rgba(200,16,46,0.85)",
           background: "#141414",
           cursor: "pointer",
           flexShrink: 0,
@@ -43,7 +43,7 @@ function PhotoButton({
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
-          <span style={{ color: "#C8102E", fontSize: 16 }}>+</span>
+          <span style={{ color: "#C8102E", fontSize: 28 }}>+</span>
         )}
       </button>
       <input {...inputProps} />
@@ -74,39 +74,35 @@ export function PlayersPanel() {
   };
 
   return (
-    <div>
-      <div className="section-label">Players</div>
-      <p className="help-text" style={{ marginBottom: 12 }}>
-        Headshots saved here are used automatically when that player is added to
-        a lineup. Uploads still work if the server is offline.
-      </p>
+    <div className="team-manager">
+      <div className="team-manager-header">
+        <div>
+          <h2>Players</h2>
+          <p className="help-text">
+            Headshots saved here are used when that player is added to a lineup.
+            Uploads still work if the server is offline.
+          </p>
+        </div>
+      </div>
       {players.length === 0 && (
-        <p style={{ fontSize: 12, color: "var(--text-muted)" }}>
+        <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
           No saved players yet. Add names on a lineup and they will show up
           here.
         </p>
       )}
-      {players.map((p) => (
-        <div
-          key={p.name}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 8,
-          }}
-        >
-          <PhotoButton player={p} onSaved={replace} />
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 13 }}>{p.name}</div>
+      <div className="team-grid">
+        {players.map((p) => (
+          <div className="team-card" key={p.name}>
+            <PhotoButton player={p} onSaved={replace} />
+            <div className="team-card-name">{p.name}</div>
             <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
               {[p.number !== null ? `#${p.number}` : null, p.position]
                 .filter(Boolean)
                 .join(" · ") || "No number yet"}
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
