@@ -277,7 +277,7 @@ export async function renderFullTime(
     new Konva.Text({
       text: scoreLabel,
       x: (W - scoreW) / 2,
-      y: scoreRowCY - SCORE_FONT * 0.49,
+      y: scoreRowCY - SCORE_FONT * 0.45,
       fontSize: SCORE_FONT,
       fontFamily: FONT_DISPLAY,
       fill: "#FFFFFF",
