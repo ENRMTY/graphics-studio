@@ -46,6 +46,7 @@ export interface SavedPlayer {
   number: number | null;
   position: string;
   lastUsed: string;
+  photoUrl?: string | null;
 }
 
 export const loadSavedPlayers = (): SavedPlayer[] => {
@@ -65,7 +66,7 @@ export const saveSavedPlayersLocal = (players: SavedPlayer[]): void => {
 // merges played players into saved players list, updating lastUsed and sorting by it
 export const mergeSavedPlayers = (
   existing: SavedPlayer[],
-  played: Pick<LineupPlayer, "name" | "number" | "position">[],
+  played: Pick<LineupPlayer, "name" | "number" | "position" | "photoUrl">[],
 ): SavedPlayer[] => {
   const map = new Map<string, SavedPlayer>(
     existing.map((p) => [p.name.toLowerCase(), p]),
@@ -77,10 +78,12 @@ export const mergeSavedPlayers = (
     }
 
     const key = p.name.toLowerCase();
+    const prev = map.get(key);
     map.set(key, {
       name: p.name,
       number: p.number,
       position: p.position,
+      photoUrl: p.photoUrl ?? prev?.photoUrl ?? null,
       lastUsed: now,
     });
   }

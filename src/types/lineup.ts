@@ -9,6 +9,7 @@ export interface LineupPlayer {
   x: number;
   y: number;
   isCaptain?: boolean;
+  photoUrl?: string | null;
 }
 
 export interface LineupData {

@@ -11,6 +11,7 @@ import { CompetitionPicker } from "./CompetitionPicker";
 import { TeamPicker } from "./TeamPicker";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
+import { playersService } from "../services/playersService";
 import { buildDefaultLineup } from "@defaults";
 import {
   loadSavedPlayers,
@@ -82,7 +83,7 @@ function PlayerNameInput({
   };
 
   return (
-    <div style={{ position: "relative", flex: 1 }}>
+    <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
       {/* ghost layer - shows completion in faded colour */}
       {ghost && (
         <div
@@ -133,36 +134,62 @@ function PlayerRow({
   onRemove,
   showPosition = true,
   savedPlayers,
+  onPlayerSaved,
 }: {
   player: LineupPlayer;
   onUpdate: (p: LineupPlayer) => void;
   onRemove?: () => void;
   showPosition?: boolean;
   savedPlayers: SavedPlayer[];
+  onPlayerSaved?: (p: SavedPlayer) => void;
 }) {
-  const handleNameChange = (name: string, suggestion?: SavedPlayer) => {
-    if (suggestion) {
-      // autocomplete accepted
+  const applySaved = (name: string, suggestion?: SavedPlayer) => {
+    const exact =
+      suggestion ??
+      savedPlayers.find(
+        (p) => p.name.toLowerCase() === name.trim().toLowerCase(),
+      );
+    if (exact) {
       onUpdate({
         ...player,
-        name,
+        name: exact.name,
         number:
-          player.number === null && suggestion.number !== null
-            ? suggestion.number
+          player.number === null && exact.number !== null
+            ? exact.number
             : player.number,
+        photoUrl: exact.photoUrl ?? player.photoUrl ?? null,
       });
-    } else {
-      onUpdate({ ...player, name });
+      return;
     }
+    onUpdate({ ...player, name, photoUrl: null });
   };
+
+  const { open, inputProps } = useFileUpload((_url, file) => {
+    const name = player.name.trim();
+    if (!name) return;
+    playersService
+      .uploadPhoto(name, file, {
+        number: player.number,
+        position: player.position,
+      })
+      .then((saved) => {
+        onUpdate({
+          ...player,
+          name: saved.name,
+          photoUrl: saved.photoUrl ?? null,
+        });
+        onPlayerSaved?.(saved);
+      })
+      .catch(() => {});
+  });
 
   return (
     <div
       style={{
         display: "grid",
         gridTemplateColumns: showPosition
-          ? "36px 1fr 48px 28px auto"
-          : "1fr 48px 28px auto",
+          ? "36px minmax(0,1fr) 48px 28px auto"
+          : "minmax(0,1fr) 48px 28px auto",
         gap: 5,
         alignItems: "center",
         marginBottom: 5,
@@ -188,11 +215,45 @@ function PlayerRow({
         />
       )}
 
-      <PlayerNameInput
-        value={player.name}
-        onChange={handleNameChange}
-        savedPlayers={savedPlayers}
-      />
+      <div
+        style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0 }}
+      >
+        <PlayerNameInput
+          value={player.name}
+          onChange={applySaved}
+          savedPlayers={savedPlayers}
+        />
+        <button
+          title={player.name.trim() ? "Upload headshot" : "Type a name first"}
+          onClick={() => player.name.trim() && open()}
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: "50%",
+            padding: 0,
+            overflow: "hidden",
+            border: "1.5px solid rgba(200,16,46,0.8)",
+            background: "#1a1a1a",
+            cursor: player.name.trim() ? "pointer" : "not-allowed",
+            flexShrink: 0,
+          }}
+        >
+          {player.photoUrl ? (
+            <img
+              src={player.photoUrl}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <span
+              style={{ color: "#C8102E", fontSize: 12, lineHeight: "20px" }}
+            >
+              +
+            </span>
+          )}
+        </button>
+        <input {...inputProps} />
+      </div>
 
       <input
         className="input"
@@ -266,8 +327,13 @@ export function LineupPanel({
 
   // load saved players on mount
   useEffect(() => {
-    setSavedPlayers(loadSavedPlayers());
     setDotColors(loadDotColors());
+    playersService
+      .getAll()
+      .then(setSavedPlayers)
+      .catch(() => {
+        setSavedPlayers(loadSavedPlayers());
+      });
   }, []);
 
   const addDotColor = () => {
@@ -592,7 +658,7 @@ export function LineupPanel({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "36px 1fr 48px 28px 28px",
+            gridTemplateColumns: "36px minmax(0,1fr) 48px 28px 28px",
             gap: 5,
             marginBottom: 4,
           }}
@@ -635,6 +701,14 @@ export function LineupPanel({
             onUpdate={(updated) => updatePlayer(i, updated)}
             showPosition
             savedPlayers={savedPlayers}
+            onPlayerSaved={(saved) =>
+              setSavedPlayers((prev) => {
+                const rest = prev.filter(
+                  (p) => p.name.toLowerCase() !== saved.name.toLowerCase(),
+                );
+                return [saved, ...rest];
+              })
+            }
           />
         ))}
       </div>
@@ -661,7 +735,7 @@ export function LineupPanel({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 48px 28px auto",
+            gridTemplateColumns: "minmax(0,1fr) 48px 28px auto",
             gap: 5,
             marginBottom: 4,
           }}
@@ -696,6 +770,14 @@ export function LineupPanel({
             onRemove={() => removeSub(i)}
             showPosition={false}
             savedPlayers={savedPlayers}
+            onPlayerSaved={(saved) =>
+              setSavedPlayers((prev) => {
+                const rest = prev.filter(
+                  (p) => p.name.toLowerCase() !== saved.name.toLowerCase(),
+                );
+                return [saved, ...rest];
+              })
+            }
           />
         ))}
         {data.subs.length === 0 && (

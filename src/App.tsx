@@ -38,6 +38,7 @@ import { MatchdayPanel } from "./components/MatchdayPanel";
 import { StatsPanel } from "./components/StatsPanel";
 import { QuotePanel } from "./components/QuotePanel";
 import { LineupPanel } from "./components/LineupPanel";
+import { PlayersPanel } from "./components/PlayersPanel";
 import { TransferPanel } from "./components/TransferPanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
@@ -582,6 +583,7 @@ export default function App() {
             onUpdate={handleCompetitionsUpdate}
           />
         )}
+        {view === "players" && <PlayersPanel />}
 
         {isCanvas && (
           <>

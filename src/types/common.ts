@@ -10,4 +10,5 @@ export type ViewMode =
   | "lineup"
   | "transfer"
   | "teams"
+  | "players"
   | "comps";

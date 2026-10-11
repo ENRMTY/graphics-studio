@@ -1,17 +1,68 @@
 import Konva from "konva";
 
-/**
- * draws the DEFENSIVE HALF of the pitch only
- * py            = halfway line (top of canvas area)
- * py + ph       = goal line / gk end (bottom of canvas area)
- *
- * layout (top to bottom):
- *   - halfway line
- *   - open pitch
- *   - penalty area
- *   - 6-yard box
- *   - goal line
- */
+export const TOP_INSET_RATIO = 0.1;
+
+export function pitchPoint(
+  px: number,
+  py: number,
+  pw: number,
+  ph: number,
+  fx: number,
+  fy: number,
+) {
+  const inset = pw * TOP_INSET_RATIO * (1 - fy);
+  return {
+    x: px + inset + fx * (pw - inset * 2),
+    y: py + fy * ph,
+  };
+}
+
+function addLine(
+  layer: Konva.Layer,
+  pts: { x: number; y: number }[],
+  stroke: string,
+  strokeWidth: number,
+  closed = false,
+  fill?: string,
+) {
+  layer.add(
+    new Konva.Line({
+      points: pts.flatMap((p) => [p.x, p.y]),
+      closed,
+      stroke,
+      strokeWidth,
+      fill,
+      lineJoin: "round",
+      lineCap: "round",
+      shadowColor: "rgba(255,255,255,0.35)",
+      shadowBlur: fill ? 0 : 8,
+    }),
+  );
+}
+
+function arcPoints(
+  px: number,
+  py: number,
+  pw: number,
+  ph: number,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  from: number,
+  to: number,
+  steps = 28,
+) {
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = from + ((to - from) * i) / steps;
+    pts.push(
+      pitchPoint(px, py, pw, ph, cx + rx * Math.cos(t), cy + ry * Math.sin(t)),
+    );
+  }
+  return pts;
+}
+
 export function drawPitch(
   layer: Konva.Layer,
   px: number,
@@ -19,140 +70,77 @@ export function drawPitch(
   pw: number,
   ph: number,
 ) {
-  const lc = "rgba(255,255,255,0.30)";
-  const lw = 2;
-  const cx = px + pw / 2;
-  const goalLineY = py + ph; // bottom edge - gk goal line
+  const line = "rgba(236,255,244,0.92)";
+  const lw = 2.4;
+  const p = (fx: number, fy: number) => pitchPoint(px, py, pw, ph, fx, fy);
 
-  // touchline
-  layer.add(
-    new Konva.Line({
-      points: [px, py, px, goalLineY],
-      stroke: lc,
-      strokeWidth: lw,
-    }),
-  );
-  layer.add(
-    new Konva.Line({
-      points: [px + pw, py, px + pw, goalLineY],
-      stroke: lc,
-      strokeWidth: lw,
-    }),
-  );
+  const tl = p(0, 0);
+  const tr = p(1, 0);
+  const br = p(1, 1);
+  const bl = p(0, 1);
 
-  // half-way line
+  addLine(layer, [tl, tr, br, bl], line, lw, true, "#07140f");
+
+  addLine(layer, [tl, tr], line, lw);
+  addLine(layer, [bl, br], line, lw);
+  addLine(layer, [tl, bl], line, lw);
+  addLine(layer, [tr, br], line, lw);
+
+  addLine(
+    layer,
+    arcPoints(px, py, pw, ph, 0.5, 0, 0.155, 0.17, 0.02, Math.PI - 0.02),
+    line,
+    lw,
+  );
+  const spot = p(0.5, 0);
   layer.add(
-    new Konva.Line({
-      points: [px, py, px + pw, py],
-      stroke: lc,
-      strokeWidth: lw,
-      // dash: [8, 6],
-    }),
+    new Konva.Circle({ x: spot.x, y: spot.y, radius: 3.5, fill: line }),
   );
 
-  // center circle arc
-  const circleR = pw * 0.13;
-  const arcStartX = cx - circleR;
-  const arcEndX = cx + circleR;
-  layer.add(
-    new Konva.Path({
-      data: `M ${arcStartX} ${py} A ${circleR} ${circleR} 0 0 0 ${arcEndX} ${py}`,
-      stroke: lc,
-      strokeWidth: lw,
-      fill: "",
-    }),
+  const box = [p(0.2, 0.7), p(0.8, 0.7), p(0.8, 1), p(0.2, 1)];
+  addLine(layer, box, line, lw, true);
+  const six = [p(0.36, 0.9), p(0.64, 0.9), p(0.64, 1), p(0.36, 1)];
+  addLine(layer, six, line, lw, true);
+
+  const pen = p(0.5, 0.8);
+  layer.add(new Konva.Circle({ x: pen.x, y: pen.y, radius: 3.5, fill: line }));
+
+  const d = arcPoints(
+    px,
+    py,
+    pw,
+    ph,
+    0.5,
+    0.8,
+    0.14,
+    0.15,
+    Math.PI + 0.55,
+    Math.PI * 2 - 0.55,
   );
-  // centre spot
-  layer.add(new Konva.Circle({ x: cx, y: py, radius: 3, fill: lc }));
+  addLine(layer, d, line, lw);
 
-  // goal line
-  layer.add(
-    new Konva.Line({
-      points: [px, goalLineY, px + pw, goalLineY],
-      stroke: lc,
-      strokeWidth: lw,
-    }),
+  const cr = 0.035;
+  addLine(
+    layer,
+    arcPoints(
+      px,
+      py,
+      pw,
+      ph,
+      0,
+      1,
+      cr,
+      cr * (pw / ph),
+      Math.PI * 1.5,
+      Math.PI * 2,
+    ),
+    line,
+    lw,
   );
-
-  // penalty area
-  const paw = pw * 0.6;
-  const pah = ph * 0.3;
-  const pax = px + (pw - paw) / 2;
-  const penAreaTopY = goalLineY - pah;
-  layer.add(
-    new Konva.Rect({
-      x: pax,
-      y: penAreaTopY,
-      width: paw,
-      height: pah,
-      stroke: lc,
-      strokeWidth: lw,
-      fill: "rgba(0,0,0,0)",
-    }),
+  addLine(
+    layer,
+    arcPoints(px, py, pw, ph, 1, 1, cr, cr * (pw / ph), Math.PI, Math.PI * 1.5),
+    line,
+    lw,
   );
-
-  // 6-yard box
-  const syw = pw * 0.28;
-  const syh = ph * 0.1;
-  const syx = px + (pw - syw) / 2;
-  layer.add(
-    new Konva.Rect({
-      x: syx,
-      y: goalLineY - syh,
-      width: syw,
-      height: syh,
-      stroke: lc,
-      strokeWidth: lw,
-      fill: "rgba(0,0,0,0)",
-    }),
-  );
-
-  // penalty spot
-  const penSpotY = goalLineY - ph * 0.2;
-  layer.add(new Konva.Circle({ x: cx, y: penSpotY, radius: 3, fill: lc }));
-
-  // penalty arc
-  // the D is centered on the penalty spot. only the portion above the penalty
-  // area top line is drawn. we compute the chord angle mathematically.
-  const dR = circleR;
-  const dToTop = penSpotY - penAreaTopY; // vertical distance
-  const cosHalfAngle = Math.min(1, Math.max(-1, dToTop / dR));
-  const halfAngleDeg = (Math.acos(cosHalfAngle) * 180) / Math.PI;
-  const arcStartAngle = 270 - halfAngleDeg;
-  const arcSpan = halfAngleDeg * 2;
-
-  layer.add(
-    new Konva.Arc({
-      x: cx,
-      y: penSpotY,
-      innerRadius: dR - lw / 2,
-      outerRadius: dR + lw / 2,
-      angle: arcSpan,
-      rotation: arcStartAngle,
-      fill: lc,
-      stroke: "",
-      strokeWidth: 0,
-    }),
-  );
-
-  // corner arcs
-  const cornerR = pw * 0.03;
-  [
-    { x: px, y: goalLineY, rot: 270 },
-    { x: px + pw, y: goalLineY, rot: 180 },
-  ].forEach(({ x, y, rot }) => {
-    layer.add(
-      new Konva.Arc({
-        x,
-        y,
-        innerRadius: 0,
-        outerRadius: cornerR,
-        angle: 90,
-        rotation: rot,
-        stroke: lc,
-        strokeWidth: lw,
-        fill: "rgba(0,0,0,0)",
-      }),
-    );
-  });
 }
