@@ -53,6 +53,7 @@ import { ExportSheet } from "./components/ExportSheet";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { ensureCanvasFonts } from "./utils/canvasFonts";
 import { lockPixelRatioForExport, shareImage } from "./utils/mobileExport";
+import "./utils/storageMigration";
 
 // constants
 import {
@@ -64,9 +65,6 @@ import {
   DEFAULT_LINEUP,
   DEFAULT_TRANSFER,
 } from "@defaults";
-
-// utils
-import "./utils/storageMigration";
 
 export default function App() {
   // use states
