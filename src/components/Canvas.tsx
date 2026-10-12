@@ -33,6 +33,8 @@ interface Props {
   data: CanvasData;
   stageRef: React.MutableRefObject<Konva.Stage | null>;
   canvasSize: CanvasSize;
+  /** mobile: preview is hidden, skip redraws until it is shown again */
+  paused?: boolean;
 }
 
 const FULL_W = 1080;
@@ -100,7 +102,7 @@ function useFitBox(
   return box;
 }
 
-export function Canvas({ data, stageRef, canvasSize }: Props) {
+export function Canvas({ data, stageRef, canvasSize, paused }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mountedRef = useRef(false);
   const dataRef = useRef(data);
@@ -148,10 +150,15 @@ export function Canvas({ data, stageRef, canvasSize }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // re-render when data or size changes
+  // re-render when data or size changes.
+  // While `paused` (mobile Edit tab - preview not on screen) redraws are
+  // skipped; the latest data is drawn as soon as the preview is shown again.
+  const renderedRef = useRef<{ data: CanvasData; size: CanvasSize } | null>(
+    null,
+  );
   useEffect(() => {
     const stage = stageRef.current;
-    if (!stage) {
+    if (!stage || paused) {
       return;
     }
 
@@ -163,8 +170,14 @@ export function Canvas({ data, stageRef, canvasSize }: Props) {
     stage.height(displayH);
     stage.scaleX(scale);
     stage.scaleY(scale);
-    triggerRender(stage, data, canvasSize);
-  }, [data, canvasSize, stageRef]);
+    const last = renderedRef.current;
+    if (last && last.data === data && last.size === canvasSize) {
+      stage.batchDraw(); // nothing changed, just resized
+    } else {
+      renderedRef.current = { data, size: canvasSize };
+      triggerRender(stage, data, canvasSize);
+    }
+  }, [data, canvasSize, stageRef, paused]);
 
   const {
     displayW,

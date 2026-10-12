@@ -780,6 +780,7 @@ export default function App() {
                       data={ftData}
                       stageRef={ftStageRef}
                       canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
                     />
                   </div>
                   <div style={{ display: view === "ht" ? "block" : "none" }}>
@@ -787,6 +788,7 @@ export default function App() {
                       data={htData}
                       stageRef={htStageRef}
                       canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
                     />
                   </div>
                   <div style={{ display: view === "md" ? "block" : "none" }}>
@@ -794,6 +796,7 @@ export default function App() {
                       data={mdData}
                       stageRef={mdStageRef}
                       canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
                     />
                   </div>
                   <div style={{ display: view === "stats" ? "block" : "none" }}>
@@ -801,6 +804,7 @@ export default function App() {
                       data={statsData}
                       stageRef={statsStageRef}
                       canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
                     />
                   </div>
                   <div style={{ display: view === "quote" ? "block" : "none" }}>
@@ -808,6 +812,7 @@ export default function App() {
                       data={quoteData}
                       stageRef={quoteStageRef}
                       canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
                     />
                   </div>
                   <div
@@ -817,6 +822,7 @@ export default function App() {
                       data={lineupData}
                       stageRef={lineupStageRef}
                       canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
                     />
                   </div>
                   <div
@@ -826,6 +832,7 @@ export default function App() {
                       data={transferData}
                       stageRef={transferStageRef}
                       canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
                     />
                   </div>
                 </div>
