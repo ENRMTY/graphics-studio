@@ -47,6 +47,12 @@ import type { CanvasSize } from "./components/Canvas";
 import { Icons } from "./components/Icons";
 import { AuthModal } from "./components/AuthModal";
 import { PasswordResetModal } from "./components/PasswordResetModal";
+import { ExportSheet } from "./components/ExportSheet";
+
+// hooks / utils
+import { useIsMobile } from "./hooks/useIsMobile";
+import { ensureCanvasFonts } from "./utils/canvasFonts";
+import { lockPixelRatioForExport, shareImage } from "./utils/mobileExport";
 
 // constants
 import {
@@ -83,6 +89,13 @@ export default function App() {
   const [canvasSize, setCanvasSize] = useState<CanvasSize>("1080x1080");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPasswordResetModal, setShowPasswordResetModal] = useState(false);
+  // mobile only
+  const isMobile = useIsMobile();
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  const [exportSheet, setExportSheet] = useState<{
+    url: string;
+    filename: string;
+  } | null>(null);
 
   // use refs
   const ftStageRef = useRef<Konva.Stage | null>(null);
@@ -473,7 +486,11 @@ export default function App() {
                   : mdStageRef.current;
     if (!stage || exporting) return;
     setExporting(true);
+    let restorePixelRatio: (() => void) | null = null;
     try {
+      // make sure canvas text uses the real web fonts (matters on mobile)
+      await ensureCanvasFonts();
+
       const { fullW, fullH } = getFullDimensions(canvasSize);
       const prev = {
         w: stage.width(),
@@ -481,6 +498,10 @@ export default function App() {
         sx: stage.scaleX(),
         sy: stage.scaleY(),
       };
+      // mobile: keep canvases within browser memory limits (1080px output)
+      if (isMobile) {
+        restorePixelRatio = lockPixelRatioForExport(stage);
+      }
       stage.size({ width: fullW, height: fullH });
       stage.scale({ x: 1, y: 1 });
 
@@ -491,10 +512,20 @@ export default function App() {
         stage.draw();
       }
 
-      const dataURL = stage.toDataURL({ pixelRatio: 1, mimeType: "image/png" });
+      const dataURL = isMobile
+        ? ""
+        : stage.toDataURL({ pixelRatio: 1, mimeType: "image/png" });
+      const blob = isMobile
+        ? ((await stage.toBlob({
+            pixelRatio: 1,
+            mimeType: "image/png",
+          })) as Blob | null)
+        : null;
       stage.size({ width: prev.w, height: prev.h });
       stage.scale({ x: prev.sx, y: prev.sy });
       stage.draw();
+      restorePixelRatio?.();
+      restorePixelRatio = null;
       const link = document.createElement("a");
       const label =
         view === "ft"
@@ -510,9 +541,18 @@ export default function App() {
                   : view === "transfer"
                     ? "transfer"
                     : "matchday";
-      link.download = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
-      link.href = dataURL;
-      link.click();
+      const filename = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
+      if (isMobile && blob) {
+        // native share sheet (Save Image, Instagram, WhatsApp...) or fallback sheet
+        const outcome = await shareImage(blob, filename);
+        if (outcome === "unsupported") {
+          setExportSheet({ url: URL.createObjectURL(blob), filename });
+        }
+      } else {
+        link.download = filename;
+        link.href = dataURL;
+        link.click();
+      }
 
       // save players after lineup export
       if (view === "lineup") {
@@ -532,6 +572,7 @@ export default function App() {
               : undefined;
       if (id) await graphicsService.publishFT(id);
     } finally {
+      restorePixelRatio?.();
       setExporting(false);
     }
   };
@@ -544,6 +585,12 @@ export default function App() {
     view === "quote" ||
     view === "lineup" ||
     view === "transfer";
+
+  // mobile: switching section always lands on the editor
+  const handleViewChange = (v: ViewMode) => {
+    setView(v);
+    setMobileTab("edit");
+  };
 
   if (loading) {
     return (
@@ -569,11 +616,11 @@ export default function App() {
     <div className="app">
       <Sidebar
         view={view}
-        onViewChange={setView}
+        onViewChange={handleViewChange}
         teamCount={teams.length}
         onSignInClick={() => setShowAuthModal(true)}
       />
-      <div className="main">
+      <div className="main" data-mtab={mobileTab}>
         {view === "teams" && (
           <TeamManager teams={teams} onUpdate={handleTeamsUpdate} />
         )}
@@ -587,6 +634,23 @@ export default function App() {
 
         {isCanvas && (
           <>
+            {/* mobile only (hidden on desktop via CSS): Edit / Preview switch */}
+            <div className="mobile-tabs">
+              <div className="tab-row">
+                <button
+                  className={`tab ${mobileTab === "edit" ? "active" : ""}`}
+                  onClick={() => setMobileTab("edit")}
+                >
+                  Edit
+                </button>
+                <button
+                  className={`tab ${mobileTab === "preview" ? "active" : ""}`}
+                  onClick={() => setMobileTab("preview")}
+                >
+                  Preview &amp; Export
+                </button>
+              </div>
+            </div>
             <div className="panel">
               <div className="panel-header">
                 <div>
@@ -772,6 +836,22 @@ export default function App() {
           </>
         )}
       </div>
+      {isCanvas && mobileTab === "edit" && (
+        <button
+          className="btn btn-primary mobile-fab"
+          onClick={() => setMobileTab("preview")}
+        >
+          <Icons.Export style={{ width: 14, height: 14 }} />
+          Preview &amp; Export
+        </button>
+      )}
+      {exportSheet && (
+        <ExportSheet
+          url={exportSheet.url}
+          filename={exportSheet.filename}
+          onClose={() => setExportSheet(null)}
+        />
+      )}
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}

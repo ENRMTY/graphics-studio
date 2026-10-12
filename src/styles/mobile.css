@@ -1,0 +1,335 @@
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE LAYER
+   Everything below is scoped to small screens (phones, small tablets,
+   phones in landscape). Desktop styling lives untouched in
+   components.css / globals.css.
+   Keep the query in sync with MOBILE_QUERY in hooks/useIsMobile.ts
+═══════════════════════════════════════════════════════════════ */
+
+/* mobile-only elements are invisible on desktop */
+.mobile-bar,
+.mobile-backdrop,
+.mobile-tabs,
+.mobile-fab {
+  display: none;
+}
+
+@media (max-width: 768px), (max-height: 500px) and (pointer: coarse) {
+  html,
+  body {
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS zooms the page when a focused field is < 16px */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(
+      [type="color"]
+    ):not([type="range"]):not(.score-digit),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  /* "POS" box in the lineup editor is only 36px wide */
+  input[placeholder="POS"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    letter-spacing: -0.5px;
+  }
+
+  /* ── app shell ───────────────────────────────────────────── */
+  .app {
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+  .main {
+    flex-direction: column;
+    min-height: 0;
+    width: 100%;
+  }
+
+  /* ── top bar ─────────────────────────────────────────────── */
+  .mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 auto;
+    height: calc(52px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) calc(12px + env(safe-area-inset-right)) 0
+      calc(12px + env(safe-area-inset-left));
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-bar-logo {
+    height: 30px;
+    width: auto;
+    max-width: 96px;
+    object-fit: contain;
+  }
+  .mobile-bar-title {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  /* ── sidebar becomes a drawer ────────────────────────────── */
+  .mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 899;
+    background: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .mobile-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 900;
+    width: min(290px, 85vw);
+    min-width: 0;
+    padding-top: env(safe-area-inset-top);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.25s ease,
+      visibility 0s linear 0.25s;
+  }
+  .sidebar.open {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.25s ease;
+  }
+  .sidebar-nav {
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-item {
+    padding: 12px 12px;
+    font-size: 15px;
+  }
+  .sidebar-footer {
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+
+  /* ── edit / Preview switch ───────────────────────────────── */
+  .mobile-tabs {
+    display: block;
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-tabs .tab-row .tab {
+    padding: 11px 12px;
+    font-size: 13px;
+  }
+  .main[data-mtab="edit"] .canvas-area {
+    display: none;
+  }
+  .main[data-mtab="preview"] .panel {
+    display: none;
+  }
+
+  .mobile-fab {
+    display: inline-flex;
+    position: fixed;
+    z-index: 50;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    padding: 13px 22px;
+    font-size: 14px;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(200, 16, 46, 0.45);
+  }
+
+  /* ── config panel ────────────────────────────────────────── */
+  .panel {
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+    min-height: 0;
+    border-right: 0;
+  }
+  .panel-header {
+    padding: 12px 16px 10px;
+  }
+  .panel-body {
+    padding: 14px 14px calc(88px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── preview + export ────────────────────────────────────── */
+  .canvas-area {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+  /* toolbar sits at the bottom, within thumb reach */
+  .canvas-wrapper {
+    order: 1;
+    padding: 12px;
+  }
+  .canvas-toolbar {
+    order: 2;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    border-bottom: 0;
+    border-top: 1px solid var(--border);
+  }
+  .canvas-toolbar-left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .canvas-toolbar-left .status-dot {
+    display: none;
+  }
+  .size-picker {
+    flex: 1;
+    min-width: 0;
+  }
+  .size-chip {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  .canvas-toolbar-right .btn-export {
+    width: 100%;
+    padding: 13px 20px;
+    font-size: 14px;
+  }
+
+  /* ── touch ergonomics ────────────────────────────────────── */
+  .btn {
+    min-height: 36px;
+  }
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .btn-sm {
+    min-height: 32px;
+  }
+  .tab-row .tab {
+    min-height: 36px;
+    white-space: nowrap;
+    flex: 1 0 auto;
+  }
+  .side-chip,
+  .comp-chip,
+  .comp-add-btn,
+  .add-event-btn {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  /* hover-only controls are unreachable on touch */
+  .comp-chip-edit,
+  .comp-chip-delete {
+    opacity: 0.7;
+    padding: 4px;
+  }
+  .team-result {
+    padding: 11px 10px;
+  }
+  .team-results-list {
+    max-height: 220px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── library screens (teams / players / competitions) ────── */
+  .team-manager {
+    padding: 14px 14px calc(24px + env(safe-area-inset-bottom));
+  }
+  .team-manager-header {
+    gap: 12px;
+  }
+  .team-grid {
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 10px;
+  }
+  .comp-manager-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  /* ── modals become bottom sheets ─────────────────────────── */
+  .modal-overlay {
+    align-items: flex-end;
+  }
+  .modal,
+  .modal.auth-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: 0;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+  }
+  .export-sheet-img {
+    display: block;
+    width: 100%;
+    max-height: 55vh;
+    max-height: 55dvh;
+    object-fit: contain;
+    border-radius: var(--radius);
+    background: var(--bg);
+    -webkit-touch-callout: default;
+    user-select: auto;
+  }
+}
+
+/* phones held sideways: very little vertical room */
+@media (max-height: 500px) and (pointer: coarse) {
+  .mobile-bar {
+    height: 44px;
+  }
+  .mobile-tabs {
+    padding: 6px 12px;
+  }
+  .canvas-wrapper {
+    padding: 8px;
+  }
+  .canvas-toolbar {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 12px;
+  }
+  .canvas-toolbar-left {
+    flex: 1;
+  }
+  .canvas-toolbar-right .btn-export {
+    width: auto;
+    padding: 9px 18px;
+  }
+}
