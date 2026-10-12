@@ -78,6 +78,7 @@ export async function renderFullTime(
     }
   }
 
+  // ---------------- CONSTANTS -----------------------------------------
   const PAD = 56;
   const homeEvents = data.events.filter((e) => e.side === "home");
   const awayEvents = data.events.filter((e) => e.side === "away");
@@ -103,8 +104,10 @@ export async function renderFullTime(
     TOP_BLOCK_PAD;
   const OVERLAY_H = Math.min(CONTENT_H + 80, H * 0.55);
   const TEAM_NAME_LIFT = 10;
+  const SCORER_LIFT = 4;
+  // ---------------- END CONSTANTS -------------------------------------
 
-  // Readability scrim only behind the type — not a coloured fade on the top edge.
+  // readability scrim only behind the type — not a coloured fade on the top edge.
   layer.add(
     new Konva.Rect({
       x: 0,
@@ -125,7 +128,7 @@ export async function renderFullTime(
     }),
   );
 
-  // Side washes fade inward. Kept short so the red stays on the edges, not across the face.
+  // side washes fade inward. Kept short so the red stays on the edges, not across the face.
   const sideW = W * 0.38;
   const leftSideW = W * 0.32;
   layer.add(
@@ -225,7 +228,7 @@ export async function renderFullTime(
       layer,
       homeEvents,
       awayEvents,
-      cursorY,
+      cursorY - SCORER_LIFT,
       W,
       EVENT_LINE_H,
       goalIcon,
