@@ -102,6 +102,7 @@ export async function renderFullTime(
     FT_LABEL_H +
     TOP_BLOCK_PAD;
   const OVERLAY_H = Math.min(CONTENT_H + 80, H * 0.55);
+  const TEAM_NAME_LIFT = 10;
 
   // Readability scrim only behind the type — not a coloured fade on the top edge.
   layer.add(
@@ -240,7 +241,7 @@ export async function renderFullTime(
     new Konva.Text({
       text: (data.homeTeam?.name || "HOME").toUpperCase(),
       x: 0,
-      y: cursorY,
+      y: cursorY - TEAM_NAME_LIFT,
       width: homeNameEdge,
       align: "right",
       fontSize: 18,
@@ -253,7 +254,7 @@ export async function renderFullTime(
     new Konva.Text({
       text: (data.awayTeam?.name || "AWAY").toUpperCase(),
       x: awayNameEdge,
-      y: cursorY,
+      y: cursorY - TEAM_NAME_LIFT,
       width: W - awayNameEdge,
       align: "left",
       fontSize: 18,

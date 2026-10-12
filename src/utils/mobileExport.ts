@@ -1,8 +1,8 @@
 import Konva from "konva";
 
 /**
- * Mobile browsers cap canvas memory (iOS Safari: ~16.7M pixels per canvas).
- * A 1080x1920 stage at a device pixel ratio of 3 is 18.6M pixels and silently
+ * mobile browsers cap canvas memory (iOS Safari: ~16.7M pixels per canvas).
+ * a 1080x1920 stage at a device pixel ratio of 3 is 18.6M pixels and silently
  * exports blank/black. For the duration of an export we force every canvas to
  * a pixel ratio of 1 so the output is exactly 1080 x (1080|1920) pixels,
  * identical to the desktop export. Returns a function that restores the
@@ -27,7 +27,7 @@ export function lockPixelRatioForExport(stage: Konva.Stage): () => void {
 }
 
 /**
- * Saves the PNG with a real file download. Does not open the share sheet.
+ * saves the PNG with a real file download. does not open the share sheet.
  *
  * Android (Chrome, Samsung Internet): the browser hands the image to the
  * system download manager, which registers it with the media store. Gallery
