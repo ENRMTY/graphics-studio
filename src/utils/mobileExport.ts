@@ -26,27 +26,27 @@ export function lockPixelRatioForExport(stage: Konva.Stage): () => void {
   };
 }
 
-export type ShareOutcome = "shared" | "cancelled" | "unsupported";
-
-/** opens the native share sheet (save image / instagram / whatsApp ...). */
-export async function shareImage(
-  blob: Blob,
-  filename: string,
-): Promise<ShareOutcome> {
-  const file = new File([blob], filename, { type: "image/png" });
-  const nav = navigator as Navigator & {
-    canShare?: (d: ShareData) => boolean;
-  };
-  if (!nav.share || !nav.canShare || !nav.canShare({ files: [file] })) {
-    return "unsupported";
-  }
-  try {
-    await nav.share({ files: [file] });
-    return "shared";
-  } catch (err) {
-    if ((err as DOMException)?.name === "AbortError") {
-      return "cancelled";
-    }
-    return "unsupported"; // e.g. user-gesture expired -> use fallback sheet
-  }
+/**
+ * Saves the PNG with a real file download. Does not open the share sheet.
+ *
+ * Android (Chrome, Samsung Internet): the browser hands the image to the
+ * system download manager, which registers it with the media store. Gallery
+ * and Photos then show it under Downloads / recent pictures. No app picker.
+ *
+ * iOS: Safari will not write the Photos library from a website. The file
+ * lands in Files → Downloads instead.
+ */
+export function downloadImage(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  window.setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 60000);
 }

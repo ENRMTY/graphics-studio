@@ -47,12 +47,11 @@ import type { CanvasSize } from "./components/Canvas";
 import { Icons } from "./components/Icons";
 import { AuthModal } from "./components/AuthModal";
 import { PasswordResetModal } from "./components/PasswordResetModal";
-import { ExportSheet } from "./components/ExportSheet";
 
 // hooks / utils
 import { useIsMobile } from "./hooks/useIsMobile";
 import { ensureCanvasFonts } from "./utils/canvasFonts";
-import { lockPixelRatioForExport, shareImage } from "./utils/mobileExport";
+import { lockPixelRatioForExport, downloadImage } from "./utils/mobileExport";
 import "./utils/storageMigration";
 
 // constants
@@ -84,16 +83,13 @@ export default function App() {
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [exporting, setExporting] = useState(false);
+  const [exportSaved, setExportSaved] = useState(false);
   const [canvasSize, setCanvasSize] = useState<CanvasSize>("1080x1080");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPasswordResetModal, setShowPasswordResetModal] = useState(false);
   // mobile only
   const isMobile = useIsMobile();
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
-  const [exportSheet, setExportSheet] = useState<{
-    url: string;
-    filename: string;
-  } | null>(null);
 
   // use refs
   const ftStageRef = useRef<Konva.Stage | null>(null);
@@ -104,6 +100,7 @@ export default function App() {
   const lineupStageRef = useRef<Konva.Stage | null>(null);
   const transferStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // use refs vars
   const ftRef = useRef(ftData);
@@ -541,11 +538,14 @@ export default function App() {
                     : "matchday";
       const filename = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       if (isMobile && blob) {
-        // native share sheet (Save Image, Instagram, WhatsApp...) or fallback sheet
-        const outcome = await shareImage(blob, filename);
-        if (outcome === "unsupported") {
-          setExportSheet({ url: URL.createObjectURL(blob), filename });
-        }
+        // straight into the gallery. no share sheet, no app picker.
+        downloadImage(blob, filename);
+        if (exportSavedTimer.current) clearTimeout(exportSavedTimer.current);
+        setExportSaved(true);
+        exportSavedTimer.current = setTimeout(
+          () => setExportSaved(false),
+          2500,
+        );
       } else {
         link.download = filename;
         link.href = dataURL;
@@ -768,7 +768,11 @@ export default function App() {
                     disabled={exporting}
                   >
                     <Icons.Export style={{ width: 14, height: 14 }} />
-                    {exporting ? "Exporting…" : "Export PNG"}
+                    {exporting
+                      ? "Exporting…"
+                      : exportSaved
+                        ? "Saved"
+                        : "Export PNG"}
                   </button>
                 </div>
               </div>
@@ -849,13 +853,6 @@ export default function App() {
           <Icons.Export style={{ width: 14, height: 14 }} />
           Preview &amp; Export
         </button>
-      )}
-      {exportSheet && (
-        <ExportSheet
-          url={exportSheet.url}
-          filename={exportSheet.filename}
-          onClose={() => setExportSheet(null)}
-        />
       )}
       {showAuthModal && (
         <AuthModal
