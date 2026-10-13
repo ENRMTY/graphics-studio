@@ -6,6 +6,7 @@ import {
   drawTeamLogo,
   drawCompetition,
   drawEventColumns,
+  eventLineCount,
   GOAL_ICON_SRC,
   RED_CARD_ICON_SRC,
   FONT_DISPLAY,
@@ -82,7 +83,11 @@ export async function renderFullTime(
   const PAD = 56;
   const homeEvents = data.events.filter((e) => e.side === "home");
   const awayEvents = data.events.filter((e) => e.side === "away");
-  const maxEvents = Math.max(homeEvents.length, awayEvents.length, 0);
+  const maxEvents = Math.max(
+    eventLineCount(homeEvents),
+    eventLineCount(awayEvents),
+    0,
+  );
   const EVENT_LINE_H = 30;
   const EVENTS_BLOCK_H = maxEvents > 0 ? maxEvents * EVENT_LINE_H + 12 : 0;
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import type { FullTimeData, Team, Competition, EventType } from "@types";
 import { TeamPicker } from "./TeamPicker";
 import { CompetitionPicker } from "./CompetitionPicker";
@@ -21,6 +22,63 @@ const EVENT_TYPES: { type: EventType; label: string; cls: string }[] = [
   { type: "red", label: "Red Card", cls: "red" },
   { type: "og", label: "OG", cls: "og" },
 ];
+
+/** Text field so a starting 0 is replaced, not stuck as 01. */
+function ScoreField({
+  value,
+  onChange,
+  allowEmpty = false,
+}: {
+  value: number | null;
+  onChange: (n: number | null) => void;
+  allowEmpty?: boolean;
+}) {
+  const [text, setText] = useState(value === null ? "" : String(value));
+  const focused = useRef(false);
+
+  useEffect(() => {
+    if (!focused.current) setText(value === null ? "" : String(value));
+  }, [value]);
+
+  return (
+    <input
+      className="score-digit"
+      inputMode="numeric"
+      maxLength={2}
+      value={text}
+      onFocus={(e) => {
+        focused.current = true;
+        e.currentTarget.select();
+      }}
+      onBlur={() => {
+        focused.current = false;
+        if (text === "") {
+          onChange(allowEmpty ? null : 0);
+          setText(allowEmpty ? "" : "0");
+          return;
+        }
+        const n = parseInt(text, 10);
+        const next = Number.isFinite(n)
+          ? Math.min(99, n)
+          : allowEmpty
+            ? null
+            : 0;
+        onChange(next);
+        setText(next === null ? "" : String(next));
+      }}
+      onChange={(e) => {
+        let raw = e.target.value.replace(/\D/g, "").slice(0, 2);
+        if (raw.length === 2 && raw.startsWith("0")) raw = raw.slice(1);
+        setText(raw);
+        if (raw === "") {
+          if (allowEmpty) onChange(null);
+          return;
+        }
+        onChange(parseInt(raw, 10));
+      }}
+    />
+  );
+}
 
 export function FullTimePanel({
   data,
@@ -168,25 +226,17 @@ export function FullTimePanel({
       <div>
         <div className="section-label">Scoreline</div>
         <div className="score-row">
-          <input
-            className="score-digit"
-            type="number"
-            min={0}
-            max={99}
+          <ScoreField
             value={data.homeScore}
-            onChange={(e) =>
-              onChange({ ...data, homeScore: parseInt(e.target.value) || 0 })
+            onChange={(homeScore) =>
+              onChange({ ...data, homeScore: homeScore ?? 0 })
             }
           />
           <div className="score-dash">–</div>
-          <input
-            className="score-digit"
-            type="number"
-            min={0}
-            max={99}
+          <ScoreField
             value={data.awayScore}
-            onChange={(e) =>
-              onChange({ ...data, awayScore: parseInt(e.target.value) || 0 })
+            onChange={(awayScore) =>
+              onChange({ ...data, awayScore: awayScore ?? 0 })
             }
           />
         </div>
@@ -196,36 +246,16 @@ export function FullTimePanel({
       <div>
         <div className="section-label">Aggregate Score (2-legged ties)</div>
         <div className="score-row">
-          <input
-            className="score-digit"
-            type="number"
-            min={0}
-            max={99}
-            placeholder="–"
-            value={data.aggScoreHome ?? ""}
-            onChange={(e) =>
-              onChange({
-                ...data,
-                aggScoreHome:
-                  e.target.value === "" ? null : parseInt(e.target.value) || 0,
-              })
-            }
+          <ScoreField
+            allowEmpty
+            value={data.aggScoreHome}
+            onChange={(aggScoreHome) => onChange({ ...data, aggScoreHome })}
           />
           <div className="score-dash">–</div>
-          <input
-            className="score-digit"
-            type="number"
-            min={0}
-            max={99}
-            placeholder="–"
-            value={data.aggScoreAway ?? ""}
-            onChange={(e) =>
-              onChange({
-                ...data,
-                aggScoreAway:
-                  e.target.value === "" ? null : parseInt(e.target.value) || 0,
-              })
-            }
+          <ScoreField
+            allowEmpty
+            value={data.aggScoreAway}
+            onChange={(aggScoreAway) => onChange({ ...data, aggScoreAway })}
           />
         </div>
         {(data.aggScoreHome !== null || data.aggScoreAway !== null) && (

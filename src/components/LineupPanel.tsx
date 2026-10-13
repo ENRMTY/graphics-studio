@@ -31,6 +31,25 @@ interface Props {
 
 const FORMATIONS = ["4-3-3", "4-4-2", "4-2-3-1", "3-4-3", "3-5-2", "5-4-1"];
 
+/** "a" matches "á". Combining marks are stripped before compare. */
+function foldName(s: string): string {
+  return s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+}
+
+function ghostRest(name: string, typed: string): string {
+  const target = foldName(typed);
+  let acc = "";
+  const chars = Array.from(name);
+  let i = 0;
+  while (i < chars.length && acc.length < target.length) {
+    const piece = foldName(chars[i]);
+    i += 1;
+    if (!piece) continue;
+    acc += piece;
+  }
+  return chars.slice(i).join("");
+}
+
 // auto-complete input for player names with ghost text and suggestions from saved players
 function PlayerNameInput({
   value,
@@ -56,12 +75,13 @@ function PlayerNameInput({
       setActiveSuggestion(null);
       return;
     }
-    const lower = value.toLowerCase();
-    const match = savedPlayers.find((p) =>
-      p.name.toLowerCase().startsWith(lower),
-    );
-    if (match && match.name.toLowerCase() !== lower) {
-      setGhost(match.name.slice(value.length));
+    const folded = foldName(value);
+    const match = savedPlayers.find((p) => foldName(p.name).startsWith(folded));
+    if (match && foldName(match.name) !== folded) {
+      setGhost(ghostRest(match.name, value));
+      setActiveSuggestion(match);
+    } else if (match && match.name !== value) {
+      setGhost("");
       setActiveSuggestion(match);
     } else {
       setGhost("");
@@ -70,7 +90,7 @@ function PlayerNameInput({
   }, [value, savedPlayers]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === "Tab" || e.key === "Enter") && activeSuggestion && ghost) {
+    if ((e.key === "Tab" || e.key === "Enter") && activeSuggestion) {
       e.preventDefault();
       onChange(activeSuggestion.name, activeSuggestion);
       setGhost("");
@@ -146,9 +166,7 @@ function PlayerRow({
   const applySaved = (name: string, suggestion?: SavedPlayer) => {
     const exact =
       suggestion ??
-      savedPlayers.find(
-        (p) => p.name.toLowerCase() === name.trim().toLowerCase(),
-      );
+      savedPlayers.find((p) => foldName(p.name) === foldName(name.trim()));
     if (exact) {
       onUpdate({
         ...player,

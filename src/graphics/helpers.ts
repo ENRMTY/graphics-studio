@@ -106,6 +106,92 @@ export async function drawTeamLogo(
   }
 }
 
+export function eventLineCount(events: MatchEvent[]): number {
+  return toDisplayLines(events).length;
+}
+
+function foldName(s: string): string {
+  return s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+}
+
+function splitMinutes(raw: string): string[] {
+  const parts = raw
+    .trim()
+    .split(/[,;/]+|\s+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return parts.length ? parts : [""];
+}
+
+function minuteKey(minute: string): number {
+  const t = minute.trim().replace(/'+$/, "");
+  const plus = t.match(/^(\d+)\+(\d+)$/);
+  if (plus) return parseInt(plus[1], 10) * 100 + parseInt(plus[2], 10);
+  const n = parseInt(t, 10);
+  return Number.isFinite(n) ? n * 100 : 1_000_000;
+}
+
+type ScoreBit = { minute: string; tag: "" | "(P)" | "(OG)" };
+
+type DisplayLine = {
+  player: string;
+  kind: "score" | "red";
+  bits: ScoreBit[];
+  redEvent?: MatchEvent;
+};
+
+/** Same player, same side: one row, minutes joined ("Salah  5'  41'"). */
+function toDisplayLines(events: MatchEvent[]): DisplayLine[] {
+  const lines: DisplayLine[] = [];
+  for (const ev of events) {
+    const scoring =
+      ev.type === "goal" || ev.type === "penalty" || ev.type === "og";
+    if (!scoring) {
+      lines.push({ player: ev.player, kind: "red", bits: [], redEvent: ev });
+      continue;
+    }
+    const key = foldName(ev.player);
+    const tag: ScoreBit["tag"] =
+      ev.type === "penalty" ? "(P)" : ev.type === "og" ? "(OG)" : "";
+    const bits = splitMinutes(ev.minute).map((minute) => ({ minute, tag }));
+    const existing =
+      key === ""
+        ? undefined
+        : lines.find((l) => l.kind === "score" && foldName(l.player) === key);
+    if (existing) {
+      existing.bits.push(...bits);
+      existing.bits.sort((a, b) => minuteKey(a.minute) - minuteKey(b.minute));
+    } else {
+      lines.push({
+        player: ev.player || "?",
+        kind: "score",
+        bits,
+      });
+    }
+  }
+  return lines;
+}
+
+function bitLabel(bit: ScoreBit): string {
+  const m = bit.minute.trim().replace(/'+$/, "");
+  const shown = m ? `${m}'` : "";
+  return [shown, bit.tag].filter(Boolean).join(" ");
+}
+
+function lineLabel(
+  line: DisplayLine,
+  side: "home" | "away",
+  redIcon: boolean,
+): string {
+  if (line.kind === "red" && line.redEvent) {
+    return buildEventText(line.redEvent, side, redIcon);
+  }
+  const minutes = line.bits.map(bitLabel).filter(Boolean).join("  ");
+  const name = line.player || "?";
+  if (side === "home") return [name, minutes].filter(Boolean).join("  ");
+  return [minutes, name].filter(Boolean).join("  ");
+}
+
 export async function drawEventColumns(
   layer: Konva.Layer,
   homeEvents: MatchEvent[],
@@ -118,22 +204,25 @@ export async function drawEventColumns(
   homeEdge: number,
   awayEdge: number,
 ): Promise<void> {
-  const maxRows = Math.max(homeEvents.length, awayEvents.length);
+  const homeLines = toDisplayLines(homeEvents);
+  const awayLines = toDisplayLines(awayEvents);
+  const maxRows = Math.max(homeLines.length, awayLines.length);
   const icon = 15;
   const fontSize = 18;
   const iconGap = 7;
+  const redIcon = !!redCardIcon;
 
   for (let i = 0; i < maxRows; i++) {
     const y = startY + i * lineH;
     const textY = y + 1;
-    const homeEv = homeEvents[i];
-    const awayEv = awayEvents[i];
+    const homeLine = homeLines[i];
+    const awayLine = awayLines[i];
 
-    if (homeEv) {
-      const iconImg = iconFor(homeEv, goalIcon, redCardIcon);
+    if (homeLine) {
+      const iconImg = homeLine.kind === "red" ? redCardIcon : goalIcon;
       layer.add(
         new Konva.Text({
-          text: buildEventText(homeEv, "home", !!redCardIcon),
+          text: lineLabel(homeLine, "home", redIcon),
           x: 0,
           y: textY,
           width: homeEdge,
@@ -157,8 +246,8 @@ export async function drawEventColumns(
         );
       }
     }
-    if (awayEv) {
-      const iconImg = iconFor(awayEv, goalIcon, redCardIcon);
+    if (awayLine) {
+      const iconImg = awayLine.kind === "red" ? redCardIcon : goalIcon;
       const textX = awayEdge;
       if (iconImg) {
         const { w, h } = iconBox(iconImg, icon);
@@ -174,7 +263,7 @@ export async function drawEventColumns(
       }
       layer.add(
         new Konva.Text({
-          text: buildEventText(awayEv, "away", !!redCardIcon),
+          text: lineLabel(awayLine, "away", redIcon),
           x: textX,
           y: textY,
           width: SIZE - textX - 24,
@@ -192,18 +281,6 @@ export async function drawEventColumns(
 function iconBox(img: HTMLImageElement, height: number) {
   const ratio = img.width > 0 && img.height > 0 ? img.width / img.height : 1;
   return { w: Math.max(8, Math.round(height * ratio)), h: height };
-}
-
-function iconFor(
-  ev: MatchEvent,
-  goalIcon: HTMLImageElement | null,
-  redCardIcon: HTMLImageElement | null,
-): HTMLImageElement | null {
-  if (ev.type === "red") return redCardIcon;
-  if (ev.type === "goal" || ev.type === "penalty" || ev.type === "og") {
-    return goalIcon;
-  }
-  return null;
 }
 
 export function buildEventText(
