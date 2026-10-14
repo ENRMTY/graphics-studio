@@ -8,14 +8,7 @@ export async function renderStats(
   W: number,
   H: number = W,
 ): Promise<void> {
-  const layout = data.layout ?? "classic";
-  if (layout === "big") {
-    return renderStatsBig(stage, data, W, H);
-  }
-  if (layout === "overlay") {
-    return renderStatsOverlay(stage, data, W, H);
-  }
-  return renderStatsClassic(stage, data, W, H);
+  return renderStatsBig(stage, data, W, H);
 }
 
 // classic layout
@@ -567,10 +560,29 @@ async function renderStatsBig(
 
   const enabled = data.stats.filter((s) => s.enabled && s.value);
   const count = Math.max(enabled.length, 1);
-  const numberSize = Math.round(W * (count <= 3 ? 0.2 : 0.15));
-  const labelSize = Math.max(13, Math.round(W * 0.016));
-  const labelY = H - RED_BAR_H - Math.round(W * 0.058);
-  const numberY = labelY - Math.round(numberSize * 0.78);
+  const values = enabled.map((s) => s.value);
+  const gap = Math.round(W * 0.055);
+  let numberSize = Math.round(Math.min(W, H) * (count <= 3 ? 0.3 : 0.22));
+  const rowWidth = (size: number) => {
+    let sum = gap * Math.max(values.length - 1, 0);
+    for (const v of values) {
+      const probe = new Konva.Text({
+        text: v,
+        fontSize: size,
+        fontFamily: FONT_DISPLAY,
+        letterSpacing: -2,
+      });
+      sum += probe.width();
+      probe.destroy();
+    }
+    return sum;
+  };
+  const maxRow = W - Math.round(W * 0.04);
+  while (numberSize > 96 && rowWidth(numberSize) > maxRow) numberSize -= 4;
+
+  const labelSize = Math.max(15, Math.round(W * 0.018));
+  const labelY = H - RED_BAR_H - Math.round(W * 0.052);
+  const numberY = labelY - Math.round(numberSize * 0.72);
   const colW = W / count;
 
   enabled.forEach((stat, i) => {
@@ -584,7 +596,8 @@ async function renderStatsBig(
         fontSize: numberSize,
         fontFamily: FONT_DISPLAY,
         fill: "#FFFFFF",
-        letterSpacing: -3,
+        letterSpacing: -2,
+        wrap: "none",
       }),
     );
     layer.add(

@@ -54,7 +54,7 @@ export const DEFAULT_MD: MatchdayData = {
 
 export const DEFAULT_STATS: StatsData = {
   type: "stats",
-  layout: "classic",
+  layout: "big",
   bgImage: null,
   playerName: "",
   playerImage: null,

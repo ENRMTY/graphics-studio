@@ -164,7 +164,7 @@ export function apiGraphicToStats(g: ApiGraphic): StatsData & { _id?: string } {
   return {
     _id: g.id,
     type: "stats",
-    layout: (g.graphicLayout as "classic" | "overlay" | "big") ?? "classic",
+    layout: (g.graphicLayout as "classic" | "overlay" | "big") ?? "big",
     bgImage: g.bgImageUrl,
     playerName: g.playerName ?? "",
     playerImage: g.playerImageUrl,
