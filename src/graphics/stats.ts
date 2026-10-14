@@ -518,8 +518,8 @@ async function renderStatsBig(
   stage.add(layer);
 
   const ACCENT = data.accentColor || "#E10600";
-  const PAD = Math.round(W * 0.055);
-  const RED_BAR_H = Math.round(W * 0.042);
+  const PAD = Math.round(W * 0.06);
+  const RED_BAR_H = Math.round(W * 0.03);
 
   layer.add(
     new Konva.Rect({ x: 0, y: 0, width: W, height: H, fill: "#14080c" }),
@@ -559,104 +559,149 @@ async function renderStatsBig(
   );
 
   const enabled = data.stats.filter((s) => s.enabled && s.value);
-  const count = Math.max(enabled.length, 1);
-  const values = enabled.map((s) => s.value);
-  const gap = Math.round(W * 0.055);
-  let numberSize = Math.round(Math.min(W, H) * (count <= 3 ? 0.3 : 0.22));
-  const rowWidth = (size: number) => {
-    let sum = gap * Math.max(values.length - 1, 0);
-    for (const v of values) {
-      const probe = new Konva.Text({
-        text: v,
-        fontSize: size,
-        fontFamily: FONT_DISPLAY,
-        letterSpacing: -2,
-      });
-      sum += probe.width();
-      probe.destroy();
-    }
-    return sum;
+  const count = enabled.length;
+  const labelSize = Math.max(13, Math.round(W * 0.015));
+  const labelTrack = Math.round(W * 0.003);
+  const numberSize = Math.round(
+    W * (count >= 4 ? 0.145 : count === 3 ? 0.175 : 0.19),
+  );
+  const labelY = H - RED_BAR_H - labelSize - Math.round(W * 0.022);
+  const numberY = labelY - Math.round(numberSize * 0.9) - Math.round(W * 0.012);
+
+  const measure = (
+    text: string,
+    size: number,
+    family: string,
+    spacing: number,
+    weight = "",
+  ) => {
+    const probe = new Konva.Text({
+      text,
+      fontSize: size,
+      fontFamily: family,
+      letterSpacing: spacing,
+      fontStyle: weight,
+    });
+    const width = probe.width();
+    probe.destroy();
+    return width;
   };
-  const maxRow = W - Math.round(W * 0.04);
-  while (numberSize > 96 && rowWidth(numberSize) > maxRow) numberSize -= 4;
 
-  const labelSize = Math.max(15, Math.round(W * 0.018));
-  const labelY = H - RED_BAR_H - Math.round(W * 0.052);
-  const numberY = labelY - Math.round(numberSize * 0.72);
-  const colW = W / count;
+  const slots: { w: number; x: number }[] = enabled.map((stat) => {
+    const numW = measure(stat.value, numberSize, FONT_DISPLAY, -1);
+    const labW = measure(
+      stat.label.toUpperCase(),
+      labelSize,
+      FONT_BODY,
+      labelTrack,
+      "600",
+    );
+    return { w: Math.max(numW, labW), x: 0 };
+  });
 
-  enabled.forEach((stat, i) => {
+  if (count <= 2) {
+    const gap = Math.round(W * 0.07);
+    let x = PAD;
+    slots.forEach((slot) => {
+      slot.x = x;
+      x += slot.w + gap;
+    });
+  } else {
+    const usable = W - PAD * 2;
+    const slotW = usable / count;
+    slots.forEach((slot, i) => {
+      slot.x = PAD + i * slotW + (slotW - slot.w) / 2;
+    });
+  }
+
+  slots.forEach((slot, i) => {
+    const stat = enabled[i];
     layer.add(
       new Konva.Text({
         text: stat.value,
-        x: i * colW,
+        x: slot.x,
         y: numberY,
-        width: colW,
+        width: slot.w,
         align: "center",
         fontSize: numberSize,
         fontFamily: FONT_DISPLAY,
         fill: "#FFFFFF",
-        letterSpacing: -2,
+        letterSpacing: -1,
         wrap: "none",
       }),
     );
     layer.add(
       new Konva.Text({
         text: stat.label.toUpperCase(),
-        x: i * colW,
+        x: slot.x,
         y: labelY,
-        width: colW,
+        width: slot.w,
         align: "center",
         fontSize: labelSize,
         fontFamily: FONT_BODY,
         fontStyle: "600",
-        fill: "rgba(255,255,255,0.92)",
-        letterSpacing: Math.round(W * 0.004),
+        fill: "rgba(255,255,255,0.9)",
+        letterSpacing: labelTrack,
+        wrap: "none",
       }),
     );
-    if (i < enabled.length - 1) {
+    if (i < slots.length - 1) {
+      const next = slots[i + 1];
       layer.add(
         new Konva.Circle({
-          x: (i + 1) * colW,
-          y: numberY + numberSize * 0.38,
-          radius: Math.max(4, Math.round(W * 0.006)),
+          x: (slot.x + slot.w + next.x) / 2,
+          y: numberY + numberSize * 0.4,
+          radius: Math.max(3.5, Math.round(W * 0.005)),
           fill: ACCENT,
         }),
       );
     }
   });
 
+  const caption = (data.matchContext ?? "").trim();
+  const captionSize = Math.round(W * 0.02);
+  const nameSize = Math.round(W * 0.044);
   const name = (data.playerName || "PLAYER NAME").toUpperCase();
-  const nameSize = Math.round(W * 0.046);
-  const nameY = numberY - Math.round(W * 0.085);
-  const nameText = new Konva.Text({
-    text: name,
-    fontSize: nameSize,
-    fontFamily: FONT_DISPLAY,
-    letterSpacing: 1.5,
-  });
-  const nameW = Math.min(nameText.width(), W - PAD * 2);
-  nameText.destroy();
+  let above = numberY - Math.round(W * 0.02);
+
+  if (caption) {
+    above -= captionSize;
+    layer.add(
+      new Konva.Text({
+        text: caption,
+        x: PAD,
+        y: above,
+        width: W - PAD * 2,
+        fontSize: captionSize,
+        fontFamily: FONT_BODY,
+        fontStyle: "500",
+        fill: "rgba(255,255,255,0.82)",
+      }),
+    );
+    above -= Math.round(W * 0.016);
+  }
+
+  const ruleW = Math.round(W * 0.105);
+  layer.add(
+    new Konva.Rect({
+      x: PAD,
+      y: above,
+      width: ruleW,
+      height: Math.max(3, Math.round(W * 0.0035)),
+      fill: ACCENT,
+    }),
+  );
 
   layer.add(
     new Konva.Text({
       text: name,
       x: PAD,
-      y: nameY,
+      y: above - Math.round(nameSize * 0.82),
       width: W - PAD * 2,
       fontSize: nameSize,
       fontFamily: FONT_DISPLAY,
       fill: "#FFFFFF",
-      letterSpacing: 1.5,
-    }),
-  );
-  layer.add(
-    new Konva.Rect({
-      x: PAD,
-      y: nameY + nameSize * 0.78,
-      width: Math.min(Math.round(nameW * 0.42), Math.round(W * 0.16)),
-      height: Math.max(3, Math.round(W * 0.004)),
-      fill: ACCENT,
+      letterSpacing: 1.2,
     }),
   );
 

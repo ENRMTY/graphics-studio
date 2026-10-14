@@ -229,31 +229,27 @@ export function StatsPanel({
         />
       </div>
 
-      {/* match context (overlay only) */}
-      {layout === "overlay" && (
-        <div>
-          <div className="section-label">
-            Match Context{" "}
-            <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
-              (optional)
-            </span>
-          </div>
-          <input
-            className="input"
-            placeholder="e.g. yesterday's game · vs Man City"
-            value={data.matchContext ?? ""}
-            onChange={(e) =>
-              onChange({ ...data, matchContext: e.target.value })
-            }
-          />
-          <p
-            className="help-text"
-            style={{ marginTop: 4, fontSize: 11, color: "var(--text-muted)" }}
-          >
-            Shown as "on [your text]" beneath the player name
-          </p>
+      {/* optional line under the name */}
+      <div>
+        <div className="section-label">
+          Smaller line{" "}
+          <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+            (optional)
+          </span>
         </div>
-      )}
+        <input
+          className="input"
+          placeholder="e.g. against LASK tonight"
+          value={data.matchContext ?? ""}
+          onChange={(e) => onChange({ ...data, matchContext: e.target.value })}
+        />
+        <p
+          className="help-text"
+          style={{ marginTop: 4, fontSize: 11, color: "var(--text-muted)" }}
+        >
+          Sits under the name. Leave it blank to hide it.
+        </p>
+      </div>
 
       {/* competition */}
       <CompetitionPicker
