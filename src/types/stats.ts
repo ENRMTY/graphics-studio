@@ -19,5 +19,6 @@ export interface StatsData {
   competitionIcon: string | null;
   competitionColor: string;
   stats: StatItem[];
+  statGap?: number;
   accentColor: string;
 }

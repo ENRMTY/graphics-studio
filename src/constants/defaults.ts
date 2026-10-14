@@ -63,6 +63,7 @@ export const DEFAULT_STATS: StatsData = {
   competitionIcon: null,
   competitionColor: "",
   stats: [],
+  statGap: 62,
   accentColor: "#C8102E",
 };
 

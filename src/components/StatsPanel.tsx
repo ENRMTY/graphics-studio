@@ -353,6 +353,32 @@ export function StatsPanel({
           </div>
         </div>
 
+        <div style={{ marginBottom: 12 }}>
+          <div
+            className="section-label"
+            style={{
+              marginBottom: 6,
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span>Spacing</span>
+            <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+              {data.statGap ?? 62}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={20}
+            max={140}
+            value={data.statGap ?? 62}
+            onChange={(e) =>
+              onChange({ ...data, statGap: Number(e.target.value) })
+            }
+            style={{ width: "100%", accentColor: "var(--red)" }}
+          />
+        </div>
+
         {data.stats.length === 0 && (
           <div className="empty-state" style={{ padding: 14 }}>
             <p>No stats yet — add some above</p>

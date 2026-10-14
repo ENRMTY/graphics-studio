@@ -561,7 +561,8 @@ async function renderStatsBig(
   const enabled = data.stats.filter((s) => s.enabled && s.value);
   const labelSize = Math.max(14, Math.round(W * 0.016));
   const labelTrack = Math.round(W * 0.0028);
-  const gap = Math.round(W * 0.08); // SPACING between stat blocks
+  const gapScale = Math.min(140, Math.max(20, data.statGap ?? 62)) / 1000;
+  const gap = Math.round(W * gapScale);
   const maxRow = W - Math.round(W * 0.05);
 
   const measure = (

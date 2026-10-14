@@ -44,6 +44,10 @@ export interface ApiGraphic {
   playerImageUrl: string | null;
   statsData:
     | { id: string; label: string; value: string; enabled: boolean }[]
+    | {
+        items: { id: string; label: string; value: string; enabled: boolean }[];
+        gap?: number;
+      }
     | null;
   accentColor: string | null;
   playerRole: string | null;
@@ -161,6 +165,9 @@ export function apiGraphicToMD(
 }
 
 export function apiGraphicToStats(g: ApiGraphic): StatsData & { _id?: string } {
+  const raw = g.statsData;
+  const stats = Array.isArray(raw) ? raw : (raw?.items ?? []);
+  const gap = !Array.isArray(raw) && raw?.gap != null ? Number(raw.gap) : 62;
   return {
     _id: g.id,
     type: "stats",
@@ -172,7 +179,8 @@ export function apiGraphicToStats(g: ApiGraphic): StatsData & { _id?: string } {
     competition: g.competitionName ?? "",
     competitionIcon: g.competitionIconUrl ?? null,
     competitionColor: g.competitionColor ?? "",
-    stats: g.statsData ?? [],
+    stats,
+    statGap: Number.isFinite(gap) ? gap : 62,
     accentColor: g.accentColor ?? "#C8102E",
   };
 }
@@ -307,7 +315,7 @@ function statsToPayload(data: StatsData) {
     competitionColor: data.competitionColor || null,
     playerName: data.playerName || null,
     matchContext: data.matchContext || null,
-    statsData: data.stats ?? [],
+    statsData: { items: data.stats ?? [], gap: data.statGap ?? 62 },
     accentColor: data.accentColor || null,
   };
 }
