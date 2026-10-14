@@ -36,6 +36,28 @@ function foldName(s: string): string {
   return s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 }
 
+function surnameMatch(full: string, query: string): boolean {
+  const q = foldName(query.trim());
+  if (!q) return false;
+  const parts = foldName(full).split(/\s+/).filter(Boolean);
+  for (let i = 1; i < parts.length; i++) {
+    if (parts.slice(i).join(" ").startsWith(q)) return true;
+  }
+  return false;
+}
+
+/** Ghost the rest of whichever part they started: first name or surname. */
+function ghostFor(name: string, typed: string): string {
+  if (foldName(name).startsWith(foldName(typed))) return ghostRest(name, typed);
+  const parts = name.trim().split(/\s+/);
+  const q = foldName(typed);
+  for (let i = 1; i < parts.length; i++) {
+    const suffix = parts.slice(i).join(" ");
+    if (foldName(suffix).startsWith(q)) return ghostRest(suffix, typed);
+  }
+  return "";
+}
+
 function ghostRest(name: string, typed: string): string {
   const target = foldName(typed);
   let acc = "";
@@ -76,9 +98,14 @@ function PlayerNameInput({
       return;
     }
     const folded = foldName(value);
-    const match = savedPlayers.find((p) => foldName(p.name).startsWith(folded));
-    if (match && foldName(match.name) !== folded) {
-      setGhost(ghostRest(match.name, value));
+    const prefix = savedPlayers.find((p) =>
+      foldName(p.name).startsWith(folded),
+    );
+    const match =
+      prefix ?? savedPlayers.find((p) => surnameMatch(p.name, value));
+    const rest = match ? ghostFor(match.name, value) : "";
+    if (match && rest) {
+      setGhost(rest);
       setActiveSuggestion(match);
     } else if (match && match.name !== value) {
       setGhost("");
@@ -171,10 +198,7 @@ function PlayerRow({
       onUpdate({
         ...player,
         name: exact.name,
-        number:
-          player.number === null && exact.number !== null
-            ? exact.number
-            : player.number,
+        number: exact.number !== null ? exact.number : player.number,
         photoUrl: exact.photoUrl ?? player.photoUrl ?? null,
       });
       return;

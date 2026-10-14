@@ -8,7 +8,7 @@ export interface StatItem {
 export interface StatsData {
   _id?: string;
   type: "stats";
-  layout?: "classic" | "overlay";
+  layout?: "classic" | "overlay" | "big";
   bgImage: string | null;
   bgImageFile?: File;
   playerName: string;

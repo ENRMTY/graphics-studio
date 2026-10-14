@@ -85,7 +85,13 @@ export function StatsPanel({
       <div>
         <div className="section-label">Design Layout</div>
         <div style={{ display: "flex", gap: 8 }}>
-          {(["classic", "overlay"] as const).map((l) => (
+          {(
+            [
+              ["classic", "Classic"],
+              ["overlay", "Overlay"],
+              ["big", "Big"],
+            ] as const
+          ).map(([l, label]) => (
             <button
               key={l}
               onClick={() => onChange({ ...data, layout: l })}
@@ -104,11 +110,10 @@ export function StatsPanel({
                 fontSize: 13,
                 fontWeight: layout === l ? 700 : 400,
                 cursor: "pointer",
-                textTransform: "capitalize",
                 letterSpacing: 0.5,
               }}
             >
-              {l === "classic" ? "Classic" : "Overlay"}
+              {label}
             </button>
           ))}
         </div>
@@ -119,6 +124,15 @@ export function StatsPanel({
           >
             Full photo background with a bottom gradient panel — like the Full
             Time &amp; Match Day graphics.
+          </p>
+        )}
+        {layout === "big" && (
+          <p
+            className="help-text"
+            style={{ marginTop: 6, fontSize: 11, color: "var(--text-muted)" }}
+          >
+            Full-bleed photo, name, then huge numbers and a red bar. Use the
+            player photo.
           </p>
         )}
       </div>

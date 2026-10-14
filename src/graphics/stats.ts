@@ -9,6 +9,9 @@ export async function renderStats(
   H: number = W,
 ): Promise<void> {
   const layout = data.layout ?? "classic";
+  if (layout === "big") {
+    return renderStatsBig(stage, data, W, H);
+  }
   if (layout === "overlay") {
     return renderStatsOverlay(stage, data, W, H);
   }
@@ -504,6 +507,185 @@ async function renderStatsOverlay(
       fontFamily: FONT_DISPLAY,
       fill: ACCENT,
       letterSpacing: 5,
+    }),
+  );
+
+  layer.draw();
+}
+
+/** Full-bleed portrait, name, then huge numbers with a red bar. */
+async function renderStatsBig(
+  stage: Konva.Stage,
+  data: StatsData,
+  W: number,
+  H: number,
+): Promise<void> {
+  stage.destroyChildren();
+  const layer = new Konva.Layer();
+  stage.add(layer);
+
+  const ACCENT = data.accentColor || "#E10600";
+  const PAD = Math.round(W * 0.055);
+  const RED_BAR_H = Math.round(W * 0.042);
+
+  layer.add(
+    new Konva.Rect({ x: 0, y: 0, width: W, height: H, fill: "#14080c" }),
+  );
+
+  const photo = data.playerImage || data.bgImage;
+  if (photo) {
+    try {
+      const img = await loadImage(photo);
+      const { w, h, x, y } = coverFit(img.width, img.height, W, H);
+      layer.add(new Konva.Image({ image: img, x, y, width: w, height: h }));
+    } catch {
+      // ignore
+    }
+  }
+
+  layer.add(
+    new Konva.Rect({
+      x: 0,
+      y: H * 0.42,
+      width: W,
+      height: H * 0.58,
+      listening: false,
+      fillLinearGradientStartPoint: { x: 0, y: 0 },
+      fillLinearGradientEndPoint: { x: 0, y: H * 0.58 },
+      fillLinearGradientColorStops: [
+        0,
+        "rgba(0,0,0,0)",
+        0.35,
+        "rgba(0,0,0,0.28)",
+        0.7,
+        "rgba(0,0,0,0.62)",
+        1,
+        "rgba(0,0,0,0.82)",
+      ],
+    }),
+  );
+
+  const enabled = data.stats.filter((s) => s.enabled && s.value);
+  const count = Math.max(enabled.length, 1);
+  const numberSize = Math.round(W * (count <= 3 ? 0.2 : 0.15));
+  const labelSize = Math.max(13, Math.round(W * 0.016));
+  const labelY = H - RED_BAR_H - Math.round(W * 0.058);
+  const numberY = labelY - Math.round(numberSize * 0.78);
+  const colW = W / count;
+
+  enabled.forEach((stat, i) => {
+    layer.add(
+      new Konva.Text({
+        text: stat.value,
+        x: i * colW,
+        y: numberY,
+        width: colW,
+        align: "center",
+        fontSize: numberSize,
+        fontFamily: FONT_DISPLAY,
+        fill: "#FFFFFF",
+        letterSpacing: -3,
+      }),
+    );
+    layer.add(
+      new Konva.Text({
+        text: stat.label.toUpperCase(),
+        x: i * colW,
+        y: labelY,
+        width: colW,
+        align: "center",
+        fontSize: labelSize,
+        fontFamily: FONT_BODY,
+        fontStyle: "600",
+        fill: "rgba(255,255,255,0.92)",
+        letterSpacing: Math.round(W * 0.004),
+      }),
+    );
+    if (i < enabled.length - 1) {
+      layer.add(
+        new Konva.Circle({
+          x: (i + 1) * colW,
+          y: numberY + numberSize * 0.38,
+          radius: Math.max(4, Math.round(W * 0.006)),
+          fill: ACCENT,
+        }),
+      );
+    }
+  });
+
+  const name = (data.playerName || "PLAYER NAME").toUpperCase();
+  const nameSize = Math.round(W * 0.046);
+  const nameY = numberY - Math.round(W * 0.085);
+  const nameText = new Konva.Text({
+    text: name,
+    fontSize: nameSize,
+    fontFamily: FONT_DISPLAY,
+    letterSpacing: 1.5,
+  });
+  const nameW = Math.min(nameText.width(), W - PAD * 2);
+  nameText.destroy();
+
+  layer.add(
+    new Konva.Text({
+      text: name,
+      x: PAD,
+      y: nameY,
+      width: W - PAD * 2,
+      fontSize: nameSize,
+      fontFamily: FONT_DISPLAY,
+      fill: "#FFFFFF",
+      letterSpacing: 1.5,
+    }),
+  );
+  layer.add(
+    new Konva.Rect({
+      x: PAD,
+      y: nameY + nameSize * 0.78,
+      width: Math.min(Math.round(nameW * 0.42), Math.round(W * 0.16)),
+      height: Math.max(3, Math.round(W * 0.004)),
+      fill: ACCENT,
+    }),
+  );
+
+  if (data.competitionIcon) {
+    try {
+      const ci = await loadImage(data.competitionIcon);
+      const s = Math.round(W * 0.052);
+      layer.add(
+        new Konva.Image({
+          image: ci,
+          x: PAD,
+          y: Math.round(W * 0.04),
+          width: s,
+          height: s,
+        }),
+      );
+    } catch {
+      // ignore
+    }
+  }
+
+  layer.add(
+    new Konva.Text({
+      text: "ENORMITY OF LFC",
+      x: PAD,
+      y: Math.round(W * 0.048),
+      width: W - PAD * 2,
+      fontSize: Math.round(W * 0.014),
+      fontFamily: FONT_DISPLAY,
+      fill: "rgba(255,255,255,0.88)",
+      letterSpacing: 2.5,
+      align: "right",
+    }),
+  );
+
+  layer.add(
+    new Konva.Rect({
+      x: 0,
+      y: H - RED_BAR_H,
+      width: W,
+      height: RED_BAR_H,
+      fill: ACCENT,
     }),
   );
 

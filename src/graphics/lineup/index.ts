@@ -307,18 +307,38 @@ export async function renderLineup(
         }),
       );
     }
+    const label = displayName(sub.name).toUpperCase();
+    const maxLabelW = chipW - 8;
+    const startSize = Math.round(W * 0.014);
+    const singleWord = !/\s/.test(label.trim());
+    let labelSize = startSize;
+    if (singleWord && label) {
+      const probe = new Konva.Text({
+        text: label,
+        fontSize: labelSize,
+        fontFamily: "DM Sans",
+        fontStyle: "600",
+        letterSpacing: 0.4,
+      });
+      while (probe.width() > maxLabelW && labelSize > 9) {
+        labelSize -= 1;
+        probe.fontSize(labelSize);
+      }
+      probe.destroy();
+    }
     layer.add(
       new Konva.Text({
-        text: displayName(sub.name).toUpperCase(),
+        text: label,
         x: cx + 4,
         y: chipY + chipH - Math.round(chipH * 0.28),
-        width: chipW - 8,
-        fontSize: Math.round(W * 0.014),
+        width: maxLabelW,
+        fontSize: labelSize,
         fontFamily: "DM Sans",
         fontStyle: "600",
         fill: "#FFFFFF",
         align: "center",
-        letterSpacing: 0.6,
+        letterSpacing: singleWord ? 0.4 : 0.6,
+        wrap: singleWord ? "none" : "word",
       }),
     );
   });
