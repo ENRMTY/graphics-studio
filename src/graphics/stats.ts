@@ -559,14 +559,10 @@ async function renderStatsBig(
   );
 
   const enabled = data.stats.filter((s) => s.enabled && s.value);
-  const count = enabled.length;
-  const labelSize = Math.max(13, Math.round(W * 0.015));
-  const labelTrack = Math.round(W * 0.003);
-  const numberSize = Math.round(
-    W * (count >= 4 ? 0.145 : count === 3 ? 0.175 : 0.19),
-  );
-  const labelY = H - RED_BAR_H - labelSize - Math.round(W * 0.022);
-  const numberY = labelY - Math.round(numberSize * 0.9) - Math.round(W * 0.012);
+  const labelSize = Math.max(14, Math.round(W * 0.016));
+  const labelTrack = Math.round(W * 0.0028);
+  const gap = Math.round(W * 0.038);
+  const maxRow = W - Math.round(W * 0.05);
 
   const measure = (
     text: string,
@@ -587,32 +583,45 @@ async function renderStatsBig(
     return width;
   };
 
-  const slots: { w: number; x: number }[] = enabled.map((stat) => {
-    const numW = measure(stat.value, numberSize, FONT_DISPLAY, -1);
-    const labW = measure(
-      stat.label.toUpperCase(),
-      labelSize,
-      FONT_BODY,
-      labelTrack,
-      "600",
+  const widthsAt = (size: number) =>
+    enabled.map((stat) =>
+      Math.max(
+        measure(stat.value, size, FONT_DISPLAY, -2),
+        measure(
+          stat.label.toUpperCase(),
+          labelSize,
+          FONT_BODY,
+          labelTrack,
+          "700",
+        ),
+      ),
     );
-    return { w: Math.max(numW, labW), x: 0 };
+
+  const rowWidthAt = (size: number) => {
+    const widths = widthsAt(size);
+    if (widths.length === 0) return 0;
+    return widths.reduce((sum, w) => sum + w, 0) + gap * (widths.length - 1);
+  };
+
+  let numberSize = Math.round(W * 0.28);
+  while (numberSize > 72 && rowWidthAt(numberSize) > maxRow) numberSize -= 4;
+
+  const labelY = H - RED_BAR_H - labelSize - Math.round(W * 0.02);
+  const numberY =
+    labelY - Math.round(numberSize * 0.92) - Math.round(W * 0.014);
+  const widths = widthsAt(numberSize);
+  const rowW =
+    widths.reduce((sum, w) => sum + w, 0) +
+    gap * Math.max(widths.length - 1, 0);
+  let cursorX = (W - rowW) / 2;
+
+  const slots: { w: number; x: number }[] = widths.map((w) => {
+    const slot = { w, x: cursorX };
+    cursorX += w + gap;
+    return slot;
   });
 
-  if (count <= 2) {
-    const gap = Math.round(W * 0.07);
-    let x = PAD;
-    slots.forEach((slot) => {
-      slot.x = x;
-      x += slot.w + gap;
-    });
-  } else {
-    const usable = W - PAD * 2;
-    const slotW = usable / count;
-    slots.forEach((slot, i) => {
-      slot.x = PAD + i * slotW + (slotW - slot.w) / 2;
-    });
-  }
+  const stroke = Math.max(2, Math.round(numberSize * 0.012));
 
   slots.forEach((slot, i) => {
     const stat = enabled[i];
@@ -626,7 +635,9 @@ async function renderStatsBig(
         fontSize: numberSize,
         fontFamily: FONT_DISPLAY,
         fill: "#FFFFFF",
-        letterSpacing: -1,
+        stroke: "#FFFFFF",
+        strokeWidth: stroke,
+        letterSpacing: -2,
         wrap: "none",
       }),
     );
@@ -639,8 +650,8 @@ async function renderStatsBig(
         align: "center",
         fontSize: labelSize,
         fontFamily: FONT_BODY,
-        fontStyle: "600",
-        fill: "rgba(255,255,255,0.9)",
+        fontStyle: "700",
+        fill: "rgba(255,255,255,0.92)",
         letterSpacing: labelTrack,
         wrap: "none",
       }),
@@ -650,8 +661,8 @@ async function renderStatsBig(
       layer.add(
         new Konva.Circle({
           x: (slot.x + slot.w + next.x) / 2,
-          y: numberY + numberSize * 0.4,
-          radius: Math.max(3.5, Math.round(W * 0.005)),
+          y: numberY + numberSize * 0.42,
+          radius: Math.max(4, Math.round(W * 0.0055)),
           fill: ACCENT,
         }),
       );
@@ -660,31 +671,32 @@ async function renderStatsBig(
 
   const caption = (data.matchContext ?? "").trim();
   const captionSize = Math.round(W * 0.02);
-  const nameSize = Math.round(W * 0.044);
+  const nameSize = Math.round(W * 0.046);
   const name = (data.playerName || "PLAYER NAME").toUpperCase();
-  let above = numberY - Math.round(W * 0.02);
+  let above = numberY - Math.round(W * 0.018);
 
   if (caption) {
     above -= captionSize;
     layer.add(
       new Konva.Text({
         text: caption,
-        x: PAD,
+        x: 0,
         y: above,
-        width: W - PAD * 2,
+        width: W,
+        align: "center",
         fontSize: captionSize,
         fontFamily: FONT_BODY,
-        fontStyle: "500",
-        fill: "rgba(255,255,255,0.82)",
+        fontStyle: "600",
+        fill: "rgba(255,255,255,0.86)",
       }),
     );
-    above -= Math.round(W * 0.016);
+    above -= Math.round(W * 0.014);
   }
 
-  const ruleW = Math.round(W * 0.105);
+  const ruleW = Math.round(W * 0.11);
   layer.add(
     new Konva.Rect({
-      x: PAD,
+      x: (W - ruleW) / 2,
       y: above,
       width: ruleW,
       height: Math.max(3, Math.round(W * 0.0035)),
@@ -695,13 +707,14 @@ async function renderStatsBig(
   layer.add(
     new Konva.Text({
       text: name,
-      x: PAD,
+      x: 0,
       y: above - Math.round(nameSize * 0.82),
-      width: W - PAD * 2,
+      width: W,
+      align: "center",
       fontSize: nameSize,
       fontFamily: FONT_DISPLAY,
       fill: "#FFFFFF",
-      letterSpacing: 1.2,
+      letterSpacing: 1.4,
     }),
   );
 
