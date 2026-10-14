@@ -25,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "lineup", label: "Lineup", Icon: Icons.Lineup, section: "create" },
   { id: "stats", label: "Player Stats", Icon: Icons.Stats, section: "create" },
   { id: "quote", label: "Quote", Icon: Icons.Quote, section: "create" },
+  { id: "news", label: "Breaking", Icon: Icons.News, section: "create" },
   {
     id: "transfer",
     label: "Transfer",

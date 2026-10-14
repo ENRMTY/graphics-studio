@@ -9,6 +9,7 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
+  NewsData,
   LineupData,
   TransferData,
   Team,
@@ -25,11 +26,16 @@ import {
   apiGraphicToMD,
   apiGraphicToStats,
   apiGraphicToQuote,
+  apiGraphicToNews,
   apiGraphicToTransfer,
 } from "./services/graphicsService";
 
 // utils
-import { loadLineupSnapshot } from "./utils/storage";
+import {
+  loadLineupSnapshot,
+  loadNewsLocal,
+  saveNewsLocal,
+} from "./utils/storage";
 
 // components
 import { Sidebar } from "./components/Sidebar";
@@ -37,6 +43,7 @@ import { FullTimePanel } from "./components/FullTimePanel";
 import { MatchdayPanel } from "./components/MatchdayPanel";
 import { StatsPanel } from "./components/StatsPanel";
 import { QuotePanel } from "./components/QuotePanel";
+import { NewsPanel } from "./components/NewsPanel";
 import { LineupPanel } from "./components/LineupPanel";
 import { PlayersPanel } from "./components/PlayersPanel";
 import { TransferPanel } from "./components/TransferPanel";
@@ -61,6 +68,7 @@ import {
   DEFAULT_MD,
   DEFAULT_STATS,
   DEFAULT_QUOTE,
+  DEFAULT_NEWS,
   DEFAULT_LINEUP,
   DEFAULT_TRANSFER,
 } from "@defaults";
@@ -75,6 +83,7 @@ export default function App() {
   const [mdData, setMdData] = useState<MatchdayData>(DEFAULT_MD);
   const [statsData, setStatsData] = useState<StatsData>(DEFAULT_STATS);
   const [quoteData, setQuoteData] = useState<QuoteData>(DEFAULT_QUOTE);
+  const [newsData, setNewsData] = useState<NewsData>(DEFAULT_NEWS);
   const [lineupData, setLineupData] = useState<LineupData>(DEFAULT_LINEUP);
   const [transferData, setTransferData] =
     useState<TransferData>(DEFAULT_TRANSFER);
@@ -97,6 +106,7 @@ export default function App() {
   const mdStageRef = useRef<Konva.Stage | null>(null);
   const statsStageRef = useRef<Konva.Stage | null>(null);
   const quoteStageRef = useRef<Konva.Stage | null>(null);
+  const newsStageRef = useRef<Konva.Stage | null>(null);
   const lineupStageRef = useRef<Konva.Stage | null>(null);
   const transferStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -108,6 +118,7 @@ export default function App() {
   const mdRef = useRef(mdData);
   const statsRef = useRef(statsData);
   const quoteRef = useRef(quoteData);
+  const newsRef = useRef(newsData);
   const lineupRef = useRef(lineupData);
   const transferRef = useRef(transferData);
   ftRef.current = ftData;
@@ -115,6 +126,7 @@ export default function App() {
   mdRef.current = mdData;
   statsRef.current = statsData;
   quoteRef.current = quoteData;
+  newsRef.current = newsData;
   lineupRef.current = lineupData;
   transferRef.current = transferData;
 
@@ -144,6 +156,14 @@ export default function App() {
         }
         if (drafts.quote) {
           setQuoteData(apiGraphicToQuote(drafts.quote) as QuoteData);
+        }
+        if (drafts.news) {
+          setNewsData(apiGraphicToNews(drafts.news) as NewsData);
+        } else {
+          const localNews = loadNewsLocal();
+          if (localNews) {
+            setNewsData((prev) => ({ ...prev, ...localNews, type: "news" }));
+          }
         }
         if ((drafts as any).transfer) {
           setTransferData(
@@ -186,7 +206,9 @@ export default function App() {
       const md = mdRef.current;
       const stats = statsRef.current;
       const quote = quoteRef.current;
+      const news = newsRef.current;
       const transfer = transferRef.current;
+      saveNewsLocal(news);
       try {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
         if (ft.bgImageFile) {
@@ -300,6 +322,28 @@ export default function App() {
           setTransferData((p) => ({ ...p, _id: transferResult.id }));
         }
 
+        try {
+          const newsResult = await graphicsService.saveNewsDraft(
+            news,
+            news._id,
+          );
+          if (news.bgImageFile) {
+            await graphicsService.uploadNewsBgImage(
+              newsResult.id,
+              news.bgImageFile,
+            );
+            setNewsData((p) => ({
+              ...p,
+              _id: newsResult.id,
+              bgImageFile: undefined,
+            }));
+          } else {
+            setNewsData((p) => ({ ...p, _id: newsResult.id }));
+          }
+        } catch (err) {
+          console.error("Breaking draft kept locally:", err);
+        }
+
         setSaveStatus("saved");
         setTimeout(() => setSaveStatus("idle"), 2000);
       } catch (err) {
@@ -375,6 +419,26 @@ export default function App() {
     },
     [scheduleAutoSave],
   );
+
+  const handleNewsChange = useCallback(
+    (data: NewsData) => {
+      setNewsData(data);
+      saveNewsLocal(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
+  const handleNewsClearImage = useCallback(async () => {
+    const id = newsRef.current._id;
+    if (!id) return;
+    try {
+      await graphicsService.clearNewsBgImage(id);
+      setNewsData((p) => ({ ...p, bgImage: null, bgImageFile: undefined }));
+    } catch (e) {
+      console.error("Failed to clear image", e);
+    }
+  }, []);
 
   const handleQuoteClearImage = useCallback(
     async (field: "bgImage" | "playerImage") => {
@@ -474,11 +538,13 @@ export default function App() {
             ? statsStageRef.current
             : view === "quote"
               ? quoteStageRef.current
-              : view === "lineup"
-                ? lineupStageRef.current
-                : view === "transfer"
-                  ? transferStageRef.current
-                  : mdStageRef.current;
+              : view === "news"
+                ? newsStageRef.current
+                : view === "lineup"
+                  ? lineupStageRef.current
+                  : view === "transfer"
+                    ? transferStageRef.current
+                    : mdStageRef.current;
     if (!stage || exporting) return;
     setExporting(true);
     let restorePixelRatio: (() => void) | null = null;
@@ -501,8 +567,12 @@ export default function App() {
       stage.scale({ x: 1, y: 1 });
 
       // lineup uses async image loading - re-render at full res before capture
-      if (view === "lineup") {
-        await triggerRender(stage, lineupRef.current, canvasSize);
+      if (view === "lineup" || view === "news") {
+        await triggerRender(
+          stage,
+          view === "news" ? newsRef.current : lineupRef.current,
+          canvasSize,
+        );
       } else {
         stage.draw();
       }
@@ -531,11 +601,13 @@ export default function App() {
               ? "stats"
               : view === "quote"
                 ? "quote"
-                : view === "lineup"
-                  ? "lineup"
-                  : view === "transfer"
-                    ? "transfer"
-                    : "matchday";
+                : view === "news"
+                  ? "news"
+                  : view === "lineup"
+                    ? "lineup"
+                    : view === "transfer"
+                      ? "transfer"
+                      : "matchday";
       const filename = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       if (isMobile && blob) {
         // straight into the gallery. no share sheet, no app picker.
@@ -581,6 +653,7 @@ export default function App() {
     view === "md" ||
     view === "stats" ||
     view === "quote" ||
+    view === "news" ||
     view === "lineup" ||
     view === "transfer";
 
@@ -661,11 +734,13 @@ export default function App() {
                           ? "Player Stats"
                           : view === "quote"
                             ? "Quote Card"
-                            : view === "lineup"
-                              ? "Lineup"
-                              : view === "transfer"
-                                ? "Transfer"
-                                : "Match Day"}
+                            : view === "news"
+                              ? "Breaking"
+                              : view === "lineup"
+                                ? "Lineup"
+                                : view === "transfer"
+                                  ? "Transfer"
+                                  : "Match Day"}
                   </h2>
                   <p>
                     {view === "md"
@@ -674,9 +749,11 @@ export default function App() {
                         ? "Player stats graphic"
                         : view === "quote"
                           ? "Player quote graphic"
-                          : view === "transfer"
-                            ? "Player transfer graphic"
-                            : "Configure scoreline & events"}
+                          : view === "news"
+                            ? "Big headline, optional line underneath"
+                            : view === "transfer"
+                              ? "Player transfer graphic"
+                              : "Configure scoreline & events"}
                   </p>
                 </div>
               </div>
@@ -702,6 +779,14 @@ export default function App() {
                   data={quoteData}
                   onChange={handleQuoteChange}
                   onClearImage={handleQuoteClearImage}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "news" ? (
+                <NewsPanel
+                  data={newsData}
+                  onChange={handleNewsChange}
+                  onClearImage={handleNewsClearImage}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
                 />
@@ -815,6 +900,14 @@ export default function App() {
                     <Canvas
                       data={quoteData}
                       stageRef={quoteStageRef}
+                      canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
+                    />
+                  </div>
+                  <div style={{ display: view === "news" ? "block" : "none" }}>
+                    <Canvas
+                      data={newsData}
+                      stageRef={newsStageRef}
                       canvasSize={canvasSize}
                       paused={isMobile && mobileTab === "edit"}
                     />

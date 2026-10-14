@@ -4,6 +4,7 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
+  NewsData,
   TransferData,
 } from "@types";
 import { isValidUUID } from "../helpers/isValidUuid";
@@ -17,6 +18,7 @@ export interface ApiGraphic {
     | "matchday"
     | "stats"
     | "quote"
+    | "news"
     | "transfer";
   status: "draft" | "published";
   bgImageUrl: string | null;
@@ -72,6 +74,7 @@ interface DraftsResponse {
     matchday: ApiGraphic | null;
     stats: ApiGraphic | null;
     quote: ApiGraphic | null;
+    news?: ApiGraphic | null;
     transfer: ApiGraphic | null;
   };
 }
@@ -192,6 +195,19 @@ export function apiGraphicToQuote(g: ApiGraphic): QuoteData & { _id?: string } {
   };
 }
 
+export function apiGraphicToNews(g: ApiGraphic): NewsData & { _id?: string } {
+  return {
+    _id: g.id,
+    type: "news",
+    bgImage: g.bgImageUrl,
+    headline: g.playerName || "QUALIFIED",
+    caption: g.quoteText ?? "",
+    competition: g.competitionName ?? "",
+    competitionIcon: g.competitionIconUrl ?? null,
+    competitionColor: g.competitionColor ?? "",
+  };
+}
+
 export function apiGraphicToTransfer(
   g: ApiGraphic,
 ): TransferData & { _id?: string } {
@@ -308,6 +324,18 @@ function quoteToPayload(data: QuoteData) {
     quoteText: data.quoteText || null,
     matchContext: data.matchContext || null,
     accentColor: data.accentColor || null,
+  };
+}
+
+function newsToPayload(data: NewsData) {
+  return {
+    graphicType: "news",
+    graphicLayout: "headline",
+    competitionName: data.competition || null,
+    competitionIconUrl: safeUrl(data.competitionIcon),
+    competitionColor: data.competitionColor || null,
+    playerName: data.headline || null,
+    quoteText: data.caption || null,
   };
 }
 
@@ -522,6 +550,38 @@ export const graphicsService = {
   async clearQuotePlayerImage(id: string): Promise<ApiGraphic> {
     const res = await api.delete<SingleResponse>(
       `/api/graphics/${id}/player-image`,
+    );
+    return res.data;
+  },
+
+  async saveNewsDraft(data: NewsData, id?: string): Promise<ApiGraphic> {
+    if (id) {
+      const res = await api.patch<SingleResponse>(
+        `/api/graphics/${id}`,
+        newsToPayload(data),
+      );
+      return res.data;
+    }
+    const res = await api.post<SingleResponse>(
+      "/api/graphics",
+      newsToPayload(data),
+    );
+    return res.data;
+  },
+
+  async uploadNewsBgImage(id: string, file: File): Promise<ApiGraphic> {
+    const form = new FormData();
+    form.append("background", file);
+    const res = await api.patchForm<SingleResponse>(
+      `/api/graphics/${id}/background`,
+      form,
+    );
+    return res.data;
+  },
+
+  async clearNewsBgImage(id: string): Promise<ApiGraphic> {
+    const res = await api.delete<SingleResponse>(
+      `/api/graphics/${id}/background`,
     );
     return res.data;
   },

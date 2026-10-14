@@ -3,6 +3,7 @@ import {
   MatchdayData,
   StatsData,
   QuoteData,
+  NewsData,
   LineupData,
   LineupPlayer,
   TransferData,
@@ -78,6 +79,16 @@ export const DEFAULT_QUOTE: QuoteData = {
   competitionIcon: null,
   competitionColor: "",
   accentColor: "#C8102E",
+};
+
+export const DEFAULT_NEWS: NewsData = {
+  type: "news",
+  bgImage: null,
+  headline: "QUALIFIED",
+  caption: "",
+  competition: "",
+  competitionIcon: null,
+  competitionColor: "",
 };
 
 export const DEFAULT_TRANSFER: TransferData = {

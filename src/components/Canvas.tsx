@@ -5,6 +5,7 @@ import type {
   MatchdayData,
   StatsData,
   QuoteData,
+  NewsData,
   LineupData,
   TransferData,
 } from "@types";
@@ -13,6 +14,7 @@ import {
   renderMatchday,
   renderStats,
   renderQuote,
+  renderNews,
   renderLineup,
   renderTransfer,
 } from "@graphics";
@@ -24,6 +26,7 @@ type CanvasData =
   | MatchdayData
   | StatsData
   | QuoteData
+  | NewsData
   | LineupData
   | TransferData;
 
@@ -221,6 +224,8 @@ export async function triggerRender(
     renderStats(stage, data, fullW, fullH);
   } else if (data.type === "quote") {
     renderQuote(stage, data, fullW, fullH);
+  } else if (data.type === "news") {
+    await renderNews(stage, data, fullW, fullH);
   } else if (data.type === "lineup") {
     await renderLineup(stage, data, fullW, fullH);
   } else if (data.type === "transfer") {

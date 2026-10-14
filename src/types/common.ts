@@ -7,6 +7,7 @@ export type ViewMode =
   | "md"
   | "stats"
   | "quote"
+  | "news"
   | "lineup"
   | "transfer"
   | "teams"
