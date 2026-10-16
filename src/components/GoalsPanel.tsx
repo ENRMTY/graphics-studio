@@ -1,6 +1,5 @@
-import type { Competition, GoalsData, Team } from "@types";
+import type { Competition, GoalsData } from "@types";
 import { CompetitionPicker } from "./CompetitionPicker";
-import { TeamPicker } from "./TeamPicker";
 import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
 
@@ -9,8 +8,6 @@ interface Props {
   onChange: (d: GoalsData) => void;
   competitions: Competition[];
   onCompetitionsChange: (c: Competition[]) => void;
-  teams: Team[];
-  onTeamSave: (team: Team) => void;
 }
 
 const COUNTS = [3, 4, 5, 6] as const;
@@ -20,8 +17,6 @@ export function GoalsPanel({
   onChange,
   competitions,
   onCompetitionsChange,
-  teams,
-  onTeamSave,
 }: Props) {
   const photoUpload = useFileUpload((url, file) =>
     onChange({ ...data, bgImage: url, bgImageFile: file }),
@@ -149,19 +144,6 @@ export function GoalsPanel({
           })
         }
         onCompetitionsChange={onCompetitionsChange}
-      />
-
-      <TeamPicker
-        label="Club badge"
-        value={data.team as Team | null}
-        teams={teams}
-        onChange={(team) =>
-          onChange({
-            ...data,
-            team: { id: team.id, name: team.name, logo: team.logo },
-          })
-        }
-        onNewTeamSave={onTeamSave}
       />
     </div>
   );

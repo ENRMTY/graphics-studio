@@ -91,9 +91,9 @@ function drawGlowNumber(
     new Konva.Text({
       ...base,
       x: x - size * 0.012,
-      fill: "#6ec8ff",
+      fill: "#ff3b3b",
       opacity: 0.85,
-      shadowColor: "#6ec8ff",
+      shadowColor: "#ff3b3b",
       shadowBlur: size * 0.14,
       shadowOpacity: 0.9,
     }),
@@ -102,9 +102,9 @@ function drawGlowNumber(
     new Konva.Text({
       ...base,
       x: x + size * 0.014,
-      fill: "#ff4fd0",
+      fill: "#C8102E",
       opacity: 0.75,
-      shadowColor: "#ff4fd0",
+      shadowColor: "#C8102E",
       shadowBlur: size * 0.14,
       shadowOpacity: 0.85,
     }),
@@ -114,7 +114,7 @@ function drawGlowNumber(
       ...base,
       x,
       fill: "#ffffff",
-      shadowColor: "rgba(190,170,255,0.95)",
+      shadowColor: "rgba(200,16,46,0.95)",
       shadowBlur: size * 0.1,
       shadowOpacity: 0.85,
     }),
@@ -127,61 +127,39 @@ async function drawBadge(
   W: number,
   H: number,
 ) {
-  const badgeH = Math.round(Math.min(W, H) * 0.105);
-  const half = badgeH;
-  const x = Math.round(W * 0.045);
-  const y = H - badgeH - Math.round(Math.min(W, H) * 0.045);
+  const s = Math.round(Math.min(W, H) * 0.11);
+  const x = Math.round(W * 0.05);
+  const y = H - s - Math.round(Math.min(W, H) * 0.05);
 
-  layer.add(
-    new Konva.Rect({
-      x,
-      y,
-      width: half,
-      height: badgeH,
-      fill: "#ffffff",
-    }),
-  );
-  layer.add(
-    new Konva.Rect({
-      x: x + half,
-      y,
-      width: half,
-      height: badgeH,
-      fill: "#1d4ed8",
-    }),
-  );
-
-  const inset = Math.round(badgeH * 0.16);
   if (data.competitionIcon) {
     try {
       const icon = await loadImage(data.competitionIcon);
       layer.add(
         new Konva.Image({
           image: icon,
-          x: x + inset,
-          y: y + inset,
-          width: half - inset * 2,
-          height: badgeH - inset * 2,
+          x,
+          y,
+          width: s,
+          height: s,
         }),
       );
+      return;
     } catch {
-      // ignore
+      // fall through to the name
     }
   }
-  if (data.team?.logo) {
-    try {
-      const logo = await loadImage(data.team.logo);
-      layer.add(
-        new Konva.Image({
-          image: logo,
-          x: x + half + inset,
-          y: y + inset,
-          width: half - inset * 2,
-          height: badgeH - inset * 2,
-        }),
-      );
-    } catch {
-      // ignore
-    }
+
+  if (data.competition) {
+    layer.add(
+      new Konva.Text({
+        text: data.competition.toUpperCase(),
+        x,
+        y: y + s * 0.35,
+        fontSize: Math.round(s * 0.28),
+        fontFamily: FONT_DISPLAY,
+        fill: "#FFFFFF",
+        letterSpacing: 2,
+      }),
+    );
   }
 }

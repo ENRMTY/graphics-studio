@@ -854,8 +854,6 @@ export default function App() {
                   onChange={handleGoalsChange}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
-                  teams={teams}
-                  onTeamSave={handleTeamSave}
                 />
               ) : (
                 <FullTimePanel
