@@ -20,6 +20,9 @@ export function NextUpPanel({
   teams,
   onTeamSave,
 }: Props) {
+  const usTeam: Team | null = data.usName
+    ? { id: "us", name: data.usName, logo: data.usLogo }
+    : null;
   const opponentTeam: Team | null = data.opponent
     ? { id: "opponent", name: data.opponent, logo: data.opponentLogo }
     : null;
@@ -34,6 +37,15 @@ export function NextUpPanel({
         onClear={() =>
           onChange({ ...data, bgImage: null, bgImageFile: undefined })
         }
+      />
+      <TeamPicker
+        label="Us"
+        value={usTeam}
+        teams={teams}
+        onChange={(team) =>
+          onChange({ ...data, usName: team.name, usLogo: team.logo })
+        }
+        onNewTeamSave={onTeamSave}
       />
       <TeamPicker
         label="Opponent"

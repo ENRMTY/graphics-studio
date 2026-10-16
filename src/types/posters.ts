@@ -16,7 +16,10 @@ export interface GoalMomentData extends PhotoFields, CompFields {
   minute: string;
   ourScore: string;
   theirScore: string;
+  usName: string;
+  usLogo: string | null;
   opponent: string;
+  opponentLogo: string | null;
 }
 
 export interface MilestoneData extends PhotoFields, CompFields {
@@ -38,6 +41,8 @@ export interface TableSpotData extends PhotoFields, CompFields {
 export interface NextUpData extends PhotoFields, CompFields {
   _id?: string;
   type: "next";
+  usName: string;
+  usLogo: string | null;
   opponent: string;
   opponentLogo: string | null;
   kickoff: string;

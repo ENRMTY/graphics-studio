@@ -1,5 +1,6 @@
-import type { Competition, GoalMomentData } from "@types";
+import type { Competition, GoalMomentData, Team } from "@types";
 import { CompetitionPicker } from "./CompetitionPicker";
+import { TeamPicker } from "./TeamPicker";
 import { PosterPhoto } from "./PosterPhoto";
 
 interface Props {
@@ -7,6 +8,8 @@ interface Props {
   onChange: (d: GoalMomentData) => void;
   competitions: Competition[];
   onCompetitionsChange: (c: Competition[]) => void;
+  teams: Team[];
+  onTeamSave: (team: Team) => void;
 }
 
 export function GoalMomentPanel({
@@ -14,7 +17,16 @@ export function GoalMomentPanel({
   onChange,
   competitions,
   onCompetitionsChange,
+  teams,
+  onTeamSave,
 }: Props) {
+  const usTeam: Team | null = data.usName
+    ? { id: "us", name: data.usName, logo: data.usLogo }
+    : null;
+  const opponentTeam: Team | null = data.opponent
+    ? { id: "opponent", name: data.opponent, logo: data.opponentLogo }
+    : null;
+
   return (
     <div className="panel-body">
       <PosterPhoto
@@ -79,20 +91,24 @@ export function GoalMomentPanel({
           />
         </div>
       </div>
-      <div>
-        <div className="section-label">
-          Opponent{" "}
-          <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
-            (optional)
-          </span>
-        </div>
-        <input
-          className="input"
-          placeholder="Arsenal"
-          value={data.opponent}
-          onChange={(e) => onChange({ ...data, opponent: e.target.value })}
-        />
-      </div>
+      <TeamPicker
+        label="Us"
+        value={usTeam}
+        teams={teams}
+        onChange={(team) =>
+          onChange({ ...data, usName: team.name, usLogo: team.logo })
+        }
+        onNewTeamSave={onTeamSave}
+      />
+      <TeamPicker
+        label="Opponent"
+        value={opponentTeam}
+        teams={teams}
+        onChange={(team) =>
+          onChange({ ...data, opponent: team.name, opponentLogo: team.logo })
+        }
+        onNewTeamSave={onTeamSave}
+      />
       <CompetitionPicker
         competitions={competitions}
         selected={data.competition}

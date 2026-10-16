@@ -1,6 +1,6 @@
 import Konva from "konva";
 import type { GoalMomentData } from "@types";
-import { FONT_DISPLAY } from "./helpers";
+import { loadImage, FONT_DISPLAY } from "./helpers";
 import {
   paintPhoto,
   edgeScrims,
@@ -37,33 +37,27 @@ export async function renderGoalMoment(
   const name = (data.playerName || "SCORER").toUpperCase();
   const nameSize = Math.round(W * 0.055);
   const score = `${data.ourScore || "0"}  –  ${data.theirScore || "0"}`;
-  const scoreSize = Math.round(W * 0.09);
-  const opp = (data.opponent || "").toUpperCase();
-  const oppSize = Math.round(W * 0.028);
+  const scoreSize = Math.round(W * 0.046);
+  const crest = Math.round(scoreSize * 1.15);
+  const crestGap = Math.round(W * 0.01);
 
   let y =
     H - bar - logoS - Math.round(Math.min(W, H) * 0.07) - Math.round(W * 0.02);
-  if (opp) {
-    y -= oppSize;
-    layer.add(
-      new Konva.Text({
-        text: opp,
-        x: pad,
-        y,
-        width: W - pad * 2,
-        fontSize: oppSize,
-        fontFamily: FONT_DISPLAY,
-        fill: "rgba(255,255,255,0.82)",
-        letterSpacing: 2,
-      }),
-    );
-    y -= Math.round(W * 0.012);
-  }
   y -= Math.round(scoreSize * 0.78);
+
+  const scoreW = measureDisplay(score, scoreSize, 1);
+  const left = data.usLogo;
+  const right = data.opponentLogo;
+  let scoreX = pad;
+  const crestY = y + (scoreSize * 0.7 - crest) / 2;
+  if (left) {
+    await paintCrest(layer, left, scoreX, crestY, crest);
+    scoreX += crest + crestGap;
+  }
   layer.add(
     new Konva.Text({
       text: score,
-      x: pad,
+      x: scoreX,
       y,
       fontSize: scoreSize,
       fontFamily: FONT_DISPLAY,
@@ -71,7 +65,11 @@ export async function renderGoalMoment(
       letterSpacing: 1,
     }),
   );
-  y -= Math.round(W * 0.02);
+  if (right) {
+    await paintCrest(layer, right, scoreX + scoreW + crestGap, crestY, crest);
+  }
+
+  y -= Math.round(W * 0.018);
   layer.add(
     new Konva.Rect({
       x: pad,
@@ -92,10 +90,26 @@ export async function renderGoalMoment(
       fontFamily: FONT_DISPLAY,
       fill: "#FFFFFF",
       letterSpacing: 1.2,
+      wrap: "none",
     }),
   );
 
   watermark(layer, W, H, bar);
   await drawCompLogo(layer, data.competitionIcon, data.competition, W, H, bar);
   layer.draw();
+}
+
+async function paintCrest(
+  layer: Konva.Layer,
+  src: string,
+  x: number,
+  y: number,
+  size: number,
+) {
+  try {
+    const img = await loadImage(src);
+    layer.add(new Konva.Image({ image: img, x, y, width: size, height: size }));
+  } catch {
+    // ignore
+  }
 }

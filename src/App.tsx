@@ -1003,6 +1003,8 @@ export default function App() {
                   onChange={handleGoalChange}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
+                  teams={teams}
+                  onTeamSave={handleTeamSave}
                 />
               ) : view === "milestone" ? (
                 <MilestonePanel

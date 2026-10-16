@@ -134,7 +134,10 @@ export const DEFAULT_GOAL: GoalMomentData = {
   minute: "24",
   ourScore: "1",
   theirScore: "0",
+  usName: "Liverpool",
+  usLogo: null,
   opponent: "",
+  opponentLogo: null,
   ...blankComp,
 };
 
@@ -159,6 +162,8 @@ export const DEFAULT_TABLE: TableSpotData = {
 export const DEFAULT_NEXT: NextUpData = {
   type: "next",
   bgImage: null,
+  usName: "Liverpool",
+  usLogo: null,
   opponent: "",
   opponentLogo: null,
   kickoff: "20:00",
