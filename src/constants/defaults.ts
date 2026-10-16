@@ -69,7 +69,8 @@ export const DEFAULT_STATS: StatsData = {
 
 export const DEFAULT_QUOTE: QuoteData = {
   type: "quote",
-  layout: "classic",
+  layout: "bottom",
+  quoteSize: "small",
   bgImage: null,
   playerName: "",
   playerRole: "",

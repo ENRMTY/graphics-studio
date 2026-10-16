@@ -1,7 +1,8 @@
 export interface QuoteData {
   _id?: string;
   type: "quote";
-  layout?: "classic" | "overlay";
+  layout?: "top" | "bottom" | "classic" | "overlay";
+  quoteSize?: "small" | "big";
   bgImage: string | null;
   bgImageFile?: File;
   playerName: string;

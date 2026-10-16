@@ -186,10 +186,17 @@ export function apiGraphicToStats(g: ApiGraphic): StatsData & { _id?: string } {
 }
 
 export function apiGraphicToQuote(g: ApiGraphic): QuoteData & { _id?: string } {
+  const raw = g.graphicLayout ?? "";
+  const [pos, size] = raw.split("|");
+  const layout: QuoteData["layout"] =
+    pos === "top" || raw === "top" ? "top" : "bottom";
+  const quoteSize: QuoteData["quoteSize"] =
+    size === "big" || raw === "big" ? "big" : "small";
   return {
     _id: g.id,
     type: "quote",
-    layout: (g.graphicLayout as "classic" | "overlay") ?? "classic",
+    layout,
+    quoteSize,
     bgImage: g.bgImageUrl,
     playerName: g.playerName ?? "",
     playerRole: g.playerRole ?? "",
@@ -323,7 +330,7 @@ function statsToPayload(data: StatsData) {
 function quoteToPayload(data: QuoteData) {
   return {
     graphicType: "quote",
-    graphicLayout: data.layout ?? "classic",
+    graphicLayout: `${data.layout === "top" ? "top" : "bottom"}|${data.quoteSize === "big" ? "big" : "small"}`,
     competitionName: data.competition || null,
     competitionIconUrl: safeUrl(data.competitionIcon),
     competitionColor: data.competitionColor || null,
