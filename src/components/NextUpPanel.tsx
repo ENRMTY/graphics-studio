@@ -67,6 +67,22 @@ export function NextUpPanel({
       </div>
       <div>
         <div className="section-label">
+          Timezone{" "}
+          <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
+            (optional)
+          </span>
+        </div>
+        <input
+          className="input"
+          placeholder="CET, CEST, BST"
+          value={data.timezone || ""}
+          onChange={(e) =>
+            onChange({ ...data, timezone: e.target.value.slice(0, 8) })
+          }
+        />
+      </div>
+      <div>
+        <div className="section-label">
           Date{" "}
           <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>
             (optional)

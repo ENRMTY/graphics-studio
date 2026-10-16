@@ -167,6 +167,7 @@ export const DEFAULT_NEXT: NextUpData = {
   opponent: "",
   opponentLogo: null,
   kickoff: "20:00",
+  timezone: "",
   matchDate: "",
   ...blankComp,
 };

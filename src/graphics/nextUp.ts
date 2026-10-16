@@ -95,6 +95,22 @@ export async function renderNextUp(
   const kickY = H * 0.52;
   drawGlow(layer, kick, (W - kickW) / 2, kickY, kickSize, kickW);
 
+  const zone = (data.timezone || "").trim().toUpperCase();
+  if (zone) {
+    layer.add(
+      new Konva.Text({
+        text: zone,
+        x: (W + kickW) / 2 + Math.round(W * 0.018),
+        y: kickY + kickSize * 0.32,
+        fontSize: Math.round(W * 0.026),
+        fontFamily: FONT_BODY,
+        fontStyle: "700",
+        fill: "rgba(255,255,255,0.9)",
+        letterSpacing: 1.4,
+      }),
+    );
+  }
+
   layer.add(
     new Konva.Rect({
       x: (W - Math.round(W * 0.14)) / 2,

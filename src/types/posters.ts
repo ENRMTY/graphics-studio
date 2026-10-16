@@ -46,5 +46,6 @@ export interface NextUpData extends PhotoFields, CompFields {
   opponent: string;
   opponentLogo: string | null;
   kickoff: string;
+  timezone: string;
   matchDate: string;
 }
