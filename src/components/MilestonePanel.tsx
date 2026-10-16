@@ -30,7 +30,7 @@ export function MilestonePanel({
         <div className="section-label">Player</div>
         <input
           className="input"
-          placeholder="Mohamed Salah"
+          placeholder="Player name"
           value={data.playerName}
           onChange={(e) => onChange({ ...data, playerName: e.target.value })}
         />

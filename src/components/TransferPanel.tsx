@@ -98,7 +98,7 @@ export function TransferPanel({ data, onChange, teams, onTeamSave }: Props) {
         <div className="section-label">Player Name</div>
         <input
           className="input"
-          placeholder="e.g. Mohamed Salah"
+          placeholder="e.g. Player name"
           value={data.playerName}
           onChange={(e) => onChange({ ...data, playerName: e.target.value })}
         />

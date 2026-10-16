@@ -85,7 +85,7 @@ export function GoalsPanel({
               <input
                 className="input"
                 inputMode="numeric"
-                placeholder="24"
+                placeholder="Minute the goal was scored"
                 value={data.minutes[i] ?? ""}
                 onChange={(e) => setMinute(i, e.target.value)}
               />

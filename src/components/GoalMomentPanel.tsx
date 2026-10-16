@@ -54,7 +54,7 @@ export function GoalMomentPanel({
         <div className="section-label">Scorer</div>
         <PlayerNameInput
           field
-          placeholder="Mohamed Salah"
+          placeholder="Player name"
           value={data.playerName}
           savedPlayers={savedPlayers}
           onChange={(name) => onChange({ ...data, playerName: name })}
@@ -65,7 +65,7 @@ export function GoalMomentPanel({
         <input
           className="input"
           inputMode="numeric"
-          placeholder="24"
+          placeholder="Minute the goal was scored"
           value={data.minute}
           onChange={(e) =>
             onChange({
