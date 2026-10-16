@@ -34,6 +34,7 @@ import {
   apiGraphicToNews,
   apiGraphicToTransfer,
   apiGraphicToLineup,
+  apiGraphicToGoal,
 } from "./services/graphicsService";
 
 // utils
@@ -226,9 +227,15 @@ export default function App() {
             minutes: localGoals.minutes ?? prev.minutes,
           }));
         }
-        const localGoal = loadBlob<GoalMomentData>(GOAL_KEY);
-        if (localGoal)
-          setGoalData((prev) => ({ ...prev, ...localGoal, type: "goal" }));
+        if (drafts.goal) {
+          const goal = apiGraphicToGoal(drafts.goal);
+          setGoalData(goal);
+          saveBlob(GOAL_KEY, goal);
+        } else {
+          const localGoal = loadBlob<GoalMomentData>(GOAL_KEY);
+          if (localGoal)
+            setGoalData((prev) => ({ ...prev, ...localGoal, type: "goal" }));
+        }
         const localMilestone = loadBlob<MilestoneData>(MILESTONE_KEY);
         if (localMilestone) {
           setMilestoneData((prev) => ({
@@ -441,6 +448,27 @@ export default function App() {
         }
 
         try {
+          const goal = goalRef.current;
+          const goalResult = await graphicsService.saveGoalDraft(goal, goal._id);
+          if (goal.bgImageFile) {
+            await graphicsService.uploadTransferBackground(
+              goalResult.id,
+              goal.bgImageFile,
+            );
+            setGoalData((p) => ({
+              ...p,
+              _id: goalResult.id,
+              bgImageFile: undefined,
+            }));
+          } else {
+            setGoalData((p) => ({ ...p, _id: goalResult.id }));
+          }
+          saveBlob(GOAL_KEY, { ...goal, _id: goalResult.id, bgImageFile: undefined });
+        } catch (err) {
+          console.error("Goal draft kept locally:", err);
+        }
+
+        try {
           const newsResult = await graphicsService.saveNewsDraft(
             news,
             news._id,
@@ -642,13 +670,7 @@ export default function App() {
   const handleLineupChange = useCallback(
     (data: LineupData) => {
       setLineupData(data);
-      saveLineupSnapshot(
-        data.players,
-        data.subs,
-        data.formation,
-        data.manager,
-        data,
-      );
+      saveLineupSnapshot(data.players, data.subs, data.formation, data.manager, data);
       scheduleAutoSave();
     },
     [scheduleAutoSave],

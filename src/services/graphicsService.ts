@@ -8,6 +8,7 @@ import type {
   TransferData,
   LineupData,
   LineupPlayer,
+  GoalMomentData,
 } from "@types";
 import { isValidUUID } from "../helpers/isValidUuid";
 
@@ -22,7 +23,8 @@ export interface ApiGraphic {
     | "quote"
     | "news"
     | "transfer"
-    | "lineup";
+    | "lineup"
+    | "goal";
   status: "draft" | "published";
   bgImageUrl: string | null;
   competitionId: string | null;
@@ -84,6 +86,7 @@ interface DraftsResponse {
     news?: ApiGraphic | null;
     transfer: ApiGraphic | null;
     lineup?: ApiGraphic | null;
+    goal?: ApiGraphic | null;
   };
 }
 
@@ -297,6 +300,27 @@ export function apiGraphicToLineup(
   };
 }
 
+export function apiGraphicToGoal(g: ApiGraphic): GoalMomentData {
+  const score = (n: number | null) =>
+    n === null || n === undefined ? "" : String(n);
+  return {
+    _id: g.id,
+    type: "goal",
+    bgImage: g.bgImageUrl,
+    playerName: g.playerName ?? "",
+    minute: g.kickoffTime ?? "",
+    ourScore: score(g.homeScore),
+    theirScore: score(g.awayScore),
+    usName: g.homeTeamName || "Liverpool",
+    usLogo: safeUrl(g.homeTeamLogoUrl),
+    opponent: g.awayTeamName ?? "",
+    opponentLogo: safeUrl(g.awayTeamLogoUrl),
+    competition: g.competitionName ?? "",
+    competitionIcon: g.competitionIconUrl ?? null,
+    competitionColor: g.competitionColor ?? "",
+  };
+}
+
 function isBase64(s: string | null | undefined): boolean {
   return !!s && s.startsWith("data:");
 }
@@ -447,6 +471,29 @@ function lineupToPayload(data: LineupData) {
       players: data.players.map(lineupPlayerPayload),
       subs: data.subs.map(lineupPlayerPayload),
     },
+  };
+}
+
+function goalScore(value: string): number | null {
+  if (!value.trim()) return null;
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function goalToPayload(data: GoalMomentData) {
+  return {
+    graphicType: "goal" as const,
+    playerName: data.playerName || null,
+    kickoffTime: data.minute || null,
+    homeScore: goalScore(data.ourScore),
+    awayScore: goalScore(data.theirScore),
+    homeTeamName: data.usName || null,
+    homeTeamLogoUrl: safeUrl(data.usLogo),
+    awayTeamName: data.opponent || null,
+    awayTeamLogoUrl: safeUrl(data.opponentLogo),
+    competitionName: data.competition || null,
+    competitionIconUrl: safeUrl(data.competitionIcon),
+    competitionColor: data.competitionColor || null,
   };
 }
 
@@ -711,6 +758,16 @@ export const graphicsService = {
 
   async saveLineupDraft(data: LineupData, id?: string): Promise<ApiGraphic> {
     const body = lineupToPayload(data);
+    if (id) {
+      const res = await api.patch<SingleResponse>(`/api/graphics/${id}`, body);
+      return res.data;
+    }
+    const res = await api.post<SingleResponse>("/api/graphics", body);
+    return res.data;
+  },
+
+  async saveGoalDraft(data: GoalMomentData, id?: string): Promise<ApiGraphic> {
+    const body = goalToPayload(data);
     if (id) {
       const res = await api.patch<SingleResponse>(`/api/graphics/${id}`, body);
       return res.data;

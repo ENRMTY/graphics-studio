@@ -95,9 +95,11 @@ export const loadBlob = <T>(key: string): Partial<T> | null => {
   }
 };
 
-export const saveBlob = (
+export const saveBlob = <
+  T extends { bgImageFile?: File; bgImage?: string | null },
+>(
   key: string,
-  data: { bgImageFile?: File; bgImage?: string | null },
+  data: T,
 ) => {
   const { bgImageFile: _file, ...rest } = data;
   try {
