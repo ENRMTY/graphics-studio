@@ -1,7 +1,7 @@
 import type { Team, Competition } from "@types";
 import type { NewsData } from "../types/news";
 import type { GoalsData } from "../types/goals";
-import type { LineupPlayer } from "../types/lineup";
+import type { LineupPlayer, LineupData } from "../types/lineup";
 
 // key names for local storage
 const TEAMS_KEY = "lfc_teams_v3";
@@ -175,14 +175,29 @@ export const saveLineupSnapshot = (
   subs: LineupPlayer[],
   formation: string,
   manager: string,
+  rest?: Partial<LineupData>,
 ): void => {
+  const prev = loadLineupSnapshot() ?? {};
+  const { bgImageFile: _file, ...extra } = rest ?? {};
+  const payload = {
+    ...prev,
+    ...extra,
+    players,
+    subs,
+    formation,
+    manager,
+  };
   try {
-    localStorage.setItem(
-      LINEUP_SNAPSHOT_KEY,
-      JSON.stringify({ players, subs, formation, manager }),
-    );
+    localStorage.setItem(LINEUP_SNAPSHOT_KEY, JSON.stringify(payload));
   } catch {
-    // ignore quota errors
+    const { bgImage: _img, ...withoutPhoto } = payload as {
+      bgImage?: string | null;
+    };
+    try {
+      localStorage.setItem(LINEUP_SNAPSHOT_KEY, JSON.stringify(withoutPhoto));
+    } catch {
+      // photo was too large
+    }
   }
 };
 
@@ -191,6 +206,13 @@ export const loadLineupSnapshot = (): {
   subs: LineupPlayer[];
   formation: string;
   manager: string;
+  competition?: string;
+  competitionIcon?: string | null;
+  competitionColor?: string;
+  dotColor?: string;
+  homeTeam?: { id: string; name: string; logo: string | null } | null;
+  awayTeam?: { id: string; name: string; logo: string | null } | null;
+  bgImage?: string | null;
 } | null => {
   try {
     const raw = localStorage.getItem(LINEUP_SNAPSHOT_KEY);

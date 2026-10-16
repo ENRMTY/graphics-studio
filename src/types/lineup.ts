@@ -13,6 +13,7 @@ export interface LineupPlayer {
 }
 
 export interface LineupData {
+  _id?: string;
   type: "lineup";
   bgImage: string | null;
   bgImageFile?: File;

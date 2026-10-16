@@ -6,6 +6,8 @@ import type {
   QuoteData,
   NewsData,
   TransferData,
+  LineupData,
+  LineupPlayer,
 } from "@types";
 import { isValidUUID } from "../helpers/isValidUuid";
 
@@ -19,7 +21,8 @@ export interface ApiGraphic {
     | "stats"
     | "quote"
     | "news"
-    | "transfer";
+    | "transfer"
+    | "lineup";
   status: "draft" | "published";
   bgImageUrl: string | null;
   competitionId: string | null;
@@ -80,6 +83,7 @@ interface DraftsResponse {
     quote: ApiGraphic | null;
     news?: ApiGraphic | null;
     transfer: ApiGraphic | null;
+    lineup?: ApiGraphic | null;
   };
 }
 
@@ -253,6 +257,46 @@ export function apiGraphicToTransfer(
   };
 }
 
+function lineupPlayers(raw: unknown): LineupPlayer[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((p) => {
+    const row = p as LineupPlayer;
+    return {
+      id: row.id,
+      name: row.name ?? "",
+      number: row.number ?? null,
+      position: row.position ?? "",
+      x: row.x ?? 0.5,
+      y: row.y ?? 0.5,
+      isCaptain: row.isCaptain,
+      photoUrl: safeUrl(row.photoUrl),
+    };
+  });
+}
+
+export function apiGraphicToLineup(
+  g: ApiGraphic,
+): LineupData & { _id?: string } {
+  const blob = g.statsData as { players?: unknown; subs?: unknown } | null;
+  const team = (id: string | null, name: string | null, logo: string | null) =>
+    name ? { id: id || "local", name, logo: safeUrl(logo) } : null;
+  return {
+    _id: g.id,
+    type: "lineup",
+    bgImage: g.bgImageUrl,
+    formation: g.graphicLayout || "4-3-3",
+    manager: g.playerName ?? "",
+    competition: g.competitionName ?? "",
+    competitionIcon: g.competitionIconUrl ?? null,
+    competitionColor: g.competitionColor ?? "",
+    dotColor: g.accentColor || undefined,
+    homeTeam: team(g.homeTeamId, g.homeTeamName, g.homeTeamLogoUrl),
+    awayTeam: team(g.awayTeamId, g.awayTeamName, g.awayTeamLogoUrl),
+    players: lineupPlayers(blob?.players),
+    subs: lineupPlayers(blob?.subs),
+  };
+}
+
 function isBase64(s: string | null | undefined): boolean {
   return !!s && s.startsWith("data:");
 }
@@ -368,6 +412,41 @@ function transferToPayload(data: TransferData) {
     transferFee: data.transferKind === "loan" ? null : data.fee || null,
     transferStatus: data.status,
     accentColor: data.currency || null,
+  };
+}
+
+function lineupPlayerPayload(p: LineupPlayer) {
+  return {
+    id: p.id,
+    name: p.name,
+    number: p.number,
+    position: p.position,
+    x: p.x,
+    y: p.y,
+    isCaptain: !!p.isCaptain,
+    photoUrl: safeUrl(p.photoUrl),
+  };
+}
+
+function lineupToPayload(data: LineupData) {
+  return {
+    graphicType: "lineup" as const,
+    graphicLayout: data.formation || null,
+    playerName: data.manager || null,
+    accentColor: data.dotColor || null,
+    competitionName: data.competition || null,
+    competitionIconUrl: safeUrl(data.competitionIcon),
+    competitionColor: data.competitionColor || null,
+    homeTeamId: isValidUUID(data.homeTeam?.id) ? data.homeTeam!.id : null,
+    homeTeamName: data.homeTeam?.name ?? null,
+    homeTeamLogoUrl: safeUrl(data.homeTeam?.logo),
+    awayTeamId: isValidUUID(data.awayTeam?.id) ? data.awayTeam!.id : null,
+    awayTeamName: data.awayTeam?.name ?? null,
+    awayTeamLogoUrl: safeUrl(data.awayTeam?.logo),
+    statsData: {
+      players: data.players.map(lineupPlayerPayload),
+      subs: data.subs.map(lineupPlayerPayload),
+    },
   };
 }
 
@@ -627,6 +706,16 @@ export const graphicsService = {
       `/api/graphics/${id}/background`,
       form,
     );
+    return res.data;
+  },
+
+  async saveLineupDraft(data: LineupData, id?: string): Promise<ApiGraphic> {
+    const body = lineupToPayload(data);
+    if (id) {
+      const res = await api.patch<SingleResponse>(`/api/graphics/${id}`, body);
+      return res.data;
+    }
+    const res = await api.post<SingleResponse>("/api/graphics", body);
     return res.data;
   },
 

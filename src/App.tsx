@@ -33,11 +33,13 @@ import {
   apiGraphicToQuote,
   apiGraphicToNews,
   apiGraphicToTransfer,
+  apiGraphicToLineup,
 } from "./services/graphicsService";
 
 // utils
 import {
   loadLineupSnapshot,
+  saveLineupSnapshot,
   loadNewsLocal,
   saveNewsLocal,
   loadGoalsLocal,
@@ -242,16 +244,26 @@ export default function App() {
         if (localNext)
           setNextData((prev) => ({ ...prev, ...localNext, type: "next" }));
 
-        // restore last lineup from local snapshot
-        const snapshot = loadLineupSnapshot();
-        if (snapshot) {
-          setLineupData((prev) => ({
-            ...prev,
-            players: snapshot.players,
-            subs: snapshot.subs,
-            formation: snapshot.formation,
-            manager: snapshot.manager,
-          }));
+        // backend lineup wins, then the local copy is updated from it
+        if (drafts.lineup) {
+          const lineup = apiGraphicToLineup(drafts.lineup);
+          setLineupData(lineup);
+          saveLineupSnapshot(
+            lineup.players,
+            lineup.subs,
+            lineup.formation,
+            lineup.manager,
+            lineup,
+          );
+        } else {
+          const snapshot = loadLineupSnapshot();
+          if (snapshot) {
+            setLineupData((prev) => ({
+              ...prev,
+              ...snapshot,
+              type: "lineup",
+            }));
+          }
         }
 
         // background-sync saved players
@@ -285,6 +297,14 @@ export default function App() {
       saveBlob(MILESTONE_KEY, milestoneRef.current);
       saveBlob(TABLE_KEY, tableRef.current);
       saveBlob(NEXT_KEY, nextRef.current);
+      const lineup = lineupRef.current;
+      saveLineupSnapshot(
+        lineup.players,
+        lineup.subs,
+        lineup.formation,
+        lineup.manager,
+        lineup,
+      );
       try {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
         if (ft.bgImageFile) {
@@ -396,6 +416,28 @@ export default function App() {
           }));
         } else {
           setTransferData((p) => ({ ...p, _id: transferResult.id }));
+        }
+
+        try {
+          const lineupResult = await graphicsService.saveLineupDraft(
+            lineup,
+            lineup._id,
+          );
+          if (lineup.bgImageFile) {
+            await graphicsService.uploadTransferBackground(
+              lineupResult.id,
+              lineup.bgImageFile,
+            );
+            setLineupData((p) => ({
+              ...p,
+              _id: lineupResult.id,
+              bgImageFile: undefined,
+            }));
+          } else {
+            setLineupData((p) => ({ ...p, _id: lineupResult.id }));
+          }
+        } catch (err) {
+          console.error("Lineup draft kept locally:", err);
         }
 
         try {
@@ -597,9 +639,20 @@ export default function App() {
   );
 
   // lineups
-  const handleLineupChange = useCallback((data: LineupData) => {
-    setLineupData(data);
-  }, []);
+  const handleLineupChange = useCallback(
+    (data: LineupData) => {
+      setLineupData(data);
+      saveLineupSnapshot(
+        data.players,
+        data.subs,
+        data.formation,
+        data.manager,
+        data,
+      );
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
 
   // teams
   const handleTeamSave = useCallback(async (team: Team) => {
