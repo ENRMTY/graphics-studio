@@ -36,9 +36,9 @@ export async function renderGoalMoment(
   const logoS = Math.round(Math.min(W, H) * 0.11);
   const name = (data.playerName || "SCORER").toUpperCase();
   const nameSize = Math.round(W * 0.055);
-  const score = `${data.ourScore || "0"}  –  ${data.theirScore || "0"}`;
+  const score = `${data.ourScore || "0"} – ${data.theirScore || "0"}`;
   const scoreSize = Math.round(W * 0.046);
-  const crest = Math.round(scoreSize * 1.15);
+  const crest = Math.round(scoreSize * 0.9);
   const crestGap = Math.round(W * 0.01);
 
   let y =
