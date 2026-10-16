@@ -34,181 +34,198 @@ export async function renderTransfer(
     }
   }
 
-  // left side dark gradient overlay, to ensure text is visible
-  const OVERLAY_W = Math.round(W * 0.4);
+  // left panel fades out so the big type can reach the photo
+  const OVERLAY_W = Math.round(W * 0.62);
+  const PAD_X = Math.round(W * 0.05);
+  const TEXT_W = Math.round(W * 0.48);
+  const RED = "#C8102E";
 
-  // multi-stop gradient: opaque on left, fully transparent on right
   layer.add(
     new Konva.Rect({
       x: 0,
       y: 0,
       width: OVERLAY_W,
       height: H,
+      listening: false,
       fillLinearGradientStartPoint: { x: 0, y: 0 },
       fillLinearGradientEndPoint: { x: OVERLAY_W, y: 0 },
       fillLinearGradientColorStops: [
         0,
-        "rgba(0,0,0,0.53)",
-        0.35,
-        "rgba(0,0,0,0.46)",
-        0.55,
-        "rgba(0,0,0,0.36)",
-        0.72,
-        "rgba(0,0,0,0.28)",
-        0.85,
-        "rgba(0,0,0,0.11)",
+        "rgba(22,4,8,0.94)",
+        0.42,
+        "rgba(18,3,6,0.82)",
+        0.68,
+        "rgba(12,2,4,0.4)",
         1,
         "rgba(0,0,0,0)",
       ],
     }),
   );
 
-  // layout constants
-  const PAD_X = 52;
-  const CONTENT_W = OVERLAY_W - PAD_X - 20;
-  const RED = "#C8102E";
-
-  // red left accent bar
   layer.add(
     new Konva.Rect({
       x: 0,
       y: 0,
-      width: 5,
+      width: Math.max(6, Math.round(W * 0.008)),
       height: H,
       fill: RED,
     }),
   );
 
-  // status badge
-  const STATUS_Y = 52;
+  const measure = (text: string, size: number, spacing: number) => {
+    const node = new Konva.Text({
+      text,
+      fontSize: size,
+      fontFamily: FONT_DISPLAY,
+      letterSpacing: spacing,
+    });
+    const width = node.width();
+    node.destroy();
+    return width;
+  };
+
+  const fitWidth = (
+    text: string,
+    target: number,
+    maxSize: number,
+    minSize: number,
+    spacing: number,
+  ) => {
+    let size = maxSize;
+    while (size > minSize && measure(text, size, spacing) > target) size -= 2;
+    return size;
+  };
+
+  let y = Math.round(W * 0.062);
+
   const statusText = data.status === "confirmed" ? "CONFIRMED" : "RUMOUR";
   const statusColor = data.status === "confirmed" ? RED : "#f59e0b";
-
-  // badge pill background
-  const STATUS_PAD_H = 7;
-  const STATUS_PAD_W = 14;
-  const STATUS_FONT = 13;
-  // approximate text width
-  const statusCharW = STATUS_FONT * 0.62;
-  const statusTextW = statusText.length * statusCharW;
-  const badgeW = statusTextW + STATUS_PAD_W * 2;
-  const badgeH = STATUS_FONT + STATUS_PAD_H * 2;
+  const statusFont = Math.round(W * 0.024);
+  const statusProbe = new Konva.Text({
+    text: statusText,
+    fontSize: statusFont,
+    fontFamily: FONT_DISPLAY,
+    letterSpacing: 2,
+  });
+  const badgeW = statusProbe.width() + Math.round(W * 0.04);
+  const badgeH = Math.round(statusFont * 1.15);
+  statusProbe.destroy();
 
   layer.add(
     new Konva.Rect({
       x: PAD_X,
-      y: STATUS_Y,
+      y,
       width: badgeW,
       height: badgeH,
       fill: statusColor,
-      cornerRadius: 3,
+      cornerRadius: 4,
     }),
   );
   layer.add(
     new Konva.Text({
       text: statusText,
-      x: PAD_X + STATUS_PAD_W,
-      y: STATUS_Y + STATUS_PAD_H,
-      fontSize: STATUS_FONT,
+      x: PAD_X,
+      y: y + Math.round(statusFont * 0.2),
+      width: badgeW,
+      align: "center",
+      fontSize: statusFont,
       fontFamily: FONT_DISPLAY,
       fill: "#ffffff",
       letterSpacing: 2,
     }),
   );
 
-  // player name
-  const PLAYER_Y = STATUS_Y + badgeH + 22;
-  if (data.playerName) {
-    const nameParts = data.playerName.trim().split(" ");
-    const lastName =
-      nameParts.length > 1
-        ? nameParts[nameParts.length - 1].toUpperCase()
-        : nameParts[0].toUpperCase();
-    const firstName =
-      nameParts.length > 1
-        ? nameParts.slice(0, -1).join(" ").toUpperCase()
-        : "";
+  y += badgeH + Math.round(W * 0.03);
 
-    if (firstName) {
-      layer.add(
-        new Konva.Text({
-          text: firstName,
-          x: PAD_X,
-          y: PLAYER_Y,
-          fontSize: 28,
-          fontFamily: FONT_DISPLAY,
-          fill: "rgba(255,255,255,0.70)",
-          letterSpacing: 3,
-          width: CONTENT_W,
-        }),
-      );
-      layer.add(
-        new Konva.Text({
-          text: lastName,
-          x: PAD_X,
-          y: PLAYER_Y + 32,
-          fontSize: 62,
-          fontFamily: FONT_DISPLAY,
-          fill: "#ffffff",
-          letterSpacing: 2,
-          width: CONTENT_W,
-        }),
-      );
-    } else {
-      layer.add(
-        new Konva.Text({
-          text: lastName,
-          x: PAD_X,
-          y: PLAYER_Y,
-          fontSize: 62,
-          fontFamily: FONT_DISPLAY,
-          fill: "#ffffff",
-          letterSpacing: 2,
-          width: CONTENT_W,
-        }),
-      );
-    }
+  const nameParts = (data.playerName || "PLAYER NAME").trim().split(/\s+/);
+  const lastName = nameParts[nameParts.length - 1].toUpperCase();
+  const firstName =
+    nameParts.length > 1 ? nameParts.slice(0, -1).join(" ").toUpperCase() : "";
+
+  if (firstName) {
+    const firstSize = Math.round(W * 0.034);
+    layer.add(
+      new Konva.Text({
+        text: firstName,
+        x: PAD_X,
+        y,
+        width: TEXT_W,
+        fontSize: firstSize,
+        fontFamily: FONT_DISPLAY,
+        fill: "rgba(255,255,255,0.82)",
+        letterSpacing: Math.round(W * 0.004),
+      }),
+    );
+    y += Math.round(firstSize * 0.95);
   }
 
-  // divider line
-  const DIV_Y = PLAYER_Y + 120;
+  let lastSize = fitWidth(
+    lastName,
+    TEXT_W,
+    Math.round(W * 0.32),
+    Math.round(W * 0.1),
+    -1,
+  );
+  let nameScaleX = 1;
+  const minNameH = Math.round(W * 0.17);
+  if (lastSize * 0.7 < minNameH) {
+    lastSize = Math.round(minNameH / 0.7);
+    const naturalW = measure(lastName, lastSize, -1);
+    nameScaleX = Math.min(1, TEXT_W / naturalW);
+  }
   layer.add(
-    new Konva.Line({
-      points: [PAD_X, DIV_Y, PAD_X + CONTENT_W * 0.75, DIV_Y],
-      stroke: "rgba(255,255,255,0.15)",
-      strokeWidth: 1,
+    new Konva.Text({
+      text: lastName,
+      x: PAD_X,
+      y,
+      fontSize: lastSize,
+      scaleX: nameScaleX,
+      fontFamily: FONT_DISPLAY,
+      fill: "#ffffff",
+      letterSpacing: -1,
     }),
   );
 
-  // transfer kind (loan / free / transfer)
-  const KIND_Y = DIV_Y + 18;
+  const aroundLine = Math.round(W * 0.032);
+  const lineH = Math.max(3, Math.round(W * 0.0035));
+  y += Math.round(lastSize * 0.7) + aroundLine;
+
+  layer.add(
+    new Konva.Rect({
+      x: PAD_X,
+      y,
+      width: Math.round(W * 0.16),
+      height: lineH,
+      fill: RED,
+    }),
+  );
+  y += lineH + aroundLine;
+
   const kindLabel =
     data.transferKind === "loan"
       ? "LOAN"
       : data.transferKind === "free"
         ? "FREE TRANSFER"
         : "TRANSFER";
-
+  const kindSize = Math.round(W * 0.02);
   layer.add(
     new Konva.Text({
       text: kindLabel,
       x: PAD_X,
-      y: KIND_Y,
-      fontSize: 12,
+      y,
+      fontSize: kindSize,
       fontFamily: FONT_BODY,
-      fill: statusColor,
-      letterSpacing: 3,
       fontStyle: "700",
+      fill: "rgba(255,255,255,0.88)",
+      letterSpacing: Math.round(W * 0.004),
     }),
   );
+  y += kindSize + Math.round(W * 0.02);
 
-  // logo row
-  const LOGO_ROW_Y = KIND_Y + 28;
-  const LOGO_SIZE = 72;
-  const ARROW_GAP = 22;
-  // positioning
+  const LOGO_SIZE = Math.round(W * 0.125);
+  const ARROW_GAP = Math.round(W * 0.02);
   const logo1CX = PAD_X + LOGO_SIZE / 2;
-  const logo1CY = LOGO_ROW_Y + LOGO_SIZE / 2;
+  const logo1CY = y + LOGO_SIZE / 2;
 
   await drawTeamLogo(
     layer,
@@ -219,13 +236,10 @@ export async function renderTransfer(
     "plain",
   );
 
-  // arrow chevrons
   const ARROW_X = PAD_X + LOGO_SIZE + ARROW_GAP;
-  const ARROW_Y = LOGO_ROW_Y + LOGO_SIZE / 2;
-  const arrowColor = "rgba(255,255,255,0.55)";
-  const chevronSize = 8;
-  const chevronSpacing = 11;
-
+  const ARROW_Y = y + LOGO_SIZE / 2;
+  const chevronSize = Math.round(W * 0.011);
+  const chevronSpacing = Math.round(W * 0.014);
   for (let i = 0; i < 3; i++) {
     const cx = ARROW_X + i * chevronSpacing;
     layer.add(
@@ -238,8 +252,8 @@ export async function renderTransfer(
           cx,
           ARROW_Y + chevronSize,
         ],
-        stroke: arrowColor,
-        strokeWidth: 2.5,
+        stroke: "rgba(255,255,255,0.8)",
+        strokeWidth: Math.max(2, Math.round(W * 0.003)),
         lineCap: "round",
         lineJoin: "round",
       }),
@@ -247,101 +261,98 @@ export async function renderTransfer(
   }
 
   const logo2CX = ARROW_X + 3 * chevronSpacing + ARROW_GAP + LOGO_SIZE / 2;
-  const logo2CY = LOGO_ROW_Y + LOGO_SIZE / 2;
-
   await drawTeamLogo(
     layer,
     data.toTeam?.logo ?? null,
     logo2CX,
-    logo2CY,
+    logo1CY,
     LOGO_SIZE,
     "plain",
   );
 
-  // club names below logos
-  const CLUB_NAME_Y = LOGO_ROW_Y + LOGO_SIZE + 10;
-  const nameStyle = {
-    fontSize: 10,
-    fontFamily: FONT_BODY,
-    fill: "rgba(255,255,255,0.45)",
-    letterSpacing: 1.5,
-    fontStyle: "600",
-  };
-
+  y += LOGO_SIZE + Math.round(W * 0.012);
+  const clubSize = Math.round(W * 0.016);
   layer.add(
     new Konva.Text({
-      ...nameStyle,
       text: (data.fromTeam?.name ?? "").toUpperCase(),
-      x: PAD_X,
-      y: CLUB_NAME_Y,
-      width: LOGO_SIZE,
+      x: PAD_X - 8,
+      y,
+      width: LOGO_SIZE + 16,
       align: "center",
+      fontSize: clubSize,
+      fontFamily: FONT_BODY,
+      fontStyle: "700",
+      fill: "rgba(255,255,255,0.7)",
+      letterSpacing: 1,
     }),
   );
   layer.add(
     new Konva.Text({
-      ...nameStyle,
       text: (data.toTeam?.name ?? "").toUpperCase(),
-      x: logo2CX - LOGO_SIZE / 2,
-      y: CLUB_NAME_Y,
-      width: LOGO_SIZE,
+      x: logo2CX - LOGO_SIZE / 2 - 8,
+      y,
+      width: LOGO_SIZE + 16,
       align: "center",
+      fontSize: clubSize,
+      fontFamily: FONT_BODY,
+      fontStyle: "700",
+      fill: "rgba(255,255,255,0.7)",
+      letterSpacing: 1,
     }),
   );
 
-  // fee, if not loan
-  if (data.transferKind !== "loan") {
-    const FEE_Y = CLUB_NAME_Y + 30;
+  y += clubSize + Math.round(W * 0.03);
 
-    layer.add(
-      new Konva.Text({
-        text: "FEE",
-        x: PAD_X,
-        y: FEE_Y,
-        fontSize: 10,
-        fontFamily: FONT_BODY,
-        fill: "rgba(255,255,255,0.35)",
-        letterSpacing: 3,
-        fontStyle: "600",
-      }),
-    );
+  let feeDisplay = "TBC";
+  if (data.transferKind === "free") feeDisplay = "FREE";
+  else if (data.transferKind === "loan") feeDisplay = "LOAN";
+  else if (data.fee)
+    feeDisplay = `${data.currency ?? "£"}${data.fee}`.toUpperCase();
 
-    // build fee display string
-    let feeDisplay: string;
-    if (data.transferKind === "free") {
-      feeDisplay = "FREE";
-    } else if (data.fee) {
-      const currency = (data as any).currency ?? "£";
-      feeDisplay = (currency + data.fee).toUpperCase();
-    } else {
-      feeDisplay = "TBC";
-    }
+  const feeLabel = data.transferKind === "loan" ? "DEAL" : "FEE";
+  const feeLabelSize = Math.round(W * 0.016);
+  layer.add(
+    new Konva.Text({
+      text: feeLabel,
+      x: PAD_X,
+      y,
+      fontSize: feeLabelSize,
+      fontFamily: FONT_BODY,
+      fontStyle: "700",
+      fill: "rgba(255,255,255,0.55)",
+      letterSpacing: Math.round(W * 0.004),
+    }),
+  );
+  y += feeLabelSize + Math.round(W * 0.008);
 
-    layer.add(
-      new Konva.Text({
-        text: feeDisplay,
-        x: PAD_X,
-        y: FEE_Y + 18,
-        fontSize: 36,
-        fontFamily: FONT_DISPLAY,
-        fill: "#ffffff",
-        letterSpacing: 1,
-        width: CONTENT_W,
-      }),
-    );
-  }
+  const feeSize = Math.round(W * 0.175);
+  const feeTarget = Math.round(TEXT_W * 0.68);
+  const feeScaleX = Math.min(
+    1,
+    feeTarget / Math.max(measure(feeDisplay, feeSize, 0), 1),
+  );
+  layer.add(
+    new Konva.Text({
+      text: feeDisplay,
+      x: PAD_X,
+      y,
+      fontSize: feeSize,
+      scaleX: feeScaleX,
+      fontFamily: FONT_DISPLAY,
+      fill: "#ffffff",
+      letterSpacing: 0,
+    }),
+  );
 
-  // watermark
   layer.add(
     new Konva.Text({
       text: "ENORMITY OF LFC",
       x: PAD_X,
-      y: H - 32,
-      width: CONTENT_W,
-      fontSize: 11,
+      y: H - Math.round(W * 0.04),
+      fontSize: Math.round(W * 0.014),
       fontFamily: FONT_DISPLAY,
-      fill: "rgba(255,255,255,0.10)",
-      letterSpacing: 3,
+      fill: "rgba(255,255,255,0.45)",
+      letterSpacing: 2,
     }),
   );
 
