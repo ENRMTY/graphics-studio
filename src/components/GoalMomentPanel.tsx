@@ -1,7 +1,11 @@
+import { useEffect, useState } from "react";
 import type { Competition, GoalMomentData, Team } from "@types";
 import { CompetitionPicker } from "./CompetitionPicker";
 import { TeamPicker } from "./TeamPicker";
 import { PosterPhoto } from "./PosterPhoto";
+import { PlayerNameInput } from "./PlayerNameInput";
+import { playersService } from "../services/playersService";
+import { loadSavedPlayers, type SavedPlayer } from "../utils/storage";
 
 interface Props {
   data: GoalMomentData;
@@ -20,6 +24,14 @@ export function GoalMomentPanel({
   teams,
   onTeamSave,
 }: Props) {
+  const [savedPlayers, setSavedPlayers] = useState<SavedPlayer[]>([]);
+  useEffect(() => {
+    playersService
+      .getAll()
+      .then(setSavedPlayers)
+      .catch(() => setSavedPlayers(loadSavedPlayers()));
+  }, []);
+
   const usTeam: Team | null = data.usName
     ? { id: "us", name: data.usName, logo: data.usLogo }
     : null;
@@ -40,11 +52,12 @@ export function GoalMomentPanel({
       />
       <div>
         <div className="section-label">Scorer</div>
-        <input
-          className="input"
+        <PlayerNameInput
+          field
           placeholder="Mohamed Salah"
           value={data.playerName}
-          onChange={(e) => onChange({ ...data, playerName: e.target.value })}
+          savedPlayers={savedPlayers}
+          onChange={(name) => onChange({ ...data, playerName: name })}
         />
       </div>
       <div>

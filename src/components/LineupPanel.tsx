@@ -1,11 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  type ChangeEvent,
-  type KeyboardEvent,
-} from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { LineupData, LineupPlayer, Competition, Team } from "@types";
 import { CompetitionPicker } from "./CompetitionPicker";
 import { TeamPicker } from "./TeamPicker";
@@ -13,6 +6,7 @@ import { Icons } from "./Icons";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { playersService } from "../services/playersService";
 import { buildDefaultLineup } from "@defaults";
+import { foldName, PlayerNameInput } from "./PlayerNameInput";
 import {
   loadSavedPlayers,
   type SavedPlayer,
@@ -30,150 +24,6 @@ interface Props {
 }
 
 const FORMATIONS = ["4-3-3", "4-4-2", "4-2-3-1", "3-4-3", "3-5-2", "5-4-1"];
-
-/** "a" matches "á". Combining marks are stripped before compare. */
-function foldName(s: string): string {
-  return s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-}
-
-function surnameMatch(full: string, query: string): boolean {
-  const q = foldName(query.trim());
-  if (!q) return false;
-  const parts = foldName(full).split(/\s+/).filter(Boolean);
-  for (let i = 1; i < parts.length; i++) {
-    if (parts.slice(i).join(" ").startsWith(q)) return true;
-  }
-  return false;
-}
-
-/** Ghost the rest of whichever part they started: first name or surname. */
-function ghostFor(name: string, typed: string): string {
-  if (foldName(name).startsWith(foldName(typed))) return ghostRest(name, typed);
-  const parts = name.trim().split(/\s+/);
-  const q = foldName(typed);
-  for (let i = 1; i < parts.length; i++) {
-    const suffix = parts.slice(i).join(" ");
-    if (foldName(suffix).startsWith(q)) return ghostRest(suffix, typed);
-  }
-  return "";
-}
-
-function ghostRest(name: string, typed: string): string {
-  const target = foldName(typed);
-  let acc = "";
-  const chars = Array.from(name);
-  let i = 0;
-  while (i < chars.length && acc.length < target.length) {
-    const piece = foldName(chars[i]);
-    i += 1;
-    if (!piece) continue;
-    acc += piece;
-  }
-  return chars.slice(i).join("");
-}
-
-// auto-complete input for player names with ghost text and suggestions from saved players
-function PlayerNameInput({
-  value,
-  onChange,
-  savedPlayers,
-  placeholder = "Player name",
-}: {
-  value: string;
-  onChange: (name: string, suggestion?: SavedPlayer) => void;
-  savedPlayers: SavedPlayer[];
-  placeholder?: string;
-}) {
-  const [ghost, setGhost] = useState("");
-  const [activeSuggestion, setActiveSuggestion] = useState<SavedPlayer | null>(
-    null,
-  );
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // recompute ghost whenever value changes
-  useEffect(() => {
-    if (!value.trim()) {
-      setGhost("");
-      setActiveSuggestion(null);
-      return;
-    }
-    const folded = foldName(value);
-    const prefix = savedPlayers.find((p) =>
-      foldName(p.name).startsWith(folded),
-    );
-    const match =
-      prefix ?? savedPlayers.find((p) => surnameMatch(p.name, value));
-    const rest = match ? ghostFor(match.name, value) : "";
-    if (match && rest) {
-      setGhost(rest);
-      setActiveSuggestion(match);
-    } else if (match && match.name !== value) {
-      setGhost("");
-      setActiveSuggestion(match);
-    } else {
-      setGhost("");
-      setActiveSuggestion(null);
-    }
-  }, [value, savedPlayers]);
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if ((e.key === "Tab" || e.key === "Enter") && activeSuggestion) {
-      e.preventDefault();
-      onChange(activeSuggestion.name, activeSuggestion);
-      setGhost("");
-      setActiveSuggestion(null);
-    }
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value);
-  };
-
-  return (
-    <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
-      {/* ghost layer - shows completion in faded colour */}
-      {ghost && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            padding: "4px 8px",
-            fontSize: 12,
-            fontFamily: "inherit",
-            pointerEvents: "none",
-            color: "transparent", // hide the typed part
-            whiteSpace: "pre",
-            overflow: "hidden",
-          }}
-        >
-          <span style={{ visibility: "hidden" }}>{value}</span>
-          <span style={{ color: "rgba(255,255,255,0.28)" }}>{ghost}</span>
-        </div>
-      )}
-      <input
-        ref={inputRef}
-        className="input"
-        value={value}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        autoComplete="off"
-        spellCheck={false}
-        style={{
-          padding: "4px 8px",
-          fontSize: 12,
-          width: "100%",
-          background: "transparent",
-          position: "relative",
-          zIndex: 1,
-        }}
-      />
-    </div>
-  );
-}
 
 function PlayerRow({
   player,
