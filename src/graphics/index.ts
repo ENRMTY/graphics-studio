@@ -6,3 +6,7 @@ export { renderNews } from "./news";
 export { renderLineup } from "./lineup";
 export { renderTransfer } from "./transfer";
 export { renderGoals } from "./goals";
+export { renderGoalMoment } from "./goalMoment";
+export { renderMilestone } from "./milestone";
+export { renderTableSpot } from "./tableSpot";
+export { renderNextUp } from "./nextUp";

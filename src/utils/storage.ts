@@ -81,18 +81,41 @@ export const loadGoalsLocal = (): Partial<GoalsData> | null => {
 };
 
 export const saveGoalsLocal = (data: GoalsData): void => {
+  saveBlob(GOALS_KEY, data);
+};
+
+export const loadBlob = <T>(key: string): Partial<T> | null => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<T>;
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+export const saveBlob = (
+  key: string,
+  data: { bgImageFile?: File; bgImage?: string | null },
+) => {
   const { bgImageFile: _file, ...rest } = data;
   try {
-    localStorage.setItem(GOALS_KEY, JSON.stringify(rest));
+    localStorage.setItem(key, JSON.stringify(rest));
   } catch {
     const { bgImage: _img, ...withoutPhoto } = rest;
     try {
-      localStorage.setItem(GOALS_KEY, JSON.stringify(withoutPhoto));
+      localStorage.setItem(key, JSON.stringify(withoutPhoto));
     } catch {
       // photo was too large
     }
   }
 };
+
+export const GOAL_KEY = "lfc_goal_v1";
+export const MILESTONE_KEY = "lfc_milestone_v1";
+export const TABLE_KEY = "lfc_table_v1";
+export const NEXT_KEY = "lfc_next_v1";
 
 // saved players for quick access when editing lineup
 export interface SavedPlayer {

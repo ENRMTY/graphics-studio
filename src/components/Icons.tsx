@@ -178,6 +178,29 @@ export const Icons = {
       <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
     </>,
   ),
+  Goal: icon(
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <path d="M12 8v8M9 12h6" />
+    </>,
+  ),
+  Milestone: icon(
+    <>
+      <path d="M5 19V5M5 5h9l-2 4 2 4H5" />
+    </>,
+  ),
+  Table: icon(
+    <>
+      <path d="M4 5h16v14H4z" />
+      <path d="M4 10h16M10 10v9" />
+    </>,
+  ),
+  Next: icon(
+    <>
+      <rect x="4" y="5" width="16" height="15" rx="2" />
+      <path d="M8 3v4M16 3v4M4 10h16" />
+    </>,
+  ),
   Eye: icon(
     <>
       <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />

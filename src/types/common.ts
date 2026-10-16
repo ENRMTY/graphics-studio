@@ -11,6 +11,10 @@ export type ViewMode =
   | "lineup"
   | "transfer"
   | "goals"
+  | "goal"
+  | "milestone"
+  | "table"
+  | "next"
   | "teams"
   | "players"
   | "comps";

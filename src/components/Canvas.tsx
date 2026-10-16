@@ -9,6 +9,10 @@ import type {
   LineupData,
   TransferData,
   GoalsData,
+  GoalMomentData,
+  MilestoneData,
+  TableSpotData,
+  NextUpData,
 } from "@types";
 import {
   renderFullTime,
@@ -19,6 +23,10 @@ import {
   renderLineup,
   renderTransfer,
   renderGoals,
+  renderGoalMoment,
+  renderMilestone,
+  renderTableSpot,
+  renderNextUp,
 } from "@graphics";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { ensureCanvasFonts } from "../utils/canvasFonts";
@@ -31,7 +39,11 @@ type CanvasData =
   | NewsData
   | LineupData
   | TransferData
-  | GoalsData;
+  | GoalsData
+  | GoalMomentData
+  | MilestoneData
+  | TableSpotData
+  | NextUpData;
 
 export type CanvasSize = "1080x1080" | "1080x1920";
 
@@ -235,6 +247,14 @@ export async function triggerRender(
     renderTransfer(stage, data, fullW, fullH);
   } else if (data.type === "goals") {
     await renderGoals(stage, data, fullW, fullH);
+  } else if (data.type === "goal") {
+    await renderGoalMoment(stage, data, fullW, fullH);
+  } else if (data.type === "milestone") {
+    await renderMilestone(stage, data, fullW, fullH);
+  } else if (data.type === "table") {
+    await renderTableSpot(stage, data, fullW, fullH);
+  } else if (data.type === "next") {
+    await renderNextUp(stage, data, fullW, fullH);
   } else {
     renderFullTime(stage, data, fullW, fullH);
   }

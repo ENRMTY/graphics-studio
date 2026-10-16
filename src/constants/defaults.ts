@@ -8,6 +8,10 @@ import {
   LineupPlayer,
   TransferData,
   GoalsData,
+  GoalMomentData,
+  MilestoneData,
+  TableSpotData,
+  NextUpData,
 } from "@types";
 
 export const DEFAULT_FT: FullTimeData = {
@@ -115,6 +119,51 @@ export const DEFAULT_GOALS: GoalsData = {
   competitionIcon: null,
   competitionColor: "",
   team: null,
+};
+
+const blankComp = {
+  competition: "",
+  competitionIcon: null,
+  competitionColor: "",
+};
+
+export const DEFAULT_GOAL: GoalMomentData = {
+  type: "goal",
+  bgImage: null,
+  playerName: "",
+  minute: "24",
+  ourScore: "1",
+  theirScore: "0",
+  opponent: "",
+  ...blankComp,
+};
+
+export const DEFAULT_MILESTONE: MilestoneData = {
+  type: "milestone",
+  bgImage: null,
+  playerName: "",
+  value: "50",
+  label: "Premier League goals",
+  ...blankComp,
+};
+
+export const DEFAULT_TABLE: TableSpotData = {
+  type: "table",
+  bgImage: null,
+  position: "1",
+  points: "45",
+  gd: "+18",
+  ...blankComp,
+};
+
+export const DEFAULT_NEXT: NextUpData = {
+  type: "next",
+  bgImage: null,
+  opponent: "",
+  opponentLogo: null,
+  kickoff: "20:00",
+  matchDate: "",
+  ...blankComp,
 };
 
 const GK_Y = 0.88;

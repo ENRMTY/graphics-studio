@@ -13,6 +13,10 @@ import type {
   LineupData,
   TransferData,
   GoalsData,
+  GoalMomentData,
+  MilestoneData,
+  TableSpotData,
+  NextUpData,
   Team,
   Competition,
 } from "./types";
@@ -38,6 +42,12 @@ import {
   saveNewsLocal,
   loadGoalsLocal,
   saveGoalsLocal,
+  loadBlob,
+  saveBlob,
+  GOAL_KEY,
+  MILESTONE_KEY,
+  TABLE_KEY,
+  NEXT_KEY,
 } from "./utils/storage";
 
 // components
@@ -51,6 +61,10 @@ import { LineupPanel } from "./components/LineupPanel";
 import { PlayersPanel } from "./components/PlayersPanel";
 import { TransferPanel } from "./components/TransferPanel";
 import { GoalsPanel } from "./components/GoalsPanel";
+import { GoalMomentPanel } from "./components/GoalMomentPanel";
+import { MilestonePanel } from "./components/MilestonePanel";
+import { TableSpotPanel } from "./components/TableSpotPanel";
+import { NextUpPanel } from "./components/NextUpPanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas, getFullDimensions, triggerRender } from "./components/Canvas";
@@ -76,6 +90,10 @@ import {
   DEFAULT_LINEUP,
   DEFAULT_TRANSFER,
   DEFAULT_GOALS,
+  DEFAULT_GOAL,
+  DEFAULT_MILESTONE,
+  DEFAULT_TABLE,
+  DEFAULT_NEXT,
 } from "@defaults";
 
 export default function App() {
@@ -93,6 +111,11 @@ export default function App() {
   const [transferData, setTransferData] =
     useState<TransferData>(DEFAULT_TRANSFER);
   const [goalsData, setGoalsData] = useState<GoalsData>(DEFAULT_GOALS);
+  const [goalData, setGoalData] = useState<GoalMomentData>(DEFAULT_GOAL);
+  const [milestoneData, setMilestoneData] =
+    useState<MilestoneData>(DEFAULT_MILESTONE);
+  const [tableData, setTableData] = useState<TableSpotData>(DEFAULT_TABLE);
+  const [nextData, setNextData] = useState<NextUpData>(DEFAULT_NEXT);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -116,6 +139,10 @@ export default function App() {
   const lineupStageRef = useRef<Konva.Stage | null>(null);
   const transferStageRef = useRef<Konva.Stage | null>(null);
   const goalsStageRef = useRef<Konva.Stage | null>(null);
+  const goalStageRef = useRef<Konva.Stage | null>(null);
+  const milestoneStageRef = useRef<Konva.Stage | null>(null);
+  const tableStageRef = useRef<Konva.Stage | null>(null);
+  const nextStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -129,6 +156,10 @@ export default function App() {
   const lineupRef = useRef(lineupData);
   const transferRef = useRef(transferData);
   const goalsRef = useRef(goalsData);
+  const goalRef = useRef(goalData);
+  const milestoneRef = useRef(milestoneData);
+  const tableRef = useRef(tableData);
+  const nextRef = useRef(nextData);
   ftRef.current = ftData;
   htRef.current = htData;
   mdRef.current = mdData;
@@ -138,6 +169,10 @@ export default function App() {
   lineupRef.current = lineupData;
   transferRef.current = transferData;
   goalsRef.current = goalsData;
+  goalRef.current = goalData;
+  milestoneRef.current = milestoneData;
+  tableRef.current = tableData;
+  nextRef.current = nextData;
 
   // initial load
   useEffect(() => {
@@ -189,6 +224,23 @@ export default function App() {
             minutes: localGoals.minutes ?? prev.minutes,
           }));
         }
+        const localGoal = loadBlob<GoalMomentData>(GOAL_KEY);
+        if (localGoal)
+          setGoalData((prev) => ({ ...prev, ...localGoal, type: "goal" }));
+        const localMilestone = loadBlob<MilestoneData>(MILESTONE_KEY);
+        if (localMilestone) {
+          setMilestoneData((prev) => ({
+            ...prev,
+            ...localMilestone,
+            type: "milestone",
+          }));
+        }
+        const localTable = loadBlob<TableSpotData>(TABLE_KEY);
+        if (localTable)
+          setTableData((prev) => ({ ...prev, ...localTable, type: "table" }));
+        const localNext = loadBlob<NextUpData>(NEXT_KEY);
+        if (localNext)
+          setNextData((prev) => ({ ...prev, ...localNext, type: "next" }));
 
         // restore last lineup from local snapshot
         const snapshot = loadLineupSnapshot();
@@ -229,6 +281,10 @@ export default function App() {
       const transfer = transferRef.current;
       saveNewsLocal(news);
       saveGoalsLocal(goalsRef.current);
+      saveBlob(GOAL_KEY, goalRef.current);
+      saveBlob(MILESTONE_KEY, milestoneRef.current);
+      saveBlob(TABLE_KEY, tableRef.current);
+      saveBlob(NEXT_KEY, nextRef.current);
       try {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
         if (ft.bgImageFile) {
@@ -504,6 +560,42 @@ export default function App() {
     [scheduleAutoSave],
   );
 
+  const handleGoalChange = useCallback(
+    (data: GoalMomentData) => {
+      setGoalData(data);
+      saveBlob(GOAL_KEY, data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
+  const handleMilestoneChange = useCallback(
+    (data: MilestoneData) => {
+      setMilestoneData(data);
+      saveBlob(MILESTONE_KEY, data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
+  const handleTableChange = useCallback(
+    (data: TableSpotData) => {
+      setTableData(data);
+      saveBlob(TABLE_KEY, data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
+  const handleNextChange = useCallback(
+    (data: NextUpData) => {
+      setNextData(data);
+      saveBlob(NEXT_KEY, data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
   // lineups
   const handleLineupChange = useCallback((data: LineupData) => {
     setLineupData(data);
@@ -575,7 +667,15 @@ export default function App() {
                     ? transferStageRef.current
                     : view === "goals"
                       ? goalsStageRef.current
-                      : mdStageRef.current;
+                      : view === "goal"
+                        ? goalStageRef.current
+                        : view === "milestone"
+                          ? milestoneStageRef.current
+                          : view === "table"
+                            ? tableStageRef.current
+                            : view === "next"
+                              ? nextStageRef.current
+                              : mdStageRef.current;
     if (!stage || exporting) return;
     setExporting(true);
     let restorePixelRatio: (() => void) | null = null;
@@ -598,16 +698,30 @@ export default function App() {
       stage.scale({ x: 1, y: 1 });
 
       // lineup uses async image loading - re-render at full res before capture
-      if (view === "lineup" || view === "news" || view === "goals") {
-        await triggerRender(
-          stage,
+      if (
+        view === "lineup" ||
+        view === "news" ||
+        view === "goals" ||
+        view === "goal" ||
+        view === "milestone" ||
+        view === "table" ||
+        view === "next"
+      ) {
+        const current =
           view === "news"
             ? newsRef.current
             : view === "goals"
               ? goalsRef.current
-              : lineupRef.current,
-          canvasSize,
-        );
+              : view === "goal"
+                ? goalRef.current
+                : view === "milestone"
+                  ? milestoneRef.current
+                  : view === "table"
+                    ? tableRef.current
+                    : view === "next"
+                      ? nextRef.current
+                      : lineupRef.current;
+        await triggerRender(stage, current, canvasSize);
       } else {
         stage.draw();
       }
@@ -644,7 +758,15 @@ export default function App() {
                       ? "transfer"
                       : view === "goals"
                         ? "goals"
-                        : "matchday";
+                        : view === "goal"
+                          ? "goal"
+                          : view === "milestone"
+                            ? "milestone"
+                            : view === "table"
+                              ? "table"
+                              : view === "next"
+                                ? "next"
+                                : "matchday";
       const filename = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       if (isMobile && blob) {
         // straight into the gallery. no share sheet, no app picker.
@@ -693,7 +815,11 @@ export default function App() {
     view === "news" ||
     view === "lineup" ||
     view === "transfer" ||
-    view === "goals";
+    view === "goals" ||
+    view === "goal" ||
+    view === "milestone" ||
+    view === "table" ||
+    view === "next";
 
   // mobile: switching section always lands on the editor
   const handleViewChange = (v: ViewMode) => {
@@ -780,7 +906,15 @@ export default function App() {
                                   ? "Transfer"
                                   : view === "goals"
                                     ? "Goals"
-                                    : "Match Day"}
+                                    : view === "goal"
+                                      ? "Goal"
+                                      : view === "milestone"
+                                        ? "Milestone"
+                                        : view === "table"
+                                          ? "Table"
+                                          : view === "next"
+                                            ? "Next Up"
+                                            : "Match Day"}
                   </h2>
                   <p>
                     {view === "md"
@@ -795,7 +929,15 @@ export default function App() {
                               ? "Player transfer graphic"
                               : view === "goals"
                                 ? "Goal times across the top"
-                                : "Configure scoreline & events"}
+                                : view === "goal"
+                                  ? "One goal, the minute, and the score"
+                                  : view === "milestone"
+                                    ? "A big number, and what it is"
+                                    : view === "table"
+                                      ? "Position, points, and goal difference"
+                                      : view === "next"
+                                        ? "Opponent, competition, and kickoff"
+                                        : "Configure scoreline & events"}
                   </p>
                 </div>
               </div>
@@ -854,6 +996,36 @@ export default function App() {
                   onChange={handleGoalsChange}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "goal" ? (
+                <GoalMomentPanel
+                  data={goalData}
+                  onChange={handleGoalChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "milestone" ? (
+                <MilestonePanel
+                  data={milestoneData}
+                  onChange={handleMilestoneChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "table" ? (
+                <TableSpotPanel
+                  data={tableData}
+                  onChange={handleTableChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "next" ? (
+                <NextUpPanel
+                  data={nextData}
+                  onChange={handleNextChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                  teams={teams}
+                  onTeamSave={handleTeamSave}
                 />
               ) : (
                 <FullTimePanel
@@ -985,6 +1157,40 @@ export default function App() {
                     <Canvas
                       data={goalsData}
                       stageRef={goalsStageRef}
+                      canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
+                    />
+                  </div>
+                  <div style={{ display: view === "goal" ? "block" : "none" }}>
+                    <Canvas
+                      data={goalData}
+                      stageRef={goalStageRef}
+                      canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
+                    />
+                  </div>
+                  <div
+                    style={{ display: view === "milestone" ? "block" : "none" }}
+                  >
+                    <Canvas
+                      data={milestoneData}
+                      stageRef={milestoneStageRef}
+                      canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
+                    />
+                  </div>
+                  <div style={{ display: view === "table" ? "block" : "none" }}>
+                    <Canvas
+                      data={tableData}
+                      stageRef={tableStageRef}
+                      canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
+                    />
+                  </div>
+                  <div style={{ display: view === "next" ? "block" : "none" }}>
+                    <Canvas
+                      data={nextData}
+                      stageRef={nextStageRef}
                       canvasSize={canvasSize}
                       paused={isMobile && mobileTab === "edit"}
                     />
