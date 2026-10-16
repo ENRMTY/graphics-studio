@@ -301,7 +301,7 @@ export async function renderTransfer(
     }),
   );
 
-  y += clubSize + Math.round(W * 0.03);
+  y += clubSize + Math.round(W * 0.03) + Math.round(W * 0.014);
 
   let feeDisplay = "TBC";
   if (data.transferKind === "free") feeDisplay = "FREE";
@@ -326,7 +326,7 @@ export async function renderTransfer(
   y += feeLabelSize + Math.round(W * 0.008);
 
   const feeSize = Math.round(W * 0.175);
-  const feeTarget = Math.round(TEXT_W * 0.68);
+  const feeTarget = Math.round(TEXT_W * 0.56);
   const feeScaleX = Math.min(
     1,
     feeTarget / Math.max(measure(feeDisplay, feeSize, 0), 1),
