@@ -9,3 +9,4 @@ export * from "./fullTime";
 export * from "./quote";
 export * from "./news";
 export * from "./transfer";
+export * from "./goals";

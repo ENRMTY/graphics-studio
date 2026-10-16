@@ -12,6 +12,7 @@ import type {
   NewsData,
   LineupData,
   TransferData,
+  GoalsData,
   Team,
   Competition,
 } from "./types";
@@ -35,6 +36,8 @@ import {
   loadLineupSnapshot,
   loadNewsLocal,
   saveNewsLocal,
+  loadGoalsLocal,
+  saveGoalsLocal,
 } from "./utils/storage";
 
 // components
@@ -47,6 +50,7 @@ import { NewsPanel } from "./components/NewsPanel";
 import { LineupPanel } from "./components/LineupPanel";
 import { PlayersPanel } from "./components/PlayersPanel";
 import { TransferPanel } from "./components/TransferPanel";
+import { GoalsPanel } from "./components/GoalsPanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
 import { Canvas, getFullDimensions, triggerRender } from "./components/Canvas";
@@ -71,6 +75,7 @@ import {
   DEFAULT_NEWS,
   DEFAULT_LINEUP,
   DEFAULT_TRANSFER,
+  DEFAULT_GOALS,
 } from "@defaults";
 
 export default function App() {
@@ -87,6 +92,7 @@ export default function App() {
   const [lineupData, setLineupData] = useState<LineupData>(DEFAULT_LINEUP);
   const [transferData, setTransferData] =
     useState<TransferData>(DEFAULT_TRANSFER);
+  const [goalsData, setGoalsData] = useState<GoalsData>(DEFAULT_GOALS);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -109,6 +115,7 @@ export default function App() {
   const newsStageRef = useRef<Konva.Stage | null>(null);
   const lineupStageRef = useRef<Konva.Stage | null>(null);
   const transferStageRef = useRef<Konva.Stage | null>(null);
+  const goalsStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -121,6 +128,7 @@ export default function App() {
   const newsRef = useRef(newsData);
   const lineupRef = useRef(lineupData);
   const transferRef = useRef(transferData);
+  const goalsRef = useRef(goalsData);
   ftRef.current = ftData;
   htRef.current = htData;
   mdRef.current = mdData;
@@ -129,6 +137,7 @@ export default function App() {
   newsRef.current = newsData;
   lineupRef.current = lineupData;
   transferRef.current = transferData;
+  goalsRef.current = goalsData;
 
   // initial load
   useEffect(() => {
@@ -170,6 +179,16 @@ export default function App() {
             apiGraphicToTransfer((drafts as any).transfer) as TransferData,
           );
         }
+        const localGoals = loadGoalsLocal();
+        if (localGoals) {
+          setGoalsData((prev) => ({
+            ...prev,
+            ...localGoals,
+            type: "goals",
+            count: (localGoals.count ?? prev.count) as GoalsData["count"],
+            minutes: localGoals.minutes ?? prev.minutes,
+          }));
+        }
 
         // restore last lineup from local snapshot
         const snapshot = loadLineupSnapshot();
@@ -209,6 +228,7 @@ export default function App() {
       const news = newsRef.current;
       const transfer = transferRef.current;
       saveNewsLocal(news);
+      saveGoalsLocal(goalsRef.current);
       try {
         const ftResult = await graphicsService.saveFTDraft(ft, ft._id);
         if (ft.bgImageFile) {
@@ -475,6 +495,15 @@ export default function App() {
     [scheduleAutoSave],
   );
 
+  const handleGoalsChange = useCallback(
+    (data: GoalsData) => {
+      setGoalsData(data);
+      saveGoalsLocal(data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
   // lineups
   const handleLineupChange = useCallback((data: LineupData) => {
     setLineupData(data);
@@ -544,7 +573,9 @@ export default function App() {
                   ? lineupStageRef.current
                   : view === "transfer"
                     ? transferStageRef.current
-                    : mdStageRef.current;
+                    : view === "goals"
+                      ? goalsStageRef.current
+                      : mdStageRef.current;
     if (!stage || exporting) return;
     setExporting(true);
     let restorePixelRatio: (() => void) | null = null;
@@ -567,10 +598,14 @@ export default function App() {
       stage.scale({ x: 1, y: 1 });
 
       // lineup uses async image loading - re-render at full res before capture
-      if (view === "lineup" || view === "news") {
+      if (view === "lineup" || view === "news" || view === "goals") {
         await triggerRender(
           stage,
-          view === "news" ? newsRef.current : lineupRef.current,
+          view === "news"
+            ? newsRef.current
+            : view === "goals"
+              ? goalsRef.current
+              : lineupRef.current,
           canvasSize,
         );
       } else {
@@ -607,7 +642,9 @@ export default function App() {
                     ? "lineup"
                     : view === "transfer"
                       ? "transfer"
-                      : "matchday";
+                      : view === "goals"
+                        ? "goals"
+                        : "matchday";
       const filename = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       if (isMobile && blob) {
         // straight into the gallery. no share sheet, no app picker.
@@ -655,7 +692,8 @@ export default function App() {
     view === "quote" ||
     view === "news" ||
     view === "lineup" ||
-    view === "transfer";
+    view === "transfer" ||
+    view === "goals";
 
   // mobile: switching section always lands on the editor
   const handleViewChange = (v: ViewMode) => {
@@ -740,7 +778,9 @@ export default function App() {
                                 ? "Lineup"
                                 : view === "transfer"
                                   ? "Transfer"
-                                  : "Match Day"}
+                                  : view === "goals"
+                                    ? "Goals"
+                                    : "Match Day"}
                   </h2>
                   <p>
                     {view === "md"
@@ -753,7 +793,9 @@ export default function App() {
                             ? "Big headline, optional line underneath"
                             : view === "transfer"
                               ? "Player transfer graphic"
-                              : "Configure scoreline & events"}
+                              : view === "goals"
+                                ? "Goal times across the top"
+                                : "Configure scoreline & events"}
                   </p>
                 </div>
               </div>
@@ -803,6 +845,15 @@ export default function App() {
                 <TransferPanel
                   data={transferData}
                   onChange={handleTransferChange}
+                  teams={teams}
+                  onTeamSave={handleTeamSave}
+                />
+              ) : view === "goals" ? (
+                <GoalsPanel
+                  data={goalsData}
+                  onChange={handleGoalsChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
                   teams={teams}
                   onTeamSave={handleTeamSave}
                 />
@@ -928,6 +979,14 @@ export default function App() {
                     <Canvas
                       data={transferData}
                       stageRef={transferStageRef}
+                      canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
+                    />
+                  </div>
+                  <div style={{ display: view === "goals" ? "block" : "none" }}>
+                    <Canvas
+                      data={goalsData}
+                      stageRef={goalsStageRef}
                       canvasSize={canvasSize}
                       paused={isMobile && mobileTab === "edit"}
                     />

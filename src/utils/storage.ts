@@ -1,5 +1,6 @@
 import type { Team, Competition } from "@types";
 import type { NewsData } from "../types/news";
+import type { GoalsData } from "../types/goals";
 import type { LineupPlayer } from "../types/lineup";
 
 // key names for local storage
@@ -9,6 +10,7 @@ const PLAYERS_KEY = "lfc_players_v1";
 const LINEUP_SNAPSHOT_KEY = "lfc_lineup_snapshot_v1";
 const DOT_COLORS_KEY = "lfc_dot_colors_v1";
 const NEWS_KEY = "lfc_news_v1";
+const GOALS_KEY = "lfc_goals_v1";
 
 // teams
 export const loadTeams = (): Team[] => {
@@ -63,6 +65,31 @@ export const saveNewsLocal = (data: NewsData): void => {
       localStorage.setItem(NEWS_KEY, JSON.stringify(withoutPhoto));
     } catch {
       // photo was too large and the rest still didn't fit
+    }
+  }
+};
+
+export const loadGoalsLocal = (): Partial<GoalsData> | null => {
+  try {
+    const raw = localStorage.getItem(GOALS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<GoalsData>;
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+export const saveGoalsLocal = (data: GoalsData): void => {
+  const { bgImageFile: _file, ...rest } = data;
+  try {
+    localStorage.setItem(GOALS_KEY, JSON.stringify(rest));
+  } catch {
+    const { bgImage: _img, ...withoutPhoto } = rest;
+    try {
+      localStorage.setItem(GOALS_KEY, JSON.stringify(withoutPhoto));
+    } catch {
+      // photo was too large
     }
   }
 };

@@ -4,7 +4,7 @@ const PLAYERS_KEY = "lfc_players_v1";
 const LINEUP_SNAPSHOT_KEY = "lfc_lineup_snapshot_v1";
 const DOT_COLORS_KEY = "lfc_dot_colors_v1";
 const STORAGE_VERSION_KEY = "lfc_storage_version";
-const CURRENT_VERSION = "v1.4";
+const CURRENT_VERSION = "v1.5";
 
 function runStorageMigration() {
   const currentVersion = localStorage.getItem(STORAGE_VERSION_KEY);

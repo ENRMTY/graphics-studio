@@ -5,3 +5,4 @@ export { renderQuote } from "./quote";
 export { renderNews } from "./news";
 export { renderLineup } from "./lineup";
 export { renderTransfer } from "./transfer";
+export { renderGoals } from "./goals";

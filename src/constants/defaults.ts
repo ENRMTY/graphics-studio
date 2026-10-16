@@ -7,6 +7,7 @@ import {
   LineupData,
   LineupPlayer,
   TransferData,
+  GoalsData,
 } from "@types";
 
 export const DEFAULT_FT: FullTimeData = {
@@ -103,6 +104,17 @@ export const DEFAULT_TRANSFER: TransferData = {
   fee: "",
   currency: "£",
   status: "confirmed",
+};
+
+export const DEFAULT_GOALS: GoalsData = {
+  type: "goals",
+  bgImage: null,
+  count: 3,
+  minutes: ["24", "37", "66", "", "", ""],
+  competition: "",
+  competitionIcon: null,
+  competitionColor: "",
+  team: null,
 };
 
 const GK_Y = 0.88;

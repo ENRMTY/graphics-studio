@@ -172,6 +172,12 @@ export const Icons = {
       <path d="M15 19V8" />
     </>,
   ),
+  Goals: icon(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+    </>,
+  ),
   Eye: icon(
     <>
       <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />

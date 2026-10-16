@@ -8,6 +8,7 @@ import type {
   NewsData,
   LineupData,
   TransferData,
+  GoalsData,
 } from "@types";
 import {
   renderFullTime,
@@ -17,6 +18,7 @@ import {
   renderNews,
   renderLineup,
   renderTransfer,
+  renderGoals,
 } from "@graphics";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { ensureCanvasFonts } from "../utils/canvasFonts";
@@ -28,7 +30,8 @@ type CanvasData =
   | QuoteData
   | NewsData
   | LineupData
-  | TransferData;
+  | TransferData
+  | GoalsData;
 
 export type CanvasSize = "1080x1080" | "1080x1920";
 
@@ -230,6 +233,8 @@ export async function triggerRender(
     await renderLineup(stage, data, fullW, fullH);
   } else if (data.type === "transfer") {
     renderTransfer(stage, data, fullW, fullH);
+  } else if (data.type === "goals") {
+    await renderGoals(stage, data, fullW, fullH);
   } else {
     renderFullTime(stage, data, fullW, fullH);
   }

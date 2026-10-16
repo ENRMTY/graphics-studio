@@ -10,6 +10,7 @@ export type ViewMode =
   | "news"
   | "lineup"
   | "transfer"
+  | "goals"
   | "teams"
   | "players"
   | "comps";

@@ -32,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
     Icon: Icons.Transfer,
     section: "create",
   },
+  { id: "goals", label: "Goals", Icon: Icons.Goals, section: "create" },
   { id: "teams", label: "Teams", Icon: Icons.Teams, section: "library" },
   { id: "players", label: "Players", Icon: Icons.User, section: "library" },
   { id: "comps", label: "Competitions", Icon: Icons.Comps, section: "library" },
