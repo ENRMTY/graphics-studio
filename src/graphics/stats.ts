@@ -607,9 +607,18 @@ async function renderStatsBig(
   let numberSize = Math.round(W * 0.28);
   while (numberSize > 72 && rowWidthAt(numberSize) > maxRow) numberSize -= 4;
 
-  const labelY = H - RED_BAR_H - labelSize - Math.round(W * 0.02);
+  const visualH = Math.round(numberSize * 0.74);
+  const labelGap = Math.round(W * 0.014);
+  const numberDrop = Math.round(W * 0.022);
   const numberY =
-    labelY - Math.round(numberSize * 0.92) - Math.round(W * 0.014);
+    H -
+    RED_BAR_H -
+    labelSize -
+    Math.round(W * 0.02) -
+    visualH -
+    labelGap +
+    numberDrop;
+  const labelY = numberY + visualH + labelGap;
   const widths = widthsAt(numberSize);
   const rowW =
     widths.reduce((sum, w) => sum + w, 0) +
