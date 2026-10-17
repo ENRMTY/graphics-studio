@@ -265,83 +265,96 @@ export async function renderLineup(
     );
   }
 
-  const subs = data.subs.slice(0, 8);
-  const gap = 12;
+  const subs = data.subs.slice(0, 12);
+  const twoRows = subs.length > 6;
+  const rowCount = twoRows ? 2 : 1;
+  const perRow = Math.max(1, Math.ceil(subs.length / rowCount));
+  const gapX = twoRows ? 8 : 12;
+  const gapY = Math.round(W * 0.008);
+  const availW = W - PAD * 2;
   const chipW = Math.min(
-    Math.floor(
-      (W - PAD * 2 - gap * Math.max(subs.length - 1, 0)) /
-        Math.max(subs.length, 1),
-    ),
-    Math.round(W * 0.14),
+    Math.round(W * (twoRows ? 0.2 : 0.14)),
+    Math.floor((availW - gapX * Math.max(perRow - 1, 0)) / perRow),
   );
-  const chipH = Math.round(W * 0.125);
-  const totalChipsW = subs.length * chipW + Math.max(subs.length - 1, 0) * gap;
-  const chipsStartX = (W - totalChipsW) / 2;
-  const chipY = FOOTER_Y + Math.round(W * 0.04);
+  const chipsTop = FOOTER_Y + Math.round(W * 0.038);
+  const availH = FOOTER_H - Math.round(W * 0.038) - Math.round(W * 0.012);
+  const chipH = Math.min(
+    Math.round(W * (twoRows ? 0.078 : 0.125)),
+    Math.floor((availH - gapY * (rowCount - 1)) / rowCount),
+  );
 
-  subs.forEach((sub, i) => {
-    const cx = chipsStartX + i * (chipW + gap);
-    layer.add(
-      new Konva.Rect({
-        x: cx,
-        y: chipY,
-        width: chipW,
-        height: chipH,
-        fill: "#070707",
-        stroke: ACCENT,
-        strokeWidth: 1.5,
-        cornerRadius: 12,
-      }),
-    );
-    if (sub.number !== null) {
+  for (let r = 0; r < rowCount; r++) {
+    const rowSubs = subs.slice(r * perRow, r * perRow + perRow);
+    if (!rowSubs.length) continue;
+    const rowW =
+      rowSubs.length * chipW + Math.max(rowSubs.length - 1, 0) * gapX;
+    const startX = (W - rowW) / 2;
+    const rowY = chipsTop + r * (chipH + gapY);
+
+    rowSubs.forEach((sub, i) => {
+      const cx = startX + i * (chipW + gapX);
       layer.add(
-        new Konva.Text({
-          text: String(sub.number),
+        new Konva.Rect({
           x: cx,
-          y: chipY + chipH * 0.08,
+          y: rowY,
           width: chipW,
-          fontSize: Math.round(chipH * 0.48),
-          fontFamily: "Bebas Neue",
-          fill: ACCENT,
-          align: "center",
+          height: chipH,
+          fill: "#070707",
+          stroke: ACCENT,
+          strokeWidth: 1.5,
+          cornerRadius: twoRows ? 8 : 12,
         }),
       );
-    }
-    const label = displayName(sub.name).toUpperCase();
-    const maxLabelW = chipW - 8;
-    const startSize = Math.round(W * 0.014);
-    const singleWord = !/\s/.test(label.trim());
-    let labelSize = startSize;
-    if (singleWord && label) {
-      const probe = new Konva.Text({
-        text: label,
-        fontSize: labelSize,
-        fontFamily: "DM Sans",
-        fontStyle: "600",
-        letterSpacing: 0.4,
-      });
-      while (probe.width() > maxLabelW && labelSize > 9) {
-        labelSize -= 1;
-        probe.fontSize(labelSize);
+      if (sub.number !== null) {
+        layer.add(
+          new Konva.Text({
+            text: String(sub.number),
+            x: cx,
+            y: rowY + chipH * 0.06,
+            width: chipW,
+            fontSize: Math.round(chipH * (twoRows ? 0.42 : 0.48)),
+            fontFamily: "Bebas Neue",
+            fill: ACCENT,
+            align: "center",
+          }),
+        );
       }
-      probe.destroy();
-    }
-    layer.add(
-      new Konva.Text({
-        text: label,
-        x: cx + 4,
-        y: chipY + chipH - Math.round(chipH * 0.28),
-        width: maxLabelW,
-        fontSize: labelSize,
-        fontFamily: "DM Sans",
-        fontStyle: "600",
-        fill: "#FFFFFF",
-        align: "center",
-        letterSpacing: singleWord ? 0.4 : 0.6,
-        wrap: singleWord ? "none" : "word",
-      }),
-    );
-  });
+      const label = displayName(sub.name).toUpperCase();
+      const maxLabelW = chipW - 8;
+      const singleWord = !/\s/.test(label.trim());
+      const allowWrap = !singleWord && !twoRows;
+      let labelSize = Math.min(Math.round(W * 0.014), Math.round(chipH * 0.24));
+      if (label && (!allowWrap || singleWord)) {
+        const probe = new Konva.Text({
+          text: label,
+          fontSize: labelSize,
+          fontFamily: "DM Sans",
+          fontStyle: "600",
+          letterSpacing: 0.4,
+        });
+        while (probe.width() > maxLabelW && labelSize > 8) {
+          labelSize -= 1;
+          probe.fontSize(labelSize);
+        }
+        probe.destroy();
+      }
+      layer.add(
+        new Konva.Text({
+          text: label,
+          x: cx + 4,
+          y: rowY + chipH - Math.round(chipH * (allowWrap ? 0.32 : 0.28)),
+          width: maxLabelW,
+          fontSize: labelSize,
+          fontFamily: "DM Sans",
+          fontStyle: "600",
+          fill: "#FFFFFF",
+          align: "center",
+          letterSpacing: singleWord ? 0.4 : 0.6,
+          wrap: allowWrap ? "word" : "none",
+        }),
+      );
+    });
+  }
 
   layer.draw();
 }
