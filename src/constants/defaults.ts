@@ -12,6 +12,8 @@ import {
   MilestoneData,
   TableSpotData,
   NextUpData,
+  BoardData,
+  BoardRow,
 } from "@types";
 
 export const DEFAULT_FT: FullTimeData = {
@@ -156,6 +158,43 @@ export const DEFAULT_TABLE: TableSpotData = {
   position: "1",
   points: "45",
   gd: "+18",
+  ...blankComp,
+};
+
+function boardRow(partial: Partial<BoardRow> & { id: string }): BoardRow {
+  return {
+    move: "same",
+    pos: "",
+    name: "",
+    logo: null,
+    played: "",
+    gd: "",
+    points: "",
+    goals: "",
+    highlight: false,
+    ...partial,
+  };
+}
+
+export const DEFAULT_BOARD: BoardData = {
+  type: "board",
+  kind: "league",
+  title: "",
+  bgImage: null,
+  rows: [
+    boardRow({ id: "r1", pos: "1", name: "Arsenal", move: "same", played: "20", gd: "+24", points: "48" }),
+    boardRow({ id: "r2", pos: "2", name: "Liverpool", move: "up", played: "20", gd: "+22", points: "47", highlight: true }),
+    boardRow({ id: "r3", pos: "3", name: "Man City", move: "down", played: "20", gd: "+18", points: "43" }),
+    boardRow({ id: "r4", pos: "4", name: "Chelsea", move: "up", played: "20", gd: "+12", points: "38" }),
+    boardRow({ id: "r5", pos: "5", name: "Aston Villa", move: "same", played: "20", gd: "+6", points: "34" }),
+  ],
+  scorerRows: [
+    boardRow({ id: "s1", pos: "1", name: "Mohamed Salah", move: "up", goals: "18", highlight: true }),
+    boardRow({ id: "s2", pos: "2", name: "Erling Haaland", move: "same", goals: "16" }),
+    boardRow({ id: "s3", pos: "3", name: "Cole Palmer", move: "up", goals: "13" }),
+    boardRow({ id: "s4", pos: "4", name: "Alexander Isak", move: "down", goals: "12" }),
+    boardRow({ id: "s5", pos: "5", name: "Bryan Mbeumo", move: "same", goals: "11" }),
+  ],
   ...blankComp,
 };
 

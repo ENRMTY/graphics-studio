@@ -14,6 +14,7 @@ export type ViewMode =
   | "goal"
   | "milestone"
   | "table"
+  | "board"
   | "next"
   | "teams"
   | "players"

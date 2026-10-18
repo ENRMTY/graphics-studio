@@ -9,4 +9,5 @@ export { renderGoals } from "./goals";
 export { renderGoalMoment } from "./goalMoment";
 export { renderMilestone } from "./milestone";
 export { renderTableSpot } from "./tableSpot";
+export { renderBoard } from "./board";
 export { renderNextUp } from "./nextUp";

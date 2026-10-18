@@ -195,6 +195,12 @@ export const Icons = {
       <path d="M4 10h16M10 10v9" />
     </>,
   ),
+  Board: icon(
+    <>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+      <path d="M8 5v4M8 15v4" />
+    </>,
+  ),
   Next: icon(
     <>
       <rect x="4" y="5" width="16" height="15" rx="2" />

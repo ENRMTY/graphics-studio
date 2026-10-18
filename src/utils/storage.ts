@@ -117,6 +117,7 @@ export const saveBlob = <
 export const GOAL_KEY = "lfc_goal_v1";
 export const MILESTONE_KEY = "lfc_milestone_v1";
 export const TABLE_KEY = "lfc_table_v1";
+export const BOARD_KEY = "lfc_board_v1";
 export const NEXT_KEY = "lfc_next_v1";
 
 // saved players for quick access when editing lineup

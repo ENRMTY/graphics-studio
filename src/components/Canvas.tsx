@@ -12,6 +12,7 @@ import type {
   GoalMomentData,
   MilestoneData,
   TableSpotData,
+  BoardData,
   NextUpData,
 } from "@types";
 import {
@@ -26,6 +27,7 @@ import {
   renderGoalMoment,
   renderMilestone,
   renderTableSpot,
+  renderBoard,
   renderNextUp,
 } from "@graphics";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -43,6 +45,7 @@ type CanvasData =
   | GoalMomentData
   | MilestoneData
   | TableSpotData
+  | BoardData
   | NextUpData;
 
 export type CanvasSize = "1080x1080" | "1080x1920";
@@ -253,6 +256,8 @@ export async function triggerRender(
     await renderMilestone(stage, data, fullW, fullH);
   } else if (data.type === "table") {
     await renderTableSpot(stage, data, fullW, fullH);
+  } else if (data.type === "board") {
+    await renderBoard(stage, data, fullW, fullH);
   } else if (data.type === "next") {
     await renderNextUp(stage, data, fullW, fullH);
   } else {

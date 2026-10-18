@@ -16,6 +16,7 @@ import type {
   GoalMomentData,
   MilestoneData,
   TableSpotData,
+  BoardData,
   NextUpData,
   Team,
   Competition,
@@ -50,6 +51,7 @@ import {
   GOAL_KEY,
   MILESTONE_KEY,
   TABLE_KEY,
+  BOARD_KEY,
   NEXT_KEY,
 } from "./utils/storage";
 
@@ -67,6 +69,7 @@ import { GoalsPanel } from "./components/GoalsPanel";
 import { GoalMomentPanel } from "./components/GoalMomentPanel";
 import { MilestonePanel } from "./components/MilestonePanel";
 import { TableSpotPanel } from "./components/TableSpotPanel";
+import { BoardPanel } from "./components/BoardPanel";
 import { NextUpPanel } from "./components/NextUpPanel";
 import { TeamManager } from "./components/TeamManager";
 import { CompetitionManager } from "./components/CompetitionManager";
@@ -96,6 +99,7 @@ import {
   DEFAULT_GOAL,
   DEFAULT_MILESTONE,
   DEFAULT_TABLE,
+  DEFAULT_BOARD,
   DEFAULT_NEXT,
 } from "@defaults";
 
@@ -118,6 +122,7 @@ export default function App() {
   const [milestoneData, setMilestoneData] =
     useState<MilestoneData>(DEFAULT_MILESTONE);
   const [tableData, setTableData] = useState<TableSpotData>(DEFAULT_TABLE);
+  const [boardData, setBoardData] = useState<BoardData>(DEFAULT_BOARD);
   const [nextData, setNextData] = useState<NextUpData>(DEFAULT_NEXT);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
@@ -145,6 +150,7 @@ export default function App() {
   const goalStageRef = useRef<Konva.Stage | null>(null);
   const milestoneStageRef = useRef<Konva.Stage | null>(null);
   const tableStageRef = useRef<Konva.Stage | null>(null);
+  const boardStageRef = useRef<Konva.Stage | null>(null);
   const nextStageRef = useRef<Konva.Stage | null>(null);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportSavedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -162,6 +168,7 @@ export default function App() {
   const goalRef = useRef(goalData);
   const milestoneRef = useRef(milestoneData);
   const tableRef = useRef(tableData);
+  const boardRef = useRef(boardData);
   const nextRef = useRef(nextData);
   ftRef.current = ftData;
   htRef.current = htData;
@@ -175,6 +182,7 @@ export default function App() {
   goalRef.current = goalData;
   milestoneRef.current = milestoneData;
   tableRef.current = tableData;
+  boardRef.current = boardData;
   nextRef.current = nextData;
 
   // initial load
@@ -247,6 +255,18 @@ export default function App() {
         const localTable = loadBlob<TableSpotData>(TABLE_KEY);
         if (localTable)
           setTableData((prev) => ({ ...prev, ...localTable, type: "table" }));
+        const localBoard = loadBlob<BoardData>(BOARD_KEY);
+        if (localBoard) {
+          setBoardData((prev) => ({
+            ...prev,
+            ...localBoard,
+            type: "board",
+            rows: localBoard.rows?.length ? localBoard.rows : prev.rows,
+            scorerRows: localBoard.scorerRows?.length
+              ? localBoard.scorerRows
+              : prev.scorerRows,
+          }));
+        }
         const localNext = loadBlob<NextUpData>(NEXT_KEY);
         if (localNext)
           setNextData((prev) => ({ ...prev, ...localNext, type: "next" }));
@@ -303,6 +323,7 @@ export default function App() {
       saveBlob(GOAL_KEY, goalRef.current);
       saveBlob(MILESTONE_KEY, milestoneRef.current);
       saveBlob(TABLE_KEY, tableRef.current);
+      saveBlob(BOARD_KEY, boardRef.current);
       saveBlob(NEXT_KEY, nextRef.current);
       const lineup = lineupRef.current;
       saveLineupSnapshot(
@@ -449,7 +470,10 @@ export default function App() {
 
         try {
           const goal = goalRef.current;
-          const goalResult = await graphicsService.saveGoalDraft(goal, goal._id);
+          const goalResult = await graphicsService.saveGoalDraft(
+            goal,
+            goal._id,
+          );
           if (goal.bgImageFile) {
             await graphicsService.uploadTransferBackground(
               goalResult.id,
@@ -463,7 +487,11 @@ export default function App() {
           } else {
             setGoalData((p) => ({ ...p, _id: goalResult.id }));
           }
-          saveBlob(GOAL_KEY, { ...goal, _id: goalResult.id, bgImageFile: undefined });
+          saveBlob(GOAL_KEY, {
+            ...goal,
+            _id: goalResult.id,
+            bgImageFile: undefined,
+          });
         } catch (err) {
           console.error("Goal draft kept locally:", err);
         }
@@ -657,6 +685,15 @@ export default function App() {
     [scheduleAutoSave],
   );
 
+  const handleBoardChange = useCallback(
+    (data: BoardData) => {
+      setBoardData(data);
+      saveBlob(BOARD_KEY, data);
+      scheduleAutoSave();
+    },
+    [scheduleAutoSave],
+  );
+
   const handleNextChange = useCallback(
     (data: NextUpData) => {
       setNextData(data);
@@ -670,7 +707,13 @@ export default function App() {
   const handleLineupChange = useCallback(
     (data: LineupData) => {
       setLineupData(data);
-      saveLineupSnapshot(data.players, data.subs, data.formation, data.manager, data);
+      saveLineupSnapshot(
+        data.players,
+        data.subs,
+        data.formation,
+        data.manager,
+        data,
+      );
       scheduleAutoSave();
     },
     [scheduleAutoSave],
@@ -748,9 +791,11 @@ export default function App() {
                           ? milestoneStageRef.current
                           : view === "table"
                             ? tableStageRef.current
-                            : view === "next"
-                              ? nextStageRef.current
-                              : mdStageRef.current;
+                            : view === "board"
+                              ? boardStageRef.current
+                              : view === "next"
+                                ? nextStageRef.current
+                                : mdStageRef.current;
     if (!stage || exporting) return;
     setExporting(true);
     let restorePixelRatio: (() => void) | null = null;
@@ -780,6 +825,7 @@ export default function App() {
         view === "goal" ||
         view === "milestone" ||
         view === "table" ||
+        view === "board" ||
         view === "next"
       ) {
         const current =
@@ -793,9 +839,11 @@ export default function App() {
                   ? milestoneRef.current
                   : view === "table"
                     ? tableRef.current
-                    : view === "next"
-                      ? nextRef.current
-                      : lineupRef.current;
+                    : view === "board"
+                      ? boardRef.current
+                      : view === "next"
+                        ? nextRef.current
+                        : lineupRef.current;
         await triggerRender(stage, current, canvasSize);
       } else {
         stage.draw();
@@ -839,9 +887,11 @@ export default function App() {
                             ? "milestone"
                             : view === "table"
                               ? "table"
-                              : view === "next"
-                                ? "next"
-                                : "matchday";
+                              : view === "board"
+                                ? "tables"
+                                : view === "next"
+                                  ? "next"
+                                  : "matchday";
       const filename = `lfc-${label}-${canvasSize}-${Date.now()}.png`;
       if (isMobile && blob) {
         // straight into the gallery. no share sheet, no app picker.
@@ -894,6 +944,7 @@ export default function App() {
     view === "goal" ||
     view === "milestone" ||
     view === "table" ||
+    view === "board" ||
     view === "next";
 
   // mobile: switching section always lands on the editor
@@ -987,9 +1038,11 @@ export default function App() {
                                         ? "Milestone"
                                         : view === "table"
                                           ? "Table"
-                                          : view === "next"
-                                            ? "Next Up"
-                                            : "Match Day"}
+                                          : view === "board"
+                                            ? "Tables"
+                                            : view === "next"
+                                              ? "Next Up"
+                                              : "Match Day"}
                   </h2>
                   <p>
                     {view === "md"
@@ -1010,9 +1063,11 @@ export default function App() {
                                     ? "A big number, and what it is"
                                     : view === "table"
                                       ? "Position, points, and goal difference"
-                                      : view === "next"
-                                        ? "Opponent, competition, and kickoff"
-                                        : "Configure scoreline & events"}
+                                      : view === "board"
+                                        ? "League table or top scorers"
+                                        : view === "next"
+                                          ? "Opponent, competition, and kickoff"
+                                          : "Configure scoreline & events"}
                   </p>
                 </div>
               </div>
@@ -1094,6 +1149,14 @@ export default function App() {
                   onChange={handleTableChange}
                   competitions={competitions}
                   onCompetitionsChange={handleCompetitionsUpdate}
+                />
+              ) : view === "board" ? (
+                <BoardPanel
+                  data={boardData}
+                  onChange={handleBoardChange}
+                  competitions={competitions}
+                  onCompetitionsChange={handleCompetitionsUpdate}
+                  teams={teams}
                 />
               ) : view === "next" ? (
                 <NextUpPanel
@@ -1260,6 +1323,14 @@ export default function App() {
                     <Canvas
                       data={tableData}
                       stageRef={tableStageRef}
+                      canvasSize={canvasSize}
+                      paused={isMobile && mobileTab === "edit"}
+                    />
+                  </div>
+                  <div style={{ display: view === "board" ? "block" : "none" }}>
+                    <Canvas
+                      data={boardData}
+                      stageRef={boardStageRef}
                       canvasSize={canvasSize}
                       paused={isMobile && mobileTab === "edit"}
                     />

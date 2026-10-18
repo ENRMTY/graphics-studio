@@ -49,3 +49,28 @@ export interface NextUpData extends PhotoFields, CompFields {
   timezone: string;
   matchDate: string;
 }
+
+export type BoardKind = "league" | "scorers";
+export type BoardMove = "up" | "down" | "same";
+
+export interface BoardRow {
+  id: string;
+  move: BoardMove;
+  pos: string;
+  name: string;
+  logo: string | null;
+  played: string;
+  gd: string;
+  points: string;
+  goals: string;
+  highlight: boolean;
+}
+
+export interface BoardData extends PhotoFields, CompFields {
+  _id?: string;
+  type: "board";
+  kind: BoardKind;
+  title: string;
+  rows: BoardRow[];
+  scorerRows: BoardRow[];
+}

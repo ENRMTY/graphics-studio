@@ -41,6 +41,7 @@ const NAV_ITEMS: NavItem[] = [
     section: "create",
   },
   { id: "table", label: "Table", Icon: Icons.Table, section: "create" },
+  { id: "board", label: "Tables", Icon: Icons.Board, section: "create" },
   { id: "next", label: "Next Up", Icon: Icons.Next, section: "create" },
   { id: "teams", label: "Teams", Icon: Icons.Teams, section: "library" },
   { id: "players", label: "Players", Icon: Icons.User, section: "library" },
