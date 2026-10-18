@@ -56,8 +56,8 @@ export function edgeScrims(layer: Konva.Layer, W: number, H: number) {
   );
 }
 
-export function redBar(layer: Konva.Layer, W: number, H: number) {
-  const h = Math.round(W * 0.03);
+export function redBar(layer: Konva.Layer, W: number, H: number, ratio = 0.03) {
+  const h = Math.round(W * ratio);
   layer.add(new Konva.Rect({ x: 0, y: H - h, width: W, height: h, fill: RED }));
   return h;
 }
