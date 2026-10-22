@@ -71,9 +71,9 @@ export async function renderMatchday(
         0,
         "rgba(0,0,0,0)",
         0.4,
-        "rgba(0,0,0,0.48)",
+        "rgba(0,0,0,0.56)",
         1,
-        "rgba(0,0,0,0.86)",
+        "rgba(0,0,0,0.92)",
       ],
     }),
   );

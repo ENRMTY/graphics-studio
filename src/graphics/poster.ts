@@ -48,9 +48,9 @@ export function edgeScrims(layer: Konva.Layer, W: number, H: number) {
         0,
         "rgba(0,0,0,0)",
         0.45,
-        "rgba(0,0,0,0.48)",
+        "rgba(0,0,0,0.56)",
         1,
-        "rgba(0,0,0,0.9)",
+        "rgba(0,0,0,0.94)",
       ],
     }),
   );

@@ -93,9 +93,9 @@ export async function renderFullTime(
         0,
         "rgba(0,0,0,0)",
         0.35,
-        "rgba(0,0,0,0.4)",
+        "rgba(0,0,0,0.48)",
         1,
-        "rgba(0,0,0,0.86)",
+        "rgba(0,0,0,0.92)",
       ],
     }),
   );

@@ -103,9 +103,9 @@ export async function renderBoard(
         0.4,
         "rgba(0,0,0,0.12)",
         0.62,
-        "rgba(0,0,0,0.58)",
+        "rgba(0,0,0,0.66)",
         1,
-        "rgba(0,0,0,0.92)",
+        "rgba(0,0,0,0.96)",
       ],
     }),
   );
