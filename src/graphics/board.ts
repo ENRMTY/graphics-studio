@@ -103,9 +103,9 @@ export async function renderBoard(
         0.4,
         "rgba(0,0,0,0.12)",
         0.62,
-        "rgba(0,0,0,0.45)",
+        "rgba(0,0,0,0.58)",
         1,
-        "rgba(0,0,0,0.82)",
+        "rgba(0,0,0,0.92)",
       ],
     }),
   );
@@ -123,9 +123,7 @@ export async function renderBoard(
   const maxTableH = Math.round(Math.min(H * 0.5, W * 0.72));
   const rowH = Math.max(
     12,
-    Math.floor(
-      Math.min(W * 0.058, (maxTableH - headerH - padBottom) / count),
-    ),
+    Math.floor(Math.min(W * 0.058, (maxTableH - headerH - padBottom) / count)),
   );
   const tableH = headerH + rowH * count + padBottom;
   const tableBottom = H - bar - Math.round(W * 0.065);

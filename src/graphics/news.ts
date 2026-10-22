@@ -8,39 +8,6 @@ import {
   FONT_DISPLAY,
 } from "./helpers";
 
-function cornerWash(
-  layer: Konva.Layer,
-  x: number,
-  y: number,
-  radius: number,
-  peak: string,
-) {
-  layer.add(
-    new Konva.Circle({
-      x,
-      y,
-      radius,
-      listening: false,
-      fillRadialGradientStartPoint: { x: 0, y: 0 },
-      fillRadialGradientEndPoint: { x: 0, y: 0 },
-      fillRadialGradientStartRadius: 0,
-      fillRadialGradientEndRadius: radius,
-      fillRadialGradientColorStops: [
-        0,
-        peak,
-        0.08,
-        peak,
-        0.32,
-        "rgba(180,12,26,0.32)",
-        0.68,
-        "rgba(150,8,20,0.1)",
-        1,
-        "rgba(120,0,12,0)",
-      ],
-    }),
-  );
-}
-
 function fitWidth(
   text: string,
   maxW: number,
@@ -111,57 +78,6 @@ export async function renderNews(
       ],
     }),
   );
-
-  const sideW = W * 0.38;
-  const leftSideW = W * 0.32;
-  layer.add(
-    new Konva.Rect({
-      x: 0,
-      y: 0,
-      width: leftSideW,
-      height: H,
-      listening: false,
-      fillLinearGradientStartPoint: { x: 0, y: 0 },
-      fillLinearGradientEndPoint: { x: leftSideW, y: 0 },
-      fillLinearGradientColorStops: [
-        0,
-        "rgba(176,10,28,0.5)",
-        0.2,
-        "rgba(160,8,22,0.18)",
-        0.5,
-        "rgba(140,6,18,0.05)",
-        1,
-        "rgba(120,0,12,0)",
-      ],
-    }),
-  );
-  layer.add(
-    new Konva.Rect({
-      x: W - sideW,
-      y: 0,
-      width: sideW,
-      height: H,
-      listening: false,
-      fillLinearGradientStartPoint: { x: sideW, y: 0 },
-      fillLinearGradientEndPoint: { x: 0, y: 0 },
-      fillLinearGradientColorStops: [
-        0,
-        "rgba(160,8,22,0.4)",
-        0.22,
-        "rgba(150,8,20,0.16)",
-        0.55,
-        "rgba(140,6,18,0.05)",
-        1,
-        "rgba(120,0,12,0)",
-      ],
-    }),
-  );
-
-  const cornerR = W * 0.48;
-  cornerWash(layer, 0, 0, cornerR, "rgba(210,14,34,0.78)");
-  cornerWash(layer, W, 0, cornerR * 0.86, "rgba(190,10,28,0.5)");
-  cornerWash(layer, 0, H, cornerR, "rgba(200,12,30,0.68)");
-  cornerWash(layer, W, H, cornerR * 0.86, "rgba(180,10,26,0.42)");
 
   layer.add(
     new Konva.Text({
